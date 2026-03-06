@@ -1,0 +1,28 @@
+{
+  "name": "geolocatedalerts-service",
+  "version": "1.0.0",
+  "description": "Servicio de geolocalización y búsqueda de alertas cercanas",
+  "type": "module",
+  "main": "index.js",
+  "scripts": {
+    "start": "node index.js",
+    "dev": "nodemon index.js"
+  },
+  "keywords": ["geolocation", "proximity", "alerts"],
+  "author": "",
+  "license": "ISC",
+  "dependencies": {
+    "express": "^4.18.2",
+    "cors": "^2.8.5",
+    "helmet": "^7.0.0",
+    "morgan": "^1.10.0",
+    "mongoose": "^7.0.0",
+    "dotenv": "^16.0.3",
+    "express-validator": "^7.0.0",
+    "uuid": "^9.0.0",
+    "axios": "^1.4.0"
+  },
+  "devDependencies": {
+    "nodemon": "^3.0.1"
+  }
+}
