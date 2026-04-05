@@ -1,0 +1,175 @@
+version: '3.8'
+
+services:
+  # Base de datos MongoDB
+  mongodb:
+    image: mongo:7.0
+    container_name: alertagt-mongodb
+    restart: unless-stopped
+    environment:
+      MONGO_INITDB_ROOT_USERNAME: admin
+      MONGO_INITDB_ROOT_PASSWORD: password123
+      MONGO_INITDB_DATABASE: AlertaGT
+    ports:
+      - "27017:27017"
+    volumes:
+      - mongodb_data:/data/db
+      - ./docker/mongo-init:/docker-entrypoint-initdb.d
+    networks:
+      - alertagt-network
+    healthcheck:
+      test: ["CMD", "mongosh", "--eval", "db.adminCommand('ping')"]
+      interval: 10s
+      timeout: 5s
+      retries: 3
+
+  # Auth Service (.NET)
+  auth-service:
+    build:
+      context: ./auth-service
+      dockerfile: Dockerfile
+    container_name: alertagt-auth-service
+    restart: unless-stopped
+    environment:
+      ASPNETCORE_ENVIRONMENT: Production
+      ASPNETCORE_URLS: http://+:3010
+      MONGODB_URI: mongodb://admin:password123@mongodb:27017
+      DATABASE_NAME: AlertaGT_Auth
+      JWT_SECRET: your-super-secret-jwt-key-change-this-in-production
+      JWT_EXPIRATION_MINUTES: 60
+      JWT_REFRESH_EXPIRATION_DAYS: 7
+      SERVICE_TOKEN: your-super-secret-service-token
+      SMTP_HOST: smtp.gmail.com
+      SMTP_PORT: 587
+      SMTP_USER: your-email@gmail.com
+      SMTP_PASSWORD: your-app-password
+      CLOUDINARY_CLOUD_NAME: your-cloud-name
+      CLOUDINARY_API_KEY: your-api-key
+      CLOUDINARY_API_SECRET: your-api-secret
+    ports:
+      - "3010:3010"
+    depends_on:
+      mongodb:
+        condition: service_healthy
+    networks:
+      - alertagt-network
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:3010/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+
+  # Posts Service (Node.js)
+  posts-service:
+    build:
+      context: ./posts-service
+      dockerfile: Dockerfile
+    container_name: alertagt-posts-service
+    restart: unless-stopped
+    environment:
+      NODE_ENV: production
+      PORT: 3020
+      MONGODB_URI: mongodb://admin:password123@mongodb:27017
+      DATABASE_NAME: AlertaGT_Posts
+      AUTH_SERVICE_URL: http://auth-service:3010/api/v1
+      GEO_SERVICE_URL: http://geolocatedalerts-service:3022/api/v1
+      NOTIFICATIONS_SERVICE_URL: http://notifications-service:3021/api/v1
+      SERVICE_TOKEN: your-super-secret-service-token
+      CLOUDINARY_CLOUD_NAME: your-cloud-name
+      CLOUDINARY_API_KEY: your-api-key
+      CLOUDINARY_API_SECRET: your-api-secret
+      RATE_LIMIT_REQUESTS_PER_MINUTE: 100
+      CORS_ORIGINS: http://localhost:3000,http://localhost:3001
+      LOG_LEVEL: info
+    ports:
+      - "3020:3020"
+    depends_on:
+      mongodb:
+        condition: service_healthy
+      auth-service:
+        condition: service_healthy
+      geolocatedalerts-service:
+        condition: service_healthy
+      notifications-service:
+        condition: service_healthy
+    networks:
+      - alertagt-network
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:3020/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+
+  # Notifications Service (Node.js)
+  notifications-service:
+    build:
+      context: ./notifications-service
+      dockerfile: Dockerfile
+    container_name: alertagt-notifications-service
+    restart: unless-stopped
+    environment:
+      NODE_ENV: production
+      PORT: 3021
+      MONGODB_URI: mongodb://admin:password123@mongodb:27017
+      DATABASE_NAME: AlertaGT_Notifications
+      AUTH_SERVICE_URL: http://auth-service:3010/api/v1
+      SERVICE_TOKEN: your-super-secret-service-token
+      FIREBASE_CREDENTIALS_PATH: /app/firebase-credentials.json
+      RATE_LIMIT_REQUESTS_PER_MINUTE: 100
+      CORS_ORIGINS: http://localhost:3000,http://localhost:3001
+      LOG_LEVEL: info
+    ports:
+      - "3021:3021"
+    volumes:
+      - ./notifications-service/firebase-credentials.json:/app/firebase-credentials.json:ro
+    depends_on:
+      mongodb:
+        condition: service_healthy
+      auth-service:
+        condition: service_healthy
+    networks:
+      - alertagt-network
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:3021/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+
+  # Geolocation Service (Node.js)
+  geolocatedalerts-service:
+    build:
+      context: ./geolocatedalerts-service
+      dockerfile: Dockerfile
+    container_name: alertagt-geolocatedalerts-service
+    restart: unless-stopped
+    environment:
+      NODE_ENV: production
+      PORT: 3022
+      MONGODB_URI: mongodb://admin:password123@mongodb:27017
+      DATABASE_NAME: AlertaGT_Geo
+      AUTH_SERVICE_URL: http://auth-service:3010/api/v1
+      SERVICE_TOKEN: your-super-secret-service-token
+      RATE_LIMIT_REQUESTS_PER_MINUTE: 100
+      CORS_ORIGINS: http://localhost:3000,http://localhost:3001
+      LOG_LEVEL: info
+    ports:
+      - "3022:3022"
+    depends_on:
+      mongodb:
+        condition: service_healthy
+      auth-service:
+        condition: service_healthy
+    networks:
+      - alertagt-network
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:3022/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+
+volumes:
+  mongodb_data:
+
+networks:
+  alertagt-network:
+    driver: bridge
