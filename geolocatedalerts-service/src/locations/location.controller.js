@@ -10,6 +10,7 @@ import {
   getLocationStatus,
   deleteUserLocation,
 } from './location.service.js';
+import { validateGpsCoordinates, validateSearchRadius, validateFCMToken } from '../../middlewares/geo-validators.js';
 
 // Actualizar ubicación del usuario
 export const updateUserLocation = async (req, res) => {
@@ -25,10 +26,27 @@ export const updateUserLocation = async (req, res) => {
       });
     }
 
+    // Validar coordenadas GPS
+    const gpsValidation = validateGpsCoordinates(latitude, longitude);
+    if (!gpsValidation.isValid) {
+      return res.status(400).json({
+        success: false,
+        message: gpsValidation.error,
+      });
+    }
+
     if (!userId) {
       return res.status(400).json({
         success: false,
         message: 'Se requiere userId',
+      });
+    }
+
+    // Validar FCM token si se proporciona
+    if (fcmToken && !validateFCMToken(fcmToken)) {
+      return res.status(400).json({
+        success: false,
+        message: 'Token FCM inválido',
       });
     }
 
@@ -100,10 +118,23 @@ export const getNearbyUsers = async (req, res) => {
       });
     }
 
+    // Validar coordenadas GPS
+    const gpsValidation = validateGpsCoordinates(latitude, longitude);
+    if (!gpsValidation.isValid) {
+      return res.status(400).json({
+        success: false,
+        message: gpsValidation.error,
+      });
+    }
+
+    // Validar radio de búsqueda
+    const radiusValidation = validateSearchRadius(maxDistance);
+    const finalRadius = radiusValidation.normalizedRadius;
+
     const users = await findUsersNearby({
       latitude: parseFloat(latitude),
       longitude: parseFloat(longitude),
-      maxDistance: parseInt(maxDistance),
+      maxDistance: finalRadius,
       limit: parseInt(limit),
     });
 
@@ -112,7 +143,7 @@ export const getNearbyUsers = async (req, res) => {
       data: users,
       count: users.length,
       searchLocation: { latitude, longitude },
-      searchRadius: maxDistance,
+      searchRadius: finalRadius,
     });
   } catch (err) {
     res.status(500).json({

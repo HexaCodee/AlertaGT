@@ -9,6 +9,7 @@ namespace AuthService.Application.Services;
 public class UserService(
     IUserRepository userRepository,
     IRoleRepository roleRepository,
+    IPostsServiceClient postsServiceClient,
     ILogger<UserService> logger) : IUserService
 {
     public async Task<UserDetailsDto> GetUserProfileAsync(string userId)
@@ -17,7 +18,8 @@ public class UserService(
         if (user == null)
             throw new KeyNotFoundException("Usuario no encontrado");
 
-        var role = await roleRepository.GetByUserIdAsync(userId);
+        var roleNames = await roleRepository.GetUserRoleNamesAsync(userId);
+        var primaryRole = roleNames?.FirstOrDefault() ?? "USER_ROLE";
 
         return new UserDetailsDto
         {
@@ -31,7 +33,7 @@ public class UserService(
             City = user.UserProfile?.City ?? string.Empty,
             Address = user.UserProfile?.Address ?? string.Empty,
             Country = user.UserProfile?.Country ?? "Guatemala",
-            Role = role?.Name ?? "USER_ROLE",
+            Role = primaryRole,
             Preferences = user.UserPreferences != null ? new UserPreferencesDto
             {
                 NotifyNewAlerts = user.UserPreferences.NotifyNewAlerts,
@@ -72,14 +74,22 @@ public class UserService(
 
     public async Task<UserStatsDto> GetUserStatsAsync(string userId)
     {
-        // Nota: Estos cálculos requerirían llamadas a otros servicios (posts, comments)
-        // Por ahora retornamos valores por defecto - se implementarían con llamadas HTTP
+        // Obtener estadísticas del posts-service con retry logic
+        var totalAlerts = await postsServiceClient.GetUserAlertsCountAsync(userId);
+        var totalComments = await postsServiceClient.GetUserCommentsCountAsync(userId);
+        var communityHelped = await postsServiceClient.GetUserCommunityHelpedAsync(userId);
+
+        // ModerationActions solo para ADMIN/MODERATOR
+        var roleNames = await roleRepository.GetUserRoleNamesAsync(userId);
+        var isModerator = roleNames?.Contains("ADMIN_ROLE") == true || roleNames?.Contains("MODERATOR_ROLE") == true;
+        var moderationActions = isModerator ? await postsServiceClient.GetUserAlertsCountAsync(userId) : 0; // Placeholder
+
         return new UserStatsDto
         {
-            TotalAlerts = 0, // Se obtendría del posts-service
-            TotalComments = 0, // Se obtendría del posts-service
-            CommunityHelped = 0, // Se calcularía basado en vistas de alertas
-            ModerationActions = 0 // Para moderadores/admin
+            TotalAlerts = totalAlerts,
+            TotalComments = totalComments,
+            CommunityHelped = communityHelped,
+            ModerationActions = moderationActions
         };
     }
 

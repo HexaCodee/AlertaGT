@@ -18,6 +18,7 @@ import {
 import { validateJWT } from '../../middlewares/validate-JWT.js';
 import { requireRole } from '../../middlewares/validate-role.js';
 import upload from '../../middlewares/upload.js';
+import { validateAttachmentsMiddleware } from '../../middlewares/attachment-validator.js';
 
 const router = Router();
 
@@ -27,8 +28,8 @@ router.get('/proximity/search', getPostsByProximity);  // Buscar por ubicación 
 router.get('/:id', getPostById);        // Obtener publicación por ID
 
 // Rutas privadas (requieren autenticación)
-router.post('/', validateJWT, upload.array('attachments', 6), validateCreatePost, createPost);
-router.put('/:id', validateJWT, upload.array('attachments', 6), validateUpdatePost, updatePost);
+router.post('/', validateJWT, upload.array('attachments', 6), validateAttachmentsMiddleware, validateCreatePost, createPost);
+router.put('/:id', validateJWT, upload.array('attachments', 6), validateAttachmentsMiddleware, validateUpdatePost, updatePost);
 router.delete('/:id', validateJWT, deletePost);
 
 // Moderación y reportes

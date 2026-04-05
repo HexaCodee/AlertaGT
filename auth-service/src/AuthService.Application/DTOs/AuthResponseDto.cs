@@ -1,11 +1,32 @@
 namespace AuthService.Application.DTOs;
 
+/// <summary>
+/// DTO de respuesta para operación de autenticación (login).
+/// </summary>
 public class AuthResponseDto
 {
+    /// <summary>
+    /// Indica si la autenticación fue exitosa.
+    /// </summary>
     public bool Success { get; set; } = true;
+
+    /// <summary>
+    /// Mensaje de estado o error de la operación.
+    /// </summary>
     public string Message { get; set; } = string.Empty;
+
+    /// <summary>
+    /// Token JWT válido para realizar peticiones autenticadas.
+    /// </summary>
     public string Token { get; set; } = string.Empty;
-    // Compact user details for clients
+
+    /// <summary>
+    /// Detalles compactos del usuario autenticado.
+    /// </summary>
     public UserDetailsDto UserDetails { get; set; } = new();
+
+    /// <summary>
+    /// Fecha y hora de expiración del token JWT.
+    /// </summary>
     public DateTime ExpiresAt { get; set; }
 }
