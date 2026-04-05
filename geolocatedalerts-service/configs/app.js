@@ -23,7 +23,7 @@ const routes = (app) => {
     res.status(200).json({
       status: 'Healthy',
       timeStamp: new Date().toISOString(),
-      service: 'AlertsPosts - Geolocation API',
+      service: 'AlertaGT - Geolocation API',
     });
   });
 
