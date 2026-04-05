@@ -62,11 +62,36 @@ export const fetchPostsByProximity = async ({ latitude, longitude, maxDistance =
   if (category) filter.category = category;
   if (onlyPublished) filter.isPublished = true;
 
+  // Obtener posts con información de distancia
   const posts = await Post.find(filter).sort({ createdAt: -1 });
 
+  // Calcular distancia para cada post y ordenar por distancia
+  const postsWithDistance = posts.map(post => {
+    const postLng = post.location.coordinates[0];
+    const postLat = post.location.coordinates[1];
+
+    // Calcular distancia aproximada usando fórmula de Haversine (en metros)
+    const R = 6371000; // Radio de la Tierra en metros
+    const dLat = (postLat - latitude) * Math.PI / 180;
+    const dLng = (postLng - longitude) * Math.PI / 180;
+    const a = Math.sin(dLat/2) * Math.sin(dLat/2) +
+              Math.cos(latitude * Math.PI / 180) * Math.cos(postLat * Math.PI / 180) *
+              Math.sin(dLng/2) * Math.sin(dLng/2);
+    const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1-a));
+    const distance = R * c;
+
+    return {
+      ...post.toObject(),
+      distance: Math.round(distance), // Distancia en metros, redondeada
+    };
+  });
+
+  // Ordenar por distancia ascendente (más cercanos primero)
+  postsWithDistance.sort((a, b) => a.distance - b.distance);
+
   return {
-    posts,
-    count: posts.length,
+    posts: postsWithDistance,
+    count: postsWithDistance.length,
   };
 };
 

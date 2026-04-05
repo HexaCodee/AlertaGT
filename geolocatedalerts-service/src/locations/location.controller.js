@@ -6,6 +6,8 @@ import {
   getNearbyUsersFCMTokens,
   setUserInactive,
   setUserActive,
+  toggleLocationSharing,
+  getLocationStatus,
   deleteUserLocation,
 } from './location.service.js';
 
@@ -264,6 +266,64 @@ export const removeUserLocation = async (req, res) => {
     res.status(500).json({
       success: false,
       message: 'Error eliminando ubicación',
+      error: err.message,
+    });
+  }
+};
+
+// Toggle compartir ubicación
+export const toggleLocationSharingController = async (req, res) => {
+  try {
+    const userId = req.user?.id || req.params.userId;
+
+    if (!userId) {
+      return res.status(400).json({
+        success: false,
+        message: 'Se requiere userId',
+      });
+    }
+
+    const location = await toggleLocationSharing(userId);
+
+    res.status(200).json({
+      success: true,
+      message: `Compartir ubicación ${location.isActive ? 'activado' : 'desactivado'}`,
+      data: {
+        isActive: location.isActive,
+        lastUpdate: location.lastLocationUpdate,
+      },
+    });
+  } catch (err) {
+    res.status(500).json({
+      success: false,
+      message: 'Error cambiando estado de ubicación',
+      error: err.message,
+    });
+  }
+};
+
+// Obtener estado de ubicación
+export const getLocationStatusController = async (req, res) => {
+  try {
+    const userId = req.user?.id || req.params.userId;
+
+    if (!userId) {
+      return res.status(400).json({
+        success: false,
+        message: 'Se requiere userId',
+      });
+    }
+
+    const status = await getLocationStatus(userId);
+
+    res.status(200).json({
+      success: true,
+      data: status,
+    });
+  } catch (err) {
+    res.status(500).json({
+      success: false,
+      message: 'Error obteniendo estado de ubicación',
       error: err.message,
     });
   }

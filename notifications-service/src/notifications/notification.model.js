@@ -21,7 +21,7 @@ const notificationSchema = new Schema(
     // Tipo de notificación (new_alert, new_comment, moderation, etc)
     type: {
       type: String,
-      enum: ['NEW_ALERT', 'NEW_COMMENT', 'MODERATION', 'FLAGGED', 'SYSTEM'],
+      enum: ['NEW_ALERT', 'NEW_COMMENT', 'MODERATION', 'FLAGGED', 'SYSTEM', 'NEARBY_ALERT_CRITICAL', 'LOCATION_SHARED', 'LOCATION_DISABLED'],
       default: 'NEW_ALERT',
     },
     // Título de la notificación

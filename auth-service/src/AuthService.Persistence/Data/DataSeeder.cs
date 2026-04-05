@@ -68,6 +68,9 @@ public class DataSeeder
                         UserId = userId,
                         ProfilePicture = string.Empty,
                         Phone = "00000000",
+                        City = "Guatemala",
+                        Address = "Centro Histórico",
+                        Country = "Guatemala",
                         CreatedAt = DateTime.UtcNow,
                         UpdatedAt = DateTime.UtcNow
                     },
@@ -79,6 +82,20 @@ public class DataSeeder
                         EmailVerified = true,
                         EmailVerificationToken = null,
                         EmailVerificationTokenExpiry = null,
+                        CreatedAt = DateTime.UtcNow,
+                        UpdatedAt = DateTime.UtcNow
+                    },
+
+                    UserPreferences = new UserPreferences
+                    {
+                        Id = UuidGenerator.GenerateUserId(),
+                        UserId = userId,
+                        NotifyNewAlerts = true,
+                        NotifyComments = true,
+                        NotifyModeration = true,
+                        NotifyNearbyAlerts = true,
+                        PreferredSearchRadius = 2000,
+                        ShareLocation = true,
                         CreatedAt = DateTime.UtcNow,
                         UpdatedAt = DateTime.UtcNow
                     },
