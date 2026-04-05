@@ -1,7 +1,14 @@
 namespace AuthService.Application.DTOs;
 
+/// <summary>
+/// DTO para actualizar el rol de un usuario (solo para administradores).
+/// Soporta roles como USER_ROLE, MODERATOR_ROLE, ADMIN_ROLE.
+/// </summary>
 public class UpdateUserRoleDto
 {
-    // Single role per user; accept role name like "ADMIN_ROLE" or "USER_ROLE"
+    /// <summary>
+    /// Nombre del rol a asignar al usuario (ej: "USER_ROLE", "MODERATOR_ROLE", "ADMIN_ROLE").
+    /// Solo un rol por usuario en el sistema actual.
+    /// </summary>
     public string RoleName { get; set; } = string.Empty;
 }

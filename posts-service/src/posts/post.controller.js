@@ -9,6 +9,7 @@ import {
   flagPostRecord,
   fetchPostsByProximity,
 } from './post.service.js';
+import { sanitizeText } from '../../middlewares/attachment-validator.js';
 
 const GEO_SERVICE_URL = process.env.GEO_SERVICE_URL || 'http://localhost:3022/api/v1';
 const NOTIFICATIONS_SERVICE_URL = process.env.NOTIFICATIONS_SERVICE_URL || 'http://localhost:3021/api/v1';
@@ -53,7 +54,15 @@ export const createPost = async (req, res) => {
     }
 
     const post = await createPostRecord({
-      postData: { ...req.body, location },
+      postData: { 
+        title: sanitizeText(req.body.title),
+        category: req.body.category,
+        riskType: req.body.riskType,
+        text: sanitizeText(req.body.text),
+        location,
+        isPublished: req.body.isPublished ?? false,
+        moderation: req.body.moderation ?? undefined
+      },
       authorId: req.user.id,
       image,
       attachments,

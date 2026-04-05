@@ -17,10 +17,14 @@ public static class ServiceCollectionExtensions
         // Registrar MongoDbContext como singleton
         services.AddSingleton<MongoDbContext>();
 
+        // HttpClientFactory para inter-service communication
+        services.AddHttpClient();
+
         services.AddScoped<IUserRepository, UserRepository>();
         services.AddScoped<IRoleRepository, RoleRepository>();
         services.AddScoped<IAuthService, Application.Services.AuthService>();
         services.AddScoped<IUserService, UserService>();
+        services.AddScoped<IPostsServiceClient, PostsServiceClient>();
         services.AddScoped<IUserManagementService, UserManagementService>();
         services.AddScoped<IPasswordHashService, PasswordHashService>();
         services.AddScoped<IJwtTokenService, JwtTokenService>();
@@ -33,8 +37,6 @@ public static class ServiceCollectionExtensions
 
     public static IServiceCollection AddApiDocumentation(this IServiceCollection services)
     {
-        services.AddEndpointsApiExplorer();
-        services.AddSwaggerGen();
-        return services;
+        return services.AddSwaggerDocumentation();
     }
 }
