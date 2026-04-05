@@ -9,7 +9,7 @@ import {
 } from './notification.service.js';
 
 // Obtener notificaciones del usuario autenticado
-export const getNotifications = async (req, res) => {
+export const getNotifications = async (req, res, next) => {
   try {
     const { page = 1, limit = 20, unread = false } = req.query;
     const userId = req.user.id;
@@ -27,16 +27,12 @@ export const getNotifications = async (req, res) => {
       pagination,
     });
   } catch (err) {
-    res.status(500).json({
-      success: false,
-      message: 'Error al obtener notificaciones',
-      error: err.message,
-    });
+    next(err);
   }
 };
 
 // Obtener una notificación por ID
-export const getNotificationById = async (req, res) => {
+export const getNotificationById = async (req, res, next) => {
   try {
     const { id } = req.params;
     const notification = await fetchNotificationById(id);
@@ -53,16 +49,12 @@ export const getNotificationById = async (req, res) => {
       data: notification,
     });
   } catch (err) {
-    res.status(500).json({
-      success: false,
-      message: 'Error al obtener la notificación',
-      error: err.message,
-    });
+    next(err);
   }
 };
 
 // Marcar una notificación como leída
-export const setNotificationAsRead = async (req, res) => {
+export const setNotificationAsRead = async (req, res, next) => {
   try {
     const { id } = req.params;
     const notification = await markAsRead(id);
@@ -80,16 +72,12 @@ export const setNotificationAsRead = async (req, res) => {
       data: notification,
     });
   } catch (err) {
-    res.status(500).json({
-      success: false,
-      message: 'Error al marcar como leída',
-      error: err.message,
-    });
+    next(err);
   }
 };
 
 // Marcar todas las notificaciones como leídas
-export const setAllNotificationsAsRead = async (req, res) => {
+export const setAllNotificationsAsRead = async (req, res, next) => {
   try {
     const userId = req.user.id;
     const result = await markAllAsRead(userId);
@@ -100,16 +88,12 @@ export const setAllNotificationsAsRead = async (req, res) => {
       modifiedCount: result.modifiedCount,
     });
   } catch (err) {
-    res.status(500).json({
-      success: false,
-      message: 'Error al marcar como leídas',
-      error: err.message,
-    });
+    next(err);
   }
 };
 
 // Eliminar una notificación
-export const removeNotification = async (req, res) => {
+export const removeNotification = async (req, res, next) => {
   try {
     const { id } = req.params;
     const notification = await deleteNotification(id);
@@ -126,16 +110,12 @@ export const removeNotification = async (req, res) => {
       message: 'Notificación eliminada',
     });
   } catch (err) {
-    res.status(500).json({
-      success: false,
-      message: 'Error al eliminar la notificación',
-      error: err.message,
-    });
+    next(err);
   }
 };
 
 // Eliminar todas las notificaciones del usuario
-export const removeAllUserNotifications = async (req, res) => {
+export const removeAllUserNotifications = async (req, res, next) => {
   try {
     const userId = req.user.id;
     const result = await deleteAllUserNotifications(userId);
@@ -146,16 +126,12 @@ export const removeAllUserNotifications = async (req, res) => {
       deletedCount: result.deletedCount,
     });
   } catch (err) {
-    res.status(500).json({
-      success: false,
-      message: 'Error al eliminar notificaciones',
-      error: err.message,
-    });
+    next(err);
   }
 };
 
 // Crear notificación (llamada interna por otros servicios)
-export const createNotificationController = async (req, res) => {
+export const createNotificationController = async (req, res, next) => {
   try {
     const { userId, postId, type, title, body, data = {}, fcmToken = null } = req.body;
     if (!userId || !postId || !title || !body) {
@@ -166,6 +142,6 @@ export const createNotificationController = async (req, res) => {
 
     res.status(201).json({ success: true, data: notification });
   } catch (err) {
-    res.status(500).json({ success: false, message: 'Error creando notificación', error: err.message });
+    next(err);
   }
 };

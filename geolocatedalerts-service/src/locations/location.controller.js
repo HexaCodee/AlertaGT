@@ -13,7 +13,7 @@ import {
 import { validateGpsCoordinates, validateSearchRadius, validateFCMToken } from '../../middlewares/geo-validators.js';
 
 // Actualizar ubicación del usuario
-export const updateUserLocation = async (req, res) => {
+export const updateUserLocation = async (req, res, next) => {
   try {
     const { latitude, longitude, address } = req.body;
     const userId = req.user?.id || req.body.userId;
@@ -64,16 +64,12 @@ export const updateUserLocation = async (req, res) => {
       data: location,
     });
   } catch (err) {
-    res.status(500).json({
-      success: false,
-      message: 'Error actualizando ubicación',
-      error: err.message,
-    });
+    next(err);
   }
 };
 
 // Obtener ubicación del usuario
-export const getUserCurrentLocation = async (req, res) => {
+export const getUserCurrentLocation = async (req, res, next) => {
   try {
     const userId = req.user?.id || req.params.userId;
 
@@ -98,16 +94,12 @@ export const getUserCurrentLocation = async (req, res) => {
       data: location,
     });
   } catch (err) {
-    res.status(500).json({
-      success: false,
-      message: 'Error obteniendo ubicación',
-      error: err.message,
-    });
+    next(err);
   }
 };
 
 // Obtener usuarios cercanos
-export const getNearbyUsers = async (req, res) => {
+export const getNearbyUsers = async (req, res, next) => {
   try {
     const { latitude, longitude, maxDistance = 2000, limit = 100 } = req.query;
 
@@ -146,16 +138,12 @@ export const getNearbyUsers = async (req, res) => {
       searchRadius: finalRadius,
     });
   } catch (err) {
-    res.status(500).json({
-      success: false,
-      message: 'Error buscando usuarios cercanos',
-      error: err.message,
-    });
+    next(err);
   }
 };
 
 // Obtener FCM tokens de usuarios cercanos
-export const getNearbyUserTokens = async (req, res) => {
+export const getNearbyUserTokens = async (req, res, next) => {
   try {
     const { latitude, longitude, maxDistance = 2000 } = req.query;
 
@@ -182,16 +170,12 @@ export const getNearbyUserTokens = async (req, res) => {
       searchRadius: maxDistance,
     });
   } catch (err) {
-    res.status(500).json({
-      success: false,
-      message: 'Error obteniendo tokens FCM',
-      error: err.message,
-    });
+    next(err);
   }
 };
 
 // Actualizar FCM token del usuario
-export const updateUserFCMToken = async (req, res) => {
+export const updateUserFCMToken = async (req, res, next) => {
   try {
     const { fcmToken } = req.body;
     const userId = req.user?.id || req.body.userId;
@@ -211,16 +195,12 @@ export const updateUserFCMToken = async (req, res) => {
       data: location,
     });
   } catch (err) {
-    res.status(500).json({
-      success: false,
-      message: 'Error actualizando FCM token',
-      error: err.message,
-    });
+    next(err);
   }
 };
 
 // Marcar usuario como inactivo
-export const markUserInactive = async (req, res) => {
+export const markUserInactive = async (req, res, next) => {
   try {
     const userId = req.user?.id || req.params.userId;
 
@@ -239,16 +219,12 @@ export const markUserInactive = async (req, res) => {
       data: location,
     });
   } catch (err) {
-    res.status(500).json({
-      success: false,
-      message: 'Error marcando usuario inactivo',
-      error: err.message,
-    });
+    next(err);
   }
 };
 
 // Marcar usuario como activo
-export const markUserActive = async (req, res) => {
+export const markUserActive = async (req, res, next) => {
   try {
     const userId = req.user?.id || req.params.userId;
 
@@ -267,16 +243,12 @@ export const markUserActive = async (req, res) => {
       data: location,
     });
   } catch (err) {
-    res.status(500).json({
-      success: false,
-      message: 'Error marcando usuario activo',
-      error: err.message,
-    });
+    next(err);
   }
 };
 
 // Eliminar ubicación de usuario
-export const removeUserLocation = async (req, res) => {
+export const removeUserLocation = async (req, res, next) => {
   try {
     const userId = req.user?.id || req.params.userId;
 
@@ -294,16 +266,12 @@ export const removeUserLocation = async (req, res) => {
       message: 'Ubicación eliminada',
     });
   } catch (err) {
-    res.status(500).json({
-      success: false,
-      message: 'Error eliminando ubicación',
-      error: err.message,
-    });
+    next(err);
   }
 };
 
 // Toggle compartir ubicación
-export const toggleLocationSharingController = async (req, res) => {
+export const toggleLocationSharingController = async (req, res, next) => {
   try {
     const userId = req.user?.id || req.params.userId;
 
@@ -325,16 +293,12 @@ export const toggleLocationSharingController = async (req, res) => {
       },
     });
   } catch (err) {
-    res.status(500).json({
-      success: false,
-      message: 'Error cambiando estado de ubicación',
-      error: err.message,
-    });
+    next(err);
   }
 };
 
 // Obtener estado de ubicación
-export const getLocationStatusController = async (req, res) => {
+export const getLocationStatusController = async (req, res, next) => {
   try {
     const userId = req.user?.id || req.params.userId;
 
@@ -352,10 +316,6 @@ export const getLocationStatusController = async (req, res) => {
       data: status,
     });
   } catch (err) {
-    res.status(500).json({
-      success: false,
-      message: 'Error obteniendo estado de ubicación',
-      error: err.message,
-    });
+    next(err);
   }
 };

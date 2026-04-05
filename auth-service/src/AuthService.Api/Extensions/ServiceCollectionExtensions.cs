@@ -18,7 +18,12 @@ public static class ServiceCollectionExtensions
         services.AddSingleton<MongoDbContext>();
 
         // HttpClientFactory para inter-service communication
-        services.AddHttpClient();
+        services.AddHttpClient("PostsServiceClient", client =>
+        {
+            var baseUrl = configuration["PostsServiceUrl"] ?? "http://localhost:3020/api/v1";
+            client.BaseAddress = new Uri(baseUrl);
+            client.Timeout = TimeSpan.FromSeconds(10);
+        });
 
         services.AddScoped<IUserRepository, UserRepository>();
         services.AddScoped<IRoleRepository, RoleRepository>();

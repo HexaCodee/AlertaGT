@@ -11,6 +11,7 @@ public class GlobalExceptionMiddleware(RequestDelegate next, ILogger<GlobalExcep
     {
         PropertyNamingPolicy = JsonNamingPolicy.CamelCase
     };
+
     public async Task InvokeAsync(HttpContext context)
     {
         try
@@ -30,12 +31,12 @@ public class GlobalExceptionMiddleware(RequestDelegate next, ILogger<GlobalExcep
 
         var response = exception switch
         {
-            BusinessException businessEx => new ErrorResponse
+            ApiException apiException => new ErrorResponse
             {
-                StatusCode = (int)HttpStatusCode.BadRequest,
-                Title = "Business Logic Error",
-                Detail = businessEx.Message,
-                ErrorCode = businessEx.ErrorCode
+                StatusCode = apiException.StatusCode,
+                Title = "API Error",
+                Detail = apiException.Message,
+                ErrorCode = apiException.ErrorCode
             },
             UnauthorizedAccessException => new ErrorResponse
             {
@@ -60,7 +61,6 @@ public class GlobalExceptionMiddleware(RequestDelegate next, ILogger<GlobalExcep
 
         context.Response.StatusCode = response.StatusCode;
 
-        // Construir respuesta unificada para errores
         var unified = new
         {
             success = false,
