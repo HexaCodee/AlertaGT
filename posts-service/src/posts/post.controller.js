@@ -271,22 +271,42 @@ async function triggerNotifications(post) {
     const tokens = nearbyResp.data?.data?.tokens || [];
     if (!tokens.length) return;
 
+    // Determinar tipo de notificación basado en el riesgo
+    const notificationType = post.riskType === 'GRAVE' ? 'NEARBY_ALERT_CRITICAL' : 'NEW_ALERT';
+
     // Crear notificaciones en notifications-service (y enviar FCM)
-    await Promise.all(tokens.map(t =>
-      axios.post(`${NOTIFICATIONS_SERVICE_URL}/notifications`, {
+    await Promise.all(tokens.map(async (t) => {
+      // Calcular distancia aproximada para este usuario
+      const userLocation = nearbyResp.data?.data?.users?.find(u => u.userId === t.userId);
+      let distance = null;
+
+      if (userLocation) {
+        const R = 6371000; // Radio de la Tierra en metros
+        const dLat = (userLocation.latitude - post.location.latitude) * Math.PI / 180;
+        const dLng = (userLocation.longitude - post.location.longitude) * Math.PI / 180;
+        const a = Math.sin(dLat/2) * Math.sin(dLat/2) +
+                  Math.cos(post.location.latitude * Math.PI / 180) * Math.cos(userLocation.latitude * Math.PI / 180) *
+                  Math.sin(dLng/2) * Math.sin(dLng/2);
+        const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1-a));
+        distance = Math.round(R * c);
+      }
+
+      await axios.post(`${NOTIFICATIONS_SERVICE_URL}/notifications`, {
         userId: t.userId,
         postId: post._id,
-        type: 'NEW_ALERT',
+        type: notificationType,
         title: post.title,
         body: post.text?.substring(0, 120) || '',
         data: {
           postId: post._id,
           category: post.category,
+          riskType: post.riskType,
+          distance: distance,
         },
       }, {
         headers: { 'x-service-token': SERVICE_TOKEN }
-      })
-    ));
+      });
+    }));
   } catch (err) {
     console.error('triggerNotifications error:', err.message);
   }

@@ -28,5 +28,14 @@ public class RegisterDto
     [StringLength(8, MinimumLength = 8)]
     public string Phone { get; set; } = string.Empty;
 
+    [MaxLength(100)]
+    public string City { get; set; } = "Guatemala";
+
+    [MaxLength(255)]
+    public string Address { get; set; } = string.Empty;
+
+    [MaxLength(50)]
+    public string Country { get; set; } = "Guatemala";
+
     public IFileData? ProfilePicture { get; set; }
 }

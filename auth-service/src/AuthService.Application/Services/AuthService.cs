@@ -77,6 +77,7 @@ public class AuthService(
         var userEmailId = UuidGenerator.GenerateUserId();
         var userRoleId = UuidGenerator.GenerateUserId();
         var userPasswordResetId = UuidGenerator.GenerateUserId();
+        var userPreferencesId = UuidGenerator.GenerateUserId();
 
         // Obtener el rol por defecto (USER_ROLE) ya seedado en DB
         var defaultRole = await roleRepository.GetByNameAsync(RoleConstants.USER_ROLE);
@@ -99,7 +100,10 @@ public class AuthService(
                 Id = userProfileId,
                 UserId = userId,
                 ProfilePicture = profilePicturePath,
-                Phone = registerDto.Phone
+                Phone = registerDto.Phone,
+                City = registerDto.City,
+                Address = registerDto.Address,
+                Country = registerDto.Country
             },
             UserEmail = new UserEmail
             {
@@ -108,6 +112,17 @@ public class AuthService(
                 EmailVerified = false,
                 EmailVerificationToken = emailVerificationToken,
                 EmailVerificationTokenExpiry = DateTime.UtcNow.AddHours(24)
+            },
+            UserPreferences = new UserPreferences
+            {
+                Id = userPreferencesId,
+                UserId = userId,
+                NotifyNewAlerts = true,
+                NotifyComments = true,
+                NotifyModeration = true,
+                NotifyNearbyAlerts = true,
+                PreferredSearchRadius = 2000,
+                ShareLocation = true
             },
             UserRoles =
             [

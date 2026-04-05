@@ -8,6 +8,8 @@ import {
   markUserInactive,
   markUserActive,
   removeUserLocation,
+  toggleLocationSharingController,
+  getLocationStatusController,
 } from './location.controller.js';
 import { validateJWT } from '../../middlewares/validate-JWT.js';
 import { validateServiceToken } from '../../middlewares/validate-service-token.js';
@@ -42,5 +44,11 @@ router.put('/active', markUserActive);
 
 // DELETE - Eliminar ubicación
 router.delete('/', removeUserLocation);
+
+// PUT - Toggle compartir ubicación
+router.put('/toggle-sharing', toggleLocationSharingController);
+
+// GET - Obtener estado de ubicación
+router.get('/status', getLocationStatusController);
 
 export default router;

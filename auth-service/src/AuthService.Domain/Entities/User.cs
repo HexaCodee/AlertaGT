@@ -44,4 +44,6 @@ public class User
     public UserEmail UserEmail {get; set;} = null!;
 
     public UserPasswordReset UserPasswordReset {get; set;} = null!;
+
+    public UserPreferences UserPreferences {get; set;} = null!;
 }

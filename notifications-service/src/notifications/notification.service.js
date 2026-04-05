@@ -3,12 +3,22 @@ import { sendPushNotification } from '../fcm/fcm.service.js';
 
 // Crear notificación
 export const createNotification = async ({ userId, postId, type, title, body, data = {}, fcmToken = null }) => {
+  // Si es una notificación de alerta cercana, incluir distancia en el título/cuerpo
+  let enhancedTitle = title;
+  let enhancedBody = body;
+
+  if (type === 'NEARBY_ALERT_CRITICAL' && data.distance) {
+    const distance = data.distance < 1000 ? `${data.distance}m` : `${(data.distance / 1000).toFixed(1)}km`;
+    enhancedTitle = `🚨 ${title}`;
+    enhancedBody = `${body} (a ${distance} de distancia)`;
+  }
+
   const notification = new Notification({
     userId,
     postId,
     type,
-    title,
-    body,
+    title: enhancedTitle,
+    body: enhancedBody,
     data,
   });
 
@@ -19,8 +29,8 @@ export const createNotification = async ({ userId, postId, type, title, body, da
     try {
       const fcmResponse = await sendPushNotification({
         token: fcmToken,
-        title,
-        body,
+        title: enhancedTitle,
+        body: enhancedBody,
         data,
       });
       notification.sentViaFCM = true;
