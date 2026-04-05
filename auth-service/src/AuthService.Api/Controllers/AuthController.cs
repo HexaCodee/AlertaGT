@@ -82,4 +82,26 @@ public class AuthController(IAuthService authService) : ControllerBase
 
         return BadRequest(result);
     }
+
+    /// <summary>
+    /// Verifica la validez de un token JWT y retorna información del usuario.
+    /// </summary>
+    /// <param name="verifyTokenDto">Token JWT a verificar.</param>
+    /// <returns>Información del usuario si el token es válido.</returns>
+    [HttpPost("verify")]
+    [EnableRateLimiting("ApiPolicy")]
+    [ProducesResponseType(StatusCodes.Status200OK, Type = typeof(VerifyTokenResponseDto))]
+    [ProducesResponseType(StatusCodes.Status401Unauthorized)]
+    [ProducesResponseType(StatusCodes.Status429TooManyRequests)]
+    public async Task<ActionResult<VerifyTokenResponseDto>> VerifyToken([FromBody] VerifyTokenDto verifyTokenDto)
+    {
+        var result = await authService.VerifyTokenAsync(verifyTokenDto);
+
+        if (!result.Success)
+        {
+            return Unauthorized(result);
+        }
+
+        return Ok(result);
+    }
 }

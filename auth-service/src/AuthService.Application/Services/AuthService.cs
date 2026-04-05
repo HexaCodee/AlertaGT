@@ -462,5 +462,69 @@ public class AuthService(
 
         return MapToUserResponseDto(user);
     }
+
+    public async Task<VerifyTokenResponseDto> VerifyTokenAsync(VerifyTokenDto verifyTokenDto)
+    {
+        try
+        {
+            // Validar el token JWT
+            var (isValid, userId) = jwtTokenService.ValidateToken(verifyTokenDto.Token);
+
+            if (!isValid || string.IsNullOrEmpty(userId))
+            {
+                return new VerifyTokenResponseDto
+                {
+                    Success = false,
+                    Message = "Token inválido o expirado"
+                };
+            }
+
+            // Obtener el usuario
+            var user = await userRepository.GetByIdAsync(userId);
+            if (user == null)
+            {
+                return new VerifyTokenResponseDto
+                {
+                    Success = false,
+                    Message = "Usuario no encontrado"
+                };
+            }
+
+            // Verificar que el usuario esté activo
+            if (!user.Status)
+            {
+                return new VerifyTokenResponseDto
+                {
+                    Success = false,
+                    Message = "Usuario inactivo"
+                };
+            }
+
+            // Mapear a UserDetailsDto
+            var userDetails = new UserDetailsDto
+            {
+                Id = user.Id,
+                Username = user.Username,
+                ProfilePicture = _cloudinaryService.GetFullImageUrl(user.UserProfile?.ProfilePicture ?? string.Empty),
+                Role = user.UserRoles.FirstOrDefault()?.Role?.Name ?? RoleConstants.USER_ROLE
+            };
+
+            return new VerifyTokenResponseDto
+            {
+                Success = true,
+                User = userDetails,
+                Message = "Token válido"
+            };
+        }
+        catch (Exception ex)
+        {
+            logger.LogError(ex, "Error verificando token JWT");
+            return new VerifyTokenResponseDto
+            {
+                Success = false,
+                Message = "Error interno del servidor"
+            };
+        }
+    }
 }
 

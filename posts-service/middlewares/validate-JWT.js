@@ -8,7 +8,7 @@ export const validateJWT = async (req, res, next) => {
       return res.status(401).json({ success: false, message: 'Token de autenticación requerido' });
     }
 
-    const authUrl = process.env.AUTH_SERVICE_URL || 'http://localhost:5000/api/v1';
+    const authUrl = process.env.AUTH_SERVICE_URL || 'http://localhost:3010/api/v1';
     try {
       const resp = await axios.post(`${authUrl}/auth/verify`, { token });
       req.user = resp.data.user;
