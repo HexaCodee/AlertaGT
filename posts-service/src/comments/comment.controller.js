@@ -6,7 +6,7 @@ import {
 } from './comment.service.js';
 
 // Crear comentario
-export const createComment = async (req, res) => {
+export const createComment = async (req, res, next) => {
   try {
     const comment = await createCommentRecord({
       postId: req.body.postId,
@@ -20,16 +20,12 @@ export const createComment = async (req, res) => {
       data: comment,
     });
   } catch (err) {
-    res.status(500).json({
-      success: false,
-      message: 'Error al crear el comentario',
-      error: err.message,
-    });
+    next(err);
   }
 };
 
 // Listar comentarios por publicación
-export const getCommentsByPostId = async (req, res) => {
+export const getCommentsByPostId = async (req, res, next) => {
   try {
     const { postId } = req.params;
     const comments = await fetchCommentsByPost(postId);
@@ -39,16 +35,12 @@ export const getCommentsByPostId = async (req, res) => {
       data: comments,
     });
   } catch (err) {
-    res.status(500).json({
-      success: false,
-      message: 'Error al obtener los comentarios',
-      error: err.message,
-    });
+    next(err);
   }
 };
 
 // Actualizar comentario (solo autor)
-export const updateComment = async (req, res) => {
+export const updateComment = async (req, res, next) => {
   try {
     const { id } = req.params;
     const comment = await updateCommentRecord({
@@ -70,16 +62,12 @@ export const updateComment = async (req, res) => {
       data: comment,
     });
   } catch (err) {
-    res.status(400).json({
-      success: false,
-      message: 'Error al actualizar el comentario',
-      error: err.message,
-    });
+    next(err);
   }
 };
 
 // Eliminar comentario (solo autor)
-export const deleteComment = async (req, res) => {
+export const deleteComment = async (req, res, next) => {
   try {
     const { id } = req.params;
     const comment = await deleteCommentRecord({
@@ -99,10 +87,6 @@ export const deleteComment = async (req, res) => {
       message: 'Comentario eliminado exitosamente',
     });
   } catch (err) {
-    res.status(500).json({
-      success: false,
-      message: 'Error al eliminar el comentario',
-      error: err.message,
-    });
+    next(err);
   }
 };

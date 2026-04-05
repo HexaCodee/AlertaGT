@@ -8,6 +8,8 @@ import { corsOptions } from './cors.configuration.js';
 import { helmetOptions } from './helmet.configuration.js';
 import { dbConnection } from './db.configuration.js';
 
+import errorHandler from '../src/middlewares/error-handler.js';
+
 // Rutas
 import locationRoutes from '../src/locations/location.routes.js';
 
@@ -32,6 +34,9 @@ const routes = (app) => {
       message: 'Endpoint no encontrado',
     });
   });
+
+  // Manejo centralizado de errores
+  app.use(errorHandler);
 };
 
 const middlewares = (app) => {

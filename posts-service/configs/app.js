@@ -5,8 +5,10 @@ import cors from 'cors';
 import helmet from 'helmet';
 import morgan from 'morgan';
 import { corsOptions } from './cors.configuration.js';
-import { helmetOptions } from './helmet.configuration.js'; 
+import { helmetOptions } from './helmet.configuration.js';
 import { dbConnection } from './db.configuration.js';
+ 
+import errorHandler from '../src/middlewares/error-handler.js';
  
 // Rutas para Posts y Comments
 import postRoutes from '../src/posts/post.routes.js';
@@ -15,7 +17,6 @@ import commentRoutes from '../src/comments/comment.routes.js';
 const BASE_PATH = '/api/v1';
  
 const routes = (app) => {
-    // Rutas principales
     app.use(`${BASE_PATH}/posts`, postRoutes);
     app.use(`${BASE_PATH}/comments`, commentRoutes);
  
@@ -35,6 +36,9 @@ const routes = (app) => {
             message: 'Endpoint no encontrado',
         });
     });
+ 
+    // Manejo centralizado de errores
+    app.use(errorHandler);
 }
  
 const middlewares = (app) => {

@@ -16,7 +16,7 @@ const NOTIFICATIONS_SERVICE_URL = process.env.NOTIFICATIONS_SERVICE_URL || 'http
 const SERVICE_TOKEN = process.env.SERVICE_TOKEN;
 
 // Crear publicación
-export const createPost = async (req, res) => {
+export const createPost = async (req, res, next) => {
   try {
     // Procesar imagen principal (si existe)
     const image = req.files?.find(f => f.fieldname === 'image') 
@@ -69,11 +69,9 @@ export const createPost = async (req, res) => {
     });
 
     // Disparar notificaciones de forma asíncrona (no bloquear la respuesta)
-    try {
-      triggerNotifications(post);
-    } catch (e) {
+    void triggerNotifications(post).catch((e) => {
       console.error('Error triggering notifications:', e.message);
-    }
+    });
 
     res.status(201).json({
       success: true,
@@ -81,16 +79,12 @@ export const createPost = async (req, res) => {
       data: post,
     });
   } catch (err) {
-    res.status(500).json({
-      success: false,
-      message: 'Error al crear la publicación',
-      error: err.message,
-    });
+    next(err);
   }
 };
 
 // Listar publicaciones
-export const getPosts = async (req, res) => {
+export const getPosts = async (req, res, next) => {
   try {
     const { page = 1, limit = 10, category } = req.query;
     const { posts, pagination } = await fetchPosts({ page, limit, category });
@@ -101,16 +95,12 @@ export const getPosts = async (req, res) => {
       pagination,
     });
   } catch (err) {
-    res.status(500).json({
-      success: false,
-      message: 'Error al obtener las publicaciones',
-      error: err.message,
-    });
+    next(err);
   }
 };
 
 // Obtener publicación por ID
-export const getPostById = async (req, res) => {
+export const getPostById = async (req, res, next) => {
   try {
     const { id } = req.params;
     const post = await fetchPostById(id);
@@ -127,16 +117,12 @@ export const getPostById = async (req, res) => {
       data: post,
     });
   } catch (err) {
-    res.status(500).json({
-      success: false,
-      message: 'Error al obtener la publicación',
-      error: err.message,
-    });
+    next(err);
   }
 };
 
 // Actualizar publicación (solo autor)
-export const updatePost = async (req, res) => {
+export const updatePost = async (req, res, next) => {
   try {
     const { id } = req.params;
 
@@ -196,16 +182,12 @@ export const updatePost = async (req, res) => {
       data: post,
     });
   } catch (err) {
-    res.status(400).json({
-      success: false,
-      message: 'Error al actualizar la publicación',
-      error: err.message,
-    });
+    next(err);
   }
 };
 
 // Eliminar publicación (solo autor)
-export const deletePost = async (req, res) => {
+export const deletePost = async (req, res, next) => {
   try {
     const { id } = req.params;
     const post = await deletePostRecord({
@@ -225,16 +207,12 @@ export const deletePost = async (req, res) => {
       message: 'Publicación eliminada exitosamente',
     });
   } catch (err) {
-    res.status(500).json({
-      success: false,
-      message: 'Error al eliminar la publicación',
-      error: err.message,
-    });
+    next(err);
   }
 };
 
 // Moderar publicación (admin/moderador)
-export const moderatePost = async (req, res) => {
+export const moderatePost = async (req, res, next) => {
   try {
     const { id } = req.params;
     const { status, comments } = req.body;
@@ -245,12 +223,12 @@ export const moderatePost = async (req, res) => {
     }
     res.status(200).json({ success: true, message: 'Publicación moderada', data: post });
   } catch (err) {
-    res.status(400).json({ success: false, message: 'Error al moderar', error: err.message });
+    next(err);
   }
 };
 
 // Reportar publicación
-export const flagPost = async (req, res) => {
+export const flagPost = async (req, res, next) => {
   try {
     const { id } = req.params;
     const post = await flagPostRecord({ id });
@@ -259,7 +237,7 @@ export const flagPost = async (req, res) => {
     }
     res.status(200).json({ success: true, message: 'Publicación reportada', data: post });
   } catch (err) {
-    res.status(400).json({ success: false, message: 'Error al reportar', error: err.message });
+    next(err);
   }
 };
 
@@ -322,7 +300,7 @@ async function triggerNotifications(post) {
 }
 
 // Obtener posts por proximidad (2km por defecto)
-export const getPostsByProximity = async (req, res) => {
+export const getPostsByProximity = async (req, res, next) => {
   try {
     const { latitude, longitude, maxDistance = 2000, category } = req.query;
 
@@ -349,10 +327,6 @@ export const getPostsByProximity = async (req, res) => {
       searchRadius: maxDistance,
     });
   } catch (err) {
-    res.status(500).json({
-      success: false,
-      message: 'Error al obtener publicaciones cercanas',
-      error: err.message,
-    });
+    next(err);
   }
 };

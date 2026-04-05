@@ -1,17 +1,16 @@
+using Microsoft.AspNetCore.Http;
+
 namespace AuthService.Application.Exceptions;
 
-public class BusinessException : Exception
+public class BusinessException : ApiException
 {
-    public string ErrorCode { get; }
-
-    public BusinessException(string errorCode, string message) : base(message)
+    public BusinessException(string errorCode, string message)
+        : base(StatusCodes.StatusBadRequest, errorCode, message)
     {
-        ErrorCode = errorCode;
     }
 
     public BusinessException(string errorCode, string message, Exception innerException)
-        : base(message, innerException)
+        : base(StatusCodes.StatusBadRequest, errorCode, message, innerException)
     {
-        ErrorCode = errorCode;
     }
 }
