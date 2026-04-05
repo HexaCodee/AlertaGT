@@ -45,19 +45,25 @@ async function createIndexes() {
         );
         console.log('✅ Índice creado: postId');
 
-        // Índice por tipo de notificación
+        // Índice por tipo de notificación con collation española
         await notificationsCollection.createIndex(
             { type: 1 },
-            { name: 'type_index' }
+            { 
+                name: 'type_index',
+                collation: { locale: 'es', strength: 1 }
+            }
         );
-        console.log('✅ Índice creado: type');
+        console.log('✅ Índice creado: type (con collation española)');
 
         // Índice compuesto tipo + usuario para notificaciones específicas
         await notificationsCollection.createIndex(
             { type: 1, userId: 1 },
-            { name: 'type_userId' }
+            { 
+                name: 'type_userId',
+                collation: { locale: 'es', strength: 1 }
+            }
         );
-        console.log('✅ Índice compuesto creado: type + userId');
+        console.log('✅ Índice compuesto creado: type + userId (con collation española)');
 
         // Índice por estado de envío FCM
         await notificationsCollection.createIndex(
@@ -97,7 +103,7 @@ async function createIndexes() {
         console.log('   • userId + createdAt: listar notificaciones por usuario (recientes primero)');
         console.log('   • read + userId: filtrar notificaciones no leídas');
         console.log('   • postId: agrupar por publicación');
-        console.log('   • type, type + userId: filtrar por tipo de notificación');
+        console.log('   • type, type + userId: filtrar por tipo de notificación (con collation española)');
         console.log('   • sentViaFCM: estado de envío push');
         console.log('   • readAt: fecha de lectura');
         console.log('   • userId, createdAt: índices individuales');

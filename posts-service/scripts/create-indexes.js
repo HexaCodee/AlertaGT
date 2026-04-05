@@ -48,12 +48,15 @@ async function createIndexes() {
         );
         console.log('✅ Índice creado: isPublished');
 
-        // Índice por categoría
+        // Índice por categoría con collation española
         await postsCollection.createIndex(
             { category: 1 },
-            { name: 'category_index' }
+            { 
+                name: 'category_index',
+                collation: { locale: 'es', strength: 1 }
+            }
         );
-        console.log('✅ Índice creado: category');
+        console.log('✅ Índice creado: category (con collation española)');
 
         // Índice por autor
         await postsCollection.createIndex(
@@ -90,12 +93,26 @@ async function createIndexes() {
         );
         console.log('✅ Índice creado: createdAt (descendente)');
 
-        // Índice por riesgo
+        // Índice por riesgo con collation
         await postsCollection.createIndex(
             { riskType: 1 },
-            { name: 'riskType_index' }
+            { 
+                name: 'riskType_index',
+                collation: { locale: 'es', strength: 1 }
+            }
         );
-        console.log('✅ Índice creado: riskType');
+        console.log('✅ Índice creado: riskType (con collation española)');
+
+        // Índice de texto para búsquedas en título y texto
+        await postsCollection.createIndex(
+            { title: 'text', text: 'text' },
+            { 
+                name: 'title_text_text_index',
+                default_language: 'spanish',
+                language_override: 'spanish'
+            }
+        );
+        console.log('✅ Índice de texto creado: title + text (español)');
 
         // Índices para la colección 'comments'
         console.log('Creando índices para colección "comments"...');
@@ -134,9 +151,11 @@ async function createIndexes() {
         console.log('Resumen de índices creados:');
         console.log('    POSTS:');
         console.log('   • location.coordinates: 2dsphere (búsquedas geoespaciales)');
-        console.log('   • isActive, isPublished, category, authorId, riskType');
+        console.log('   • isActive, isPublished, authorId, riskType (con collation española)');
+        console.log('   • category (con collation española)');
         console.log('   • authorId + isActive, moderation.status + isPublished');
         console.log('   • createdAt (descendente)');
+        console.log('   • title + text: índice de texto (español)');
         console.log('    COMMENTS:');
         console.log('   • postId + isActive, authorId + isActive');
         console.log('   • postId, createdAt (descendente)');

@@ -1,102 +1,326 @@
-# Español
 # AlertaGT
 
 Aplicación de alertas geolocalizadas de arquitectura full-stack para la publicación de eventos de riesgo en la ciudad de Guatemala. Desarrollado utilizando React, Node.js y .NET bajo el marco ágil SCRUM, garantizando una sólida seguridad, escalabilidad y operaciones de alto rendimiento.
 
-## Funcionalidades Principales
+## Arquitectura del Sistema
 
-### Autenticación y Autorización
+```
+┌─────────────────┐    ┌─────────────────┐    ┌─────────────────┐
+│   Auth Service  │    │  Posts Service  │    │   Geo Service   │
+│     (.NET 8)    │◄──►│   (Node.js)     │◄──►│   (Node.js)     │
+│                 │    │                 │    │                 │
+│ • JWT Auth      │    │ • CRUD Posts    │    │ • Geolocation   │
+│ • User Mgmt     │    │ • Comments      │    │ • Nearby Search │
+│ • Roles         │    │ • Moderation    │    │ • FCM Tokens    │
+└─────────────────┘    └─────────────────┘    └─────────────────┘
+         ▲                       ▲                       ▲
+         │                       │                       │
+         └───────────────────────┼───────────────────────┘
+                                 ▼
+                    ┌─────────────────┐
+                    │Notifications    │
+                    │   Service       │
+                    │   (Node.js)     │
+                    │                 │
+                    │ • Push Notifs   │
+                    │ • FCM           │
+                    │ • History       │
+                    └─────────────────┘
+```
 
-* Registro de usuarios
-* Inicio de sesión con JWT
-* Protección de rutas con JWT Bearer Authentication
-* Sistema de roles
-* Control de acceso basado en roles
-* Cierre de sesión seguro
-* Bloqueo de cuenta por intentos fallidos
+## Servicios
 
----
+### 🔐 Auth Service (.NET 8)
+- **Puerto**: 3010
+- **Base de datos**: MongoDB (AlertaGT_Auth)
+- **Funciones**: Autenticación JWT, gestión de usuarios, roles, perfiles
 
-### Publicación de Alertas
+### 📝 Posts Service (Node.js)
+- **Puerto**: 3020
+- **Base de datos**: MongoDB (AlertaGT_Posts)
+- **Funciones**: CRUD de publicaciones, comentarios, moderación, búsqueda geoespacial
 
-* Creación de las alertas
-* Eliminación de las alertas
-* Actualización de las alertas
+### 📍 Geolocation Service (Node.js)
+- **Puerto**: 3022
+- **Base de datos**: MongoDB (AlertaGT_Geo)
+- **Funciones**: Ubicaciones de usuarios, búsquedas por proximidad, tokens FCM
 
----
-
-### Geolocalización
-
-* Captura de coordenadas del usuario
-* Búsqueda de alertas
-* Alertas cercanas al usuario
-
----
-
-### Notificaciones
-
-* Notificaciones push de las alertas
-* Historial de notificaciones
-* Preferencias de notificación
-
----
-
-### Seguridad
-
-* Tokens JWT con expiración
-* Encriptación de datos sensibles
-* Rate limiting en endpoints críticos
-* Middleware de manejo global de excepciones
-
----
+### 🔔 Notifications Service (Node.js)
+- **Puerto**: 3021
+- **Base de datos**: MongoDB (AlertaGT_Notifications)
+- **Funciones**: Notificaciones push via FCM, historial, preferencias
 
 ## Tecnologías Utilizadas
 
 ### Backend - .NET
-
-* **Framework**: ASP.NET Core 8.0
-* **Lenguaje**: C# (.NET 8)
-* **Arquitectura**: Clean Architecture (4 capas)
+- **Framework**: ASP.NET Core 8.0
+- **Lenguaje**: C# (.NET 8)
+- **Arquitectura**: Clean Architecture (4 capas)
+- **ORM**: Entity Framework Core (MongoDB)
+- **Validación**: FluentValidation
+- **Logging**: Serilog
 
 ### Backend - Node.js
-
-* **Runtime**: Node.js 18+
-* **Framework**: Express.js
-* **Lenguaje**: JavaScript
-* **Package Manager**: pnpm
+- **Runtime**: Node.js 18+
+- **Framework**: Express.js
+- **Lenguaje**: JavaScript ES6+
+- **Package Manager**: pnpm
+- **ODM**: Mongoose (MongoDB)
 
 ### Base de Datos
-
-* **Motor Principal**: MongoDB
-* **ORM (.NET)**: Entity Framework Core
-* **Migraciones**: EF Core Migrations
-* **Naming Convention**: Snake case
+- **Motor Principal**: MongoDB 6+
+- **Índices**: Geoespaciales (2dsphere), texto, compuestos
+- **Collation**: Español para ordenamiento correcto
+- **Migraciones**: Scripts personalizados
 
 ### Seguridad
-
-* **JWT**: System.IdentityModel.Tokens.Jwt
-* **Hashing**: Argon2 (Konscious.Security.Cryptography.Argon2)
-* **Authentication**: Microsoft.AspNetCore.Authentication.JwtBearer
-* **CORS**: Express CORS middleware
-* **Headers**: 
-  - NetEscapades.AspNetCore.SecurityHeaders (.NET)
-  - Helmet.js (Node.js)
-* **Rate Limiting**: Express rate-limit
+- **JWT**: Tokens con expiración (1h access, 7d refresh)
+- **Hashing**: Argon2 (.NET), bcrypt (Node.js)
+- **Rate Limiting**: Express rate-limit
+- **CORS**: Configurado por servicio
+- **Headers**: Helmet.js, NetEscapades.AspNetCore.SecurityHeaders
 
 ### Servicios Externos
+- **Email**: MailKit (SMTP) - .NET
+- **Almacenamiento**: Cloudinary (imágenes)
+- **Notificaciones Push**: Firebase Cloud Messaging (FCM)
 
-* **Email**: MailKit (SMTP)
-* **Almacenamiento**: Cloudinary (imágenes de perfil)
-* **Notificaciones Push**: Firebase Cloud Messaging (FCM)
+## 🚀 Despliegue
 
-### Validación y Logging
+### Prerrequisitos
 
-* **Validación**: 
-  - FluentValidation (.NET)
-  - Express middleware validators (Node.js)
-* **Logging**: 
-  - Serilog.AspNetCore (.NET)
-  - Morgan (Node.js)
+- **Docker y Docker Compose** (recomendado)
+- **Node.js 18+** y **pnpm** (para desarrollo local)
+- **.NET 8 SDK** (para Auth Service)
+- **MongoDB** (para desarrollo local)
+
+### Opción 1: Docker Compose (Recomendado)
+
+1. **Clonar el repositorio**
+   ```bash
+   git clone <repository-url>
+   cd AlertaGT
+   ```
+
+2. **Configurar variables de entorno**
+   ```bash
+   cp .env.example .env
+   # Editar .env con sus valores reales
+   ```
+
+3. **Desplegar con Docker Compose**
+   ```bash
+   docker-compose up -d
+   ```
+
+4. **Verificar servicios**
+   ```bash
+   docker-compose ps
+   ```
+
+### Opción 2: Despliegue Local
+
+1. **Instalar dependencias**
+   ```bash
+   # Auth Service
+   cd auth-service
+   dotnet restore
+
+   # Servicios Node.js
+   cd ../posts-service && pnpm install
+   cd ../notifications-service && pnpm install
+   cd ../geolocatedalerts-service && pnpm install
+   ```
+
+2. **Configurar variables de entorno**
+   ```bash
+   cp .env.example .env
+   # Editar .env en cada directorio de servicio
+   ```
+
+3. **Iniciar MongoDB**
+   ```bash
+   # Con Docker
+   docker run -d -p 27017:27017 --name mongodb mongo:7.0
+
+   # O instalar localmente
+   brew install mongodb-community  # macOS
+   sudo systemctl start mongod    # Linux
+   ```
+
+4. **Ejecutar migraciones**
+   ```bash
+   # Auth Service
+   cd auth-service
+   dotnet ef database update
+
+   # Servicios Node.js
+   cd ../posts-service && node scripts/create-indexes.js
+   cd ../notifications-service && node scripts/create-indexes.js
+   cd ../geolocatedalerts-service && node scripts/create-indexes.js
+   ```
+
+5. **Iniciar servicios**
+   ```bash
+   # Usar el script de despliegue
+   chmod +x deploy.sh
+   ./deploy.sh start
+   ```
+
+### Verificar Despliegue
+
+Una vez desplegado, verificar que todos los servicios estén funcionando:
+
+```bash
+# Verificar health checks
+curl http://localhost:3010/health  # Auth Service
+curl http://localhost:3020/health  # Posts Service
+curl http://localhost:3021/health  # Notifications Service
+curl http://localhost:3022/health  # Geolocation Service
+```
+
+### URLs de Servicios
+
+- **Auth Service**: http://localhost:3010
+- **Posts Service**: http://localhost:3020
+- **Notifications Service**: http://localhost:3021
+- **Geolocation Service**: http://localhost:3022
+
+## 🛠️ Desarrollo
+
+### Estructura del Proyecto
+
+```
+AlertaGT/
+├── auth-service/              # Servicio de autenticación (.NET)
+├── posts-service/             # Servicio de publicaciones (Node.js)
+├── notifications-service/     # Servicio de notificaciones (Node.js)
+├── geolocatedalerts-service/  # Servicio de geolocalización (Node.js)
+├── docker-compose.yml         # Configuración Docker
+├── deploy.sh                  # Script de despliegue
+└── .env.example              # Variables de entorno
+```
+
+### Comandos Útiles
+
+```bash
+# Ver logs de servicios
+./deploy.sh logs auth-service
+./deploy.sh logs posts-service
+
+# Reiniciar servicios
+./deploy.sh restart
+
+# Detener todos los servicios
+./deploy.sh stop
+
+# Ver estado de servicios
+./deploy.sh status
+```
+
+## 📊 Monitoreo y Logs
+
+Los servicios generan logs estructurados que se almacenan en el directorio `logs/`:
+
+- `auth-service.log`
+- `posts-service.log`
+- `notifications-service.log`
+- `geolocatedalerts-service.log`
+
+Para ver logs en tiempo real:
+```bash
+tail -f logs/auth-service.log
+```
+
+## 🔧 Configuración
+
+### Variables de Entorno
+
+Copiar `.env.example` a `.env` y configurar:
+
+- **Base de datos**: `MONGODB_URI`, `DATABASE_NAME`
+- **Autenticación**: `JWT_SECRET`, `SERVICE_TOKEN`
+- **Servicios externos**: `CLOUDINARY_*`, `FIREBASE_*`
+- **Rate limiting**: `RATE_LIMIT_REQUESTS_PER_MINUTE`
+- **CORS**: `CORS_ORIGINS`
+
+### Indices de Base de Datos
+
+Los índices de MongoDB se crean automáticamente al iniciar los servicios Node.js. Incluyen:
+
+- **Indices geoespaciales**: Para búsquedas por ubicación
+- **Indices de texto**: Con collation español para búsquedas
+- **Indices compuestos**: Para optimizar consultas comunes
+
+## 🧪 Testing
+
+```bash
+# Auth Service
+cd auth-service
+dotnet test
+
+# Servicios Node.js
+cd posts-service && pnpm test
+cd notifications-service && pnpm test
+cd geolocatedalerts-service && pnpm test
+```
+
+## 📝 API Documentation
+
+Cada servicio incluye documentación OpenAPI/Swagger:
+
+- **Auth Service**: http://localhost:3010/swagger
+- **Posts Service**: http://localhost:3020/api-docs
+- **Notifications Service**: http://localhost:3021/api-docs
+- **Geolocation Service**: http://localhost:3022/api-docs
+
+## API Endpoints
+
+### Health Checks
+- Auth: `GET /api/v1/health`
+- Posts: `GET /api/v1/health`
+- Geo: `GET /api/v1/health`
+- Notifications: `GET /api/v1/health`
+
+### Documentación API
+Cada servicio incluye documentación detallada en su README respectivo.
+
+## Flujo de Usuario Típico
+
+1. **Registro/Login**: Usuario se registra en Auth Service
+2. **Actualizar Ubicación**: App envía coordenadas a Geo Service
+3. **Crear Alerta**: Usuario publica alerta en Posts Service
+4. **Notificación Automática**: Sistema busca usuarios cercanos y envía push notifications
+5. **Interacción**: Usuarios ven alertas, comentan, reportan contenido inapropiado
+
+## Seguridad
+
+- Autenticación JWT con refresh tokens
+- Rate limiting en endpoints críticos
+- Validación estricta de entrada
+- Manejo seguro de excepciones
+- Encriptación de datos sensibles
+- Auditoría de acciones de moderación
+
+## Escalabilidad
+
+- Arquitectura de microservicios desacoplada
+- Índices optimizados en MongoDB
+- Circuit breaker en llamadas inter-servicio
+- Caché potencial para búsquedas frecuentes
+- Horizontal scaling posible por servicio
+
+## Monitoreo
+
+- Health checks en todos los servicios
+- Logging estructurado (Serilog, Morgan)
+- Manejo centralizado de errores
+- Métricas de rendimiento por endpoint
+
+
+## Licencia
+
+Este proyecto está bajo la Licencia MIT. Ver el archivo `LICENSE` para más detalles.
 
 ### Herramientas y Librerías
 
