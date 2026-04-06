@@ -1,6 +1,6 @@
 # Notifications Service
 
-Servicio de notificaciones push basado en Firebase Cloud Messaging (FCM) para la aplicación AlertsPosts.
+Servicio de notificaciones push basado en Firebase Cloud Messaging (FCM) para la aplicación AlertaGT.
 
 ## Características
 

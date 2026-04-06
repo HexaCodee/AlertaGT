@@ -2,7 +2,7 @@ import mongoose from 'mongoose';
 
 export const dbConnection = async () => {
   try {
-    const conn = await mongoose.connect(process.env.MONGODB_URI || 'mongodb://localhost:27017/notifications-service');
+    const conn = await mongoose.connect(process.env.MONGODB_URI || 'mongodb://localhost:27017/AlertaGT_Notifications');
     console.log(`✓ MongoDB conectado: ${conn.connection.host}`);
     return conn;
   } catch (err) {
