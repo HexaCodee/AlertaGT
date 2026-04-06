@@ -25,7 +25,7 @@ const routes = (app) => {
         res.status(200).json({
             status: 'Healthy',
             timeStamp: new Date().toISOString(),
-            service: 'AlertsPosts - Publications & Comments API',
+            service: 'AlertaGT - Publications & Comments API',
         });
     });
  
