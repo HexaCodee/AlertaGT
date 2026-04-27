@@ -2,6 +2,9 @@ using Microsoft.AspNetCore.DataProtection;
 
 namespace AuthService.Api.Extensions;
 
+/// <summary>
+/// Extensiones para configurar políticas de seguridad en la aplicación.
+/// </summary>
 public static class SecurityExtensions
 {
     private static readonly string[] DefaultAllowedOrigins = ["http://localhost:3000", "https://localhost:3001"];
@@ -9,6 +12,13 @@ public static class SecurityExtensions
     private static readonly string[] AllowedHttpMethods = ["GET", "POST", "PUT", "DELETE", "OPTIONS"];
     private static readonly string[] AdminHttpMethods = ["GET", "POST", "PUT", "DELETE"];
     private static readonly string[] AdminAllowedHeaders = ["Content-Type", "Authorization"];
+
+    /// <summary>
+    /// Configura las políticas de seguridad incluyendo CORS, protección de datos y anti-CSRF.
+    /// </summary>
+    /// <param name="services">La colección de servicios.</param>
+    /// <param name="configuration">La configuración de la aplicación.</param>
+    /// <returns>La colección de servicios configurada.</returns>
     public static IServiceCollection AddSecurityPolicies(this IServiceCollection services, IConfiguration configuration)
     {
         // Configurar CORS
@@ -88,6 +98,11 @@ public static class SecurityExtensions
         return services;
     }
 
+    /// <summary>
+    /// Configura las opciones de seguridad para cookies en la aplicación.
+    /// </summary>
+    /// <param name="services">La colección de servicios.</param>
+    /// <returns>La colección de servicios configurada.</returns>
     public static IServiceCollection AddSecurityOptions(this IServiceCollection services)
     {
         services.Configure<CookiePolicyOptions>(options =>

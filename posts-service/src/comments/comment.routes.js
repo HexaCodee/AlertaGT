@@ -10,7 +10,7 @@ import {
   validateCreateComment,
   validateUpdateComment,
 } from '../../middlewares/comment.validator.js';
-import { asyncHandler } from '../../middlewares/async-handler.js';
+import { asyncHandler } from '../middlewares/async-handler.js';
 
 import { validateJWT } from '../../middlewares/validate-JWT.js';
 
