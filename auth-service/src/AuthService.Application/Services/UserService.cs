@@ -9,8 +9,7 @@ namespace AuthService.Application.Services;
 public class UserService(
     IUserRepository userRepository,
     IRoleRepository roleRepository,
-    IPostsServiceClient postsServiceClient,
-    ILogger<UserService> logger) : IUserService
+    IPostsServiceClient postsServiceClient) : IUserService
 {
     public async Task<UserDetailsDto> GetUserProfileAsync(string userId)
     {

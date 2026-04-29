@@ -41,4 +41,37 @@ public class JwtTokenService(IConfiguration configuration) : IJwtTokenService
 
         return new JwtSecurityTokenHandler().WriteToken(token);
     }
+
+    public (bool isValid, string userId) ValidateToken(string token)
+    {
+        try
+        {
+            var jwtSettings = configuration.GetSection("JwtSettings");
+            var secretKey = jwtSettings["SecretKey"] ?? throw new InvalidOperationException("JWT SecretKey not configured");
+            var issuer = jwtSettings["Issuer"] ?? "AlertaGT";
+            var audience = jwtSettings["Audience"] ?? "AlertaGT";
+
+            var key = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(secretKey));
+            var tokenHandler = new JwtSecurityTokenHandler();
+
+            var principal = tokenHandler.ValidateToken(token, new TokenValidationParameters
+            {
+                ValidateIssuerSigningKey = true,
+                IssuerSigningKey = key,
+                ValidateIssuer = true,
+                ValidIssuer = issuer,
+                ValidateAudience = true,
+                ValidAudience = audience,
+                ValidateLifetime = true,
+                ClockSkew = TimeSpan.Zero
+            }, out SecurityToken validatedToken);
+
+            var userId = principal.FindFirst(JwtRegisteredClaimNames.Sub)?.Value;
+            return (!string.IsNullOrEmpty(userId), userId ?? "");
+        }
+        catch (Exception)
+        {
+            return (false, "");
+        }
+    }
 }

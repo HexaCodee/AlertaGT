@@ -10,8 +10,17 @@ using Microsoft.Extensions.DependencyInjection;
 
 namespace AuthService.Api.Extensions;
 
+/// <summary>
+/// Extensiones para registrar servicios de aplicación en el contenedor de inyección de dependencias.
+/// </summary>
 public static class ServiceCollectionExtensions
 {
+    /// <summary>
+    /// Registra los servicios de la aplicación.
+    /// </summary>
+    /// <param name="services">La colección de servicios.</param>
+    /// <param name="configuration">La configuración de la aplicación.</param>
+    /// <returns>La colección de servicios configurada.</returns>
     public static IServiceCollection AddApplicationServices(this IServiceCollection services, IConfiguration configuration)
     {
         // Registrar MongoDbContext como singleton
@@ -40,6 +49,11 @@ public static class ServiceCollectionExtensions
         return services;
     }
 
+    /// <summary>
+    /// Configura la documentación de la API usando Swagger.
+    /// </summary>
+    /// <param name="services">La colección de servicios.</param>
+    /// <returns>La colección de servicios configurada.</returns>
     public static IServiceCollection AddApiDocumentation(this IServiceCollection services)
     {
         return services.AddSwaggerDocumentation();

@@ -4,8 +4,17 @@ using System.Text;
 
 namespace AuthService.Api.Extensions;
 
+/// <summary>
+/// Extensiones para configurar la autenticación JWT en la aplicación.
+/// </summary>
 public static class AuthenticationExtensions
 {
+    /// <summary>
+    /// Configura la autenticación JWT con los parámetros especificados en la configuración.
+    /// </summary>
+    /// <param name="services">La colección de servicios.</param>
+    /// <param name="configuration">La configuración de la aplicación.</param>
+    /// <returns>La colección de servicios configurada.</returns>
     public static IServiceCollection AddJwtAuthentication(this IServiceCollection services, IConfiguration configuration)
     {
         var jwtSettings = configuration.GetSection("JwtSettings");

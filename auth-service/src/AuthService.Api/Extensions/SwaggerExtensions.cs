@@ -1,9 +1,19 @@
+using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.OpenApi.Models;
+using Swashbuckle.AspNetCore.SwaggerGen;
 
 namespace AuthService.Api.Extensions;
 
+/// <summary>
+/// Extensiones para configurar Swagger/OpenAPI en la aplicación.
+/// </summary>
 public static class SwaggerExtensions
 {
+    /// <summary>
+    /// Configura la documentación Swagger/OpenAPI para la API.
+    /// </summary>
+    /// <param name="services">La colección de servicios.</param>
+    /// <returns>La colección de servicios configurada.</returns>
     public static IServiceCollection AddSwaggerDocumentation(this IServiceCollection services)
     {
         services.AddEndpointsApiExplorer();
@@ -65,7 +75,6 @@ public static class SwaggerExtensions
             // Esquema personalizado
             options.UseOneOfForPolymorphism();
             options.SelectDiscriminatorNameUsing((baseType) => "discriminator");
-            options.SelectEnumMemberName();
 
             // Tags de operaciones
             options.TagActionsBy(api =>

@@ -13,8 +13,8 @@ public class PostsServiceClient(
     IConfiguration configuration,
     ILogger<PostsServiceClient> logger) : IPostsServiceClient
 {
-    private readonly HttpClient _httpClient;
-    private readonly ILogger<PostsServiceClient> _logger;
+    private readonly HttpClient _httpClient = CreateHttpClient(httpClientFactory, configuration);
+    private readonly ILogger<PostsServiceClient> _logger = logger;
     private readonly int _maxRetries = 3;
     private readonly int _retryDelayMs = 1000;
     private readonly int _failureThreshold = 3;
@@ -22,11 +22,11 @@ public class PostsServiceClient(
     private int _failureCount;
     private DateTime _circuitOpenedAt = DateTime.MinValue;
 
-    public PostsServiceClient(IHttpClientFactory httpClientFactory, IConfiguration configuration, ILogger<PostsServiceClient> logger)
+    private static HttpClient CreateHttpClient(IHttpClientFactory httpClientFactory, IConfiguration configuration)
     {
-        _httpClient = httpClientFactory.CreateClient("PostsServiceClient");
-        _httpClient.BaseAddress ??= new Uri(configuration["PostsServiceUrl"] ?? "http://localhost:3020/api/v1");
-        _logger = logger;
+        var client = httpClientFactory.CreateClient("PostsServiceClient");
+        client.BaseAddress ??= new Uri(configuration["PostsServiceUrl"] ?? "http://localhost:3020/api/v1");
+        return client;
     }
 
     public async Task<int> GetUserAlertsCountAsync(string userId)

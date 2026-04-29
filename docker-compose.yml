@@ -35,19 +35,19 @@ services:
       ASPNETCORE_URLS: http://+:3010
       MONGODB_URI: mongodb://admin:password123@mongodb:27017
       DATABASE_NAME: AlertaGT_Auth
-      JWT_SECRET: your-super-secret-jwt-key-change-this-in-production
+      JWT_SECRET: E$3cr3tK3yF0rK1n4lSp0rts@In6am2024
       JWT_EXPIRATION_MINUTES: 60
       JWT_REFRESH_EXPIRATION_DAYS: 7
-      SERVICE_TOKEN: your-super-secret-service-token
+      SERVICE_TOKEN: 0c819cbf650f3df2fd99dab2e552a1c04de54bcdb83dda3443ff2e5ce16f3648
       SMTP_HOST: smtp.gmail.com
-      SMTP_PORT: 587
-      SMTP_USER: your-email@gmail.com
-      SMTP_PASSWORD: your-app-password
-      CLOUDINARY_CLOUD_NAME: your-cloud-name
-      CLOUDINARY_API_KEY: your-api-key
-      CLOUDINARY_API_SECRET: your-api-secret
+      SMTP_PORT: 465
+      SMTP_USER: official.hexacodee@gmail.com
+      SMTP_PASSWORD: bogo pufu dyko lxke
+      CLOUDINARY_CLOUD_NAME: dpxs0f5zw
+      CLOUDINARY_API_KEY: 521768524693749
+      CLOUDINARY_API_SECRET: 1Z2fmRasGsJ0-kVYEeXSX4s0Mdg
     ports:
-      - "3010:3010"
+      - "5079:5079"
     depends_on:
       mongodb:
         condition: service_healthy
@@ -74,10 +74,10 @@ services:
       AUTH_SERVICE_URL: http://auth-service:3010/api/v1
       GEO_SERVICE_URL: http://geolocatedalerts-service:3022/api/v1
       NOTIFICATIONS_SERVICE_URL: http://notifications-service:3021/api/v1
-      SERVICE_TOKEN: your-super-secret-service-token
-      CLOUDINARY_CLOUD_NAME: your-cloud-name
-      CLOUDINARY_API_KEY: your-api-key
-      CLOUDINARY_API_SECRET: your-api-secret
+      SERVICE_TOKEN: 0c819cbf650f3df2fd99dab2e552a1c04de54bcdb83dda3443ff2e5ce16f3648
+      CLOUDINARY_CLOUD_NAME: dpxs0f5zw
+      CLOUDINARY_API_KEY: 521768524693749
+      CLOUDINARY_API_SECRET: 1Z2fmRasGsJ0-kVYEeXSX4s0Mdg
       RATE_LIMIT_REQUESTS_PER_MINUTE: 100
       CORS_ORIGINS: http://localhost:3000,http://localhost:3001
       LOG_LEVEL: info
@@ -113,15 +113,15 @@ services:
       MONGODB_URI: mongodb://admin:password123@mongodb:27017
       DATABASE_NAME: AlertaGT_Notifications
       AUTH_SERVICE_URL: http://auth-service:3010/api/v1
-      SERVICE_TOKEN: your-super-secret-service-token
-      FIREBASE_CREDENTIALS_PATH: /app/firebase-credentials.json
+      SERVICE_TOKEN: 0c819cbf650f3df2fd99dab2e552a1c04de54bcdb83dda3443ff2e5ce16f3648
+      FIREBASE_SERVICE_ACCOUNT_PATH: ./alertagt-notifications-firebase-adminsdk-fbsvc-0361af1299.json
       RATE_LIMIT_REQUESTS_PER_MINUTE: 100
       CORS_ORIGINS: http://localhost:3000,http://localhost:3001
       LOG_LEVEL: info
     ports:
       - "3021:3021"
     volumes:
-      - ./notifications-service/firebase-credentials.json:/app/firebase-credentials.json:ro
+      - ./notifications-service/alertagt-notifications-firebase-adminsdk-fbsvc-0361af1299.json:/app/alertagt-notifications-firebase-adminsdk-fbsvc-0361af1299.json:ro
     depends_on:
       mongodb:
         condition: service_healthy
@@ -148,7 +148,7 @@ services:
       MONGODB_URI: mongodb://admin:password123@mongodb:27017
       DATABASE_NAME: AlertaGT_Geo
       AUTH_SERVICE_URL: http://auth-service:3010/api/v1
-      SERVICE_TOKEN: your-super-secret-service-token
+      SERVICE_TOKEN: 0c819cbf650f3df2fd99dab2e552a1c04de54bcdb83dda3443ff2e5ce16f3648
       RATE_LIMIT_REQUESTS_PER_MINUTE: 100
       CORS_ORIGINS: http://localhost:3000,http://localhost:3001
       LOG_LEVEL: info

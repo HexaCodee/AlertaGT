@@ -3,8 +3,16 @@ using System.Threading.RateLimiting;
 
 namespace AuthService.Api.Extensions;
 
+/// <summary>
+/// Extensiones para configurar políticas de limitación de velocidad en la aplicación.
+/// </summary>
 public static class RateLimitingExtensions
 {
+    /// <summary>
+    /// Configura las políticas de limitación de velocidad para autenticación y API general.
+    /// </summary>
+    /// <param name="services">La colección de servicios.</param>
+    /// <returns>La colección de servicios configurada.</returns>
     public static IServiceCollection AddRateLimitingPolicies(this IServiceCollection services)
     {
         services.AddRateLimiter(options =>

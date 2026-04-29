@@ -14,7 +14,7 @@ import {
   validateCreatePost,
   validateUpdatePost,
 } from '../../middlewares/post.validator.js';
-import { asyncHandler } from '../../middlewares/async-handler.js';
+import { asyncHandler } from '../middlewares/async-handler.js';
 
 import { validateJWT } from '../../middlewares/validate-JWT.js';
 import { requireRole } from '../../middlewares/validate-role.js';

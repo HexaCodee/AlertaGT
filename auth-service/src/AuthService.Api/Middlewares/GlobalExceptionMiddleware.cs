@@ -5,6 +5,9 @@ using AuthService.Application.Exceptions;
 
 namespace AuthService.Api.Middlewares;
 
+/// <summary>
+/// Middleware para manejar excepciones globales y devolver respuestas de error consistentes.
+/// </summary>
 public class GlobalExceptionMiddleware(RequestDelegate next, ILogger<GlobalExceptionMiddleware> logger)
 {
     private static readonly JsonSerializerOptions JsonOptions = new()
@@ -12,6 +15,11 @@ public class GlobalExceptionMiddleware(RequestDelegate next, ILogger<GlobalExcep
         PropertyNamingPolicy = JsonNamingPolicy.CamelCase
     };
 
+    /// <summary>
+    /// Ejecuta el middleware para procesar la solicitud y manejar excepciones.
+    /// </summary>
+    /// <param name="context">El contexto HTTP de la solicitud.</param>
+    /// <returns>Una tarea que representa la operación asincrónica.</returns>
     public async Task InvokeAsync(HttpContext context)
     {
         try

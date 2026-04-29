@@ -10,7 +10,7 @@ import {
 } from './notification.controller.js';
 import { validateJWT } from '../../middlewares/validate-JWT.js';
 import { validateServiceToken } from '../../middlewares/validate-service-token.js';
-import { asyncHandler } from '../../middlewares/async-handler.js';
+import { asyncHandler } from '../middlewares/async-handler.js';
 
 const router = Router();
 
