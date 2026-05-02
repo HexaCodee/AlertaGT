@@ -29,6 +29,10 @@
 .env
 *firebase-adminsdk*.json
 
+## [Service Account Keys - SENSITIVE]
+*.json
+firebase-service-account.json
+
 ## [Logs]
 *.log
 logs/
