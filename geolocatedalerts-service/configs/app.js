@@ -4,6 +4,8 @@ import express from 'express';
 import cors from 'cors';
 import helmet from 'helmet';
 import morgan from 'morgan';
+import swaggerJsdoc from 'swagger-jsdoc';
+import swaggerUi from 'swagger-ui-express';
 import { corsOptions } from './cors.configuration.js';
 import { helmetOptions } from './helmet.configuration.js';
 import { dbConnection } from './db.configuration.js';
@@ -12,10 +14,13 @@ import errorHandler from '../src/middlewares/error-handler.js';
 
 // Rutas
 import locationRoutes from '../src/locations/location.routes.js';
+import swaggerDocumentation from './documentation.js';
 
 const BASE_PATH = '/api/v1';
+const swaggerSpec = swaggerJsdoc(swaggerDocumentation);
 
 const routes = (app) => {
+  app.use('/api-docs', swaggerUi.serve, swaggerUi.setup(swaggerSpec));
   app.use(`${BASE_PATH}/locations`, locationRoutes);
 
   // Healthcheck
@@ -57,7 +62,7 @@ export const initServer = async () => {
     routes(app);
 
     app.listen(PORT, () => {
-      console.log(`\n✓ AlertsPosts Geolocation API running on port ${PORT}`);
+      console.log(`\n✓ AlertaGT Geolocation API running on port ${PORT}`);
       console.log(`✓ Health check: http://localhost:${PORT}${BASE_PATH}/health\n`);
     });
   } catch (err) {

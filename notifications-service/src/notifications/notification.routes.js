@@ -14,28 +14,143 @@ import { asyncHandler } from '../middlewares/async-handler.js';
 
 const router = Router();
 
-// Endpoint para creación de notificaciones desde otros servicios (protegido por SERVICE_TOKEN)
+/**
+ * @swagger
+ * /api/v1/notifications:
+ *   post:
+ *     summary: Crea una notificación desde otro servicio
+ *     tags:
+ *       - Notifications
+ *     security:
+ *       - serviceToken: []
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             properties:
+ *               title:
+ *                 type: string
+ *               message:
+ *                 type: string
+ *               userId:
+ *                 type: string
+ *     responses:
+ *       201:
+ *         description: Notificación creada correctamente
+ */
 router.post('/', validateServiceToken, asyncHandler(createNotificationController));
 
 // Todas las rutas siguientes requieren autenticación de usuario
 router.use(validateJWT);
 
-// GET - Obtener todas las notificaciones del usuario
+/**
+ * @swagger
+ * /api/v1/notifications:
+ *   get:
+ *     summary: Obtiene todas las notificaciones del usuario autenticado
+ *     tags:
+ *       - Notifications
+ *     security:
+ *       - bearerAuth: []
+ *     responses:
+ *       200:
+ *         description: Lista de notificaciones
+ */
 router.get('/', asyncHandler(getNotifications));
 
-// GET - Obtener una notificación por ID
+/**
+ * @swagger
+ * /api/v1/notifications/{id}:
+ *   get:
+ *     summary: Obtiene una notificación por ID
+ *     tags:
+ *       - Notifications
+ *     security:
+ *       - bearerAuth: []
+ *     parameters:
+ *       - in: path
+ *         name: id
+ *         required: true
+ *         schema:
+ *           type: string
+ *     responses:
+ *       200:
+ *         description: Notificación encontrada
+ */
 router.get('/:id', asyncHandler(getNotificationById));
 
-// PUT - Marcar una notificación como leída
+/**
+ * @swagger
+ * /api/v1/notifications/{id}/read:
+ *   put:
+ *     summary: Marca una notificación como leída
+ *     tags:
+ *       - Notifications
+ *     security:
+ *       - bearerAuth: []
+ *     parameters:
+ *       - in: path
+ *         name: id
+ *         required: true
+ *         schema:
+ *           type: string
+ *     responses:
+ *       200:
+ *         description: Notificación marcada como leída
+ */
 router.put('/:id/read', asyncHandler(setNotificationAsRead));
 
-// PUT - Marcar todas como leídas
+/**
+ * @swagger
+ * /api/v1/notifications/read-all:
+ *   put:
+ *     summary: Marca todas las notificaciones del usuario como leídas
+ *     tags:
+ *       - Notifications
+ *     security:
+ *       - bearerAuth: []
+ *     responses:
+ *       200:
+ *         description: Todas las notificaciones marcadas como leídas
+ */
 router.put('/read-all', asyncHandler(setAllNotificationsAsRead));
 
-// DELETE - Eliminar una notificación
+/**
+ * @swagger
+ * /api/v1/notifications/{id}:
+ *   delete:
+ *     summary: Elimina una notificación por ID
+ *     tags:
+ *       - Notifications
+ *     security:
+ *       - bearerAuth: []
+ *     parameters:
+ *       - in: path
+ *         name: id
+ *         required: true
+ *         schema:
+ *           type: string
+ *     responses:
+ *       200:
+ *         description: Notificación eliminada
+ */
 router.delete('/:id', asyncHandler(removeNotification));
 
-// DELETE - Eliminar todas las notificaciones del usuario
+/**
+ * @swagger
+ * /api/v1/notifications:
+ *   delete:
+ *     summary: Elimina todas las notificaciones del usuario autenticado
+ *     tags:
+ *       - Notifications
+ *     security:
+ *       - bearerAuth: []
+ *     responses:
+ *       200:
+ *         description: Todas las notificaciones eliminadas
+ */
 router.delete('/', asyncHandler(removeAllUserNotifications));
 
 export default router;

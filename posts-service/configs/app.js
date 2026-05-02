@@ -4,6 +4,8 @@ import express from 'express';
 import cors from 'cors';
 import helmet from 'helmet';
 import morgan from 'morgan';
+import swaggerJsdoc from 'swagger-jsdoc';
+import swaggerUi from 'swagger-ui-express';
 import { corsOptions } from './cors.configuration.js';
 import { helmetOptions } from './helmet.configuration.js';
 import { dbConnection } from './db.configuration.js';
@@ -13,10 +15,13 @@ import errorHandler from '../src/middlewares/error-handler.js';
 // Rutas para Posts y Comments
 import postRoutes from '../src/posts/post.routes.js';
 import commentRoutes from '../src/comments/comment.routes.js';
+import swaggerDocumentation from './documentation.js';
  
 const BASE_PATH = '/api/v1';
+const swaggerSpec = swaggerJsdoc(swaggerDocumentation);
  
 const routes = (app) => {
+    app.use('/api-docs', swaggerUi.serve, swaggerUi.setup(swaggerSpec));
     app.use(`${BASE_PATH}/posts`, postRoutes);
     app.use(`${BASE_PATH}/comments`, commentRoutes);
  
@@ -59,7 +64,7 @@ export const initServer = async () => {
         routes(app);
  
         app.listen(PORT, () => {
-            console.log(`\n✓ AlertsPosts Publications API running on port ${PORT}`);
+            console.log(`\n✓ AlertaGT Publications API running on port ${PORT}`);
             console.log(`✓ Health check: http://localhost:${PORT}${BASE_PATH}/health\n`);
         });
     } catch (err) {
