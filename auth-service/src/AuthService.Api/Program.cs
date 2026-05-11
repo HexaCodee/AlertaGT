@@ -80,8 +80,14 @@ app.UseSecurityHeaders(policies => policies
 app.UseMiddleware<GlobalExceptionMiddleware>();
 
 // Middlewares principales
-app.UseHttpsRedirection();
 app.UseCors("DefaultCorsPolicy");
+
+// En desarrollo evitar redirección HTTPS para no romper preflight CORS desde Vite (http://localhost:5173)
+if (!app.Environment.IsDevelopment())
+{
+    app.UseHttpsRedirection();
+}
+
 app.UseRateLimiter();
 app.UseAuthentication();
 app.UseAuthorization();

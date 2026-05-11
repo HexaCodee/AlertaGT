@@ -1,9 +1,10 @@
 import { useState } from 'react'
 import { useNavigate } from 'react-router-dom'
+import { login } from '../../../shared/apis/auth.js'
 
 export const LoginForm = ({ onForgot }) => {
   const navigate = useNavigate()
-  const [form, setForm] = useState({ email: '', password: '' })
+  const [form, setForm] = useState({ emailOrUsername: '', password: '' })
   const [error, setError] = useState('')
   const [loading, setLoading] = useState(false)
 
@@ -16,16 +17,46 @@ export const LoginForm = ({ onForgot }) => {
     event.preventDefault()
     setError('')
 
-    if (!form.email.trim() || !form.password.trim()) {
+    if (!form.emailOrUsername.trim() || !form.password.trim()) {
       setError('Por favor completa todos los campos')
       return
     }
 
-    setLoading(true)
-    await new Promise((resolve) => setTimeout(resolve, 500))
-    setLoading(false)
+    if (form.emailOrUsername.includes('@')) {
+      const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/
+      if (!emailRegex.test(form.emailOrUsername.trim())) {
+        setError('Ingresa un correo válido o un nombre de usuario')
+        return
+      }
+    }
 
-    navigate('/dashboard')
+    setLoading(true)
+    try {
+      const response = await login({
+        emailOrUsername: form.emailOrUsername.trim(),
+        password: form.password
+      })
+
+      const token = response?.token || response?.accessToken
+
+      if (!token) {
+        setError('Inicio de sesión sin token válido')
+        return
+      }
+
+      window.localStorage.setItem('authToken', token)
+      window.localStorage.setItem('token', token)
+
+      if (response?.userDetails) {
+        window.localStorage.setItem('authUser', JSON.stringify(response.userDetails))
+      }
+
+      navigate('/home')
+    } catch (apiError) {
+      setError(apiError.message || 'No se pudo iniciar sesión')
+    } finally {
+      setLoading(false)
+    }
   }
 
   return (
@@ -33,19 +64,19 @@ export const LoginForm = ({ onForgot }) => {
       {error && <p className='form-error'>{error}</p>}
 
       <label className='field-group'>
-        <span className='field-label'>Correo electrónico</span>
+        <span className='field-label'>Correo o usuario</span>
         <div className='input-wrapper'>
           <svg viewBox='0 0 24 24' aria-hidden='true' className='input-icon'>
             <path d='M2.01 6.62 12 13.13l9.99-6.51A2 2 0 0 0 20 4H4a2 2 0 0 0-1.99 2.62z' />
             <path d='M22 8.24 12.7 14.77a3 3 0 0 1-3.4 0L2 8.24V18a2 2 0 0 0 2 2h16a2 2 0 0 0 2-2V8.24z' />
           </svg>
           <input
-            type='email'
-            name='email'
+            type='text'
+            name='emailOrUsername'
             autoComplete='off'
-            value={form.email}
+            value={form.emailOrUsername}
             onChange={handleChange}
-            placeholder='correo@ejemplo.com'
+            placeholder='correo@ejemplo.com o usuario'
           />
         </div>
       </label>

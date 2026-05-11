@@ -1,20 +1,20 @@
 {
   "format": 1,
   "restore": {
-    "C:\\AlertaGT\\auth-service\\src\\AuthService.Api\\AuthService.Api.csproj": {}
+    "c:\\Users\\Informatica\\Downloads\\alerta\\AlertaGT\\auth-service\\src\\AuthService.Api\\AuthService.Api.csproj": {}
   },
   "projects": {
-    "C:\\AlertaGT\\auth-service\\src\\AuthService.Api\\AuthService.Api.csproj": {
+    "c:\\Users\\Informatica\\Downloads\\alerta\\AlertaGT\\auth-service\\src\\AuthService.Api\\AuthService.Api.csproj": {
       "version": "1.0.0",
       "restore": {
-        "projectUniqueName": "C:\\AlertaGT\\auth-service\\src\\AuthService.Api\\AuthService.Api.csproj",
+        "projectUniqueName": "c:\\Users\\Informatica\\Downloads\\alerta\\AlertaGT\\auth-service\\src\\AuthService.Api\\AuthService.Api.csproj",
         "projectName": "AuthService.Api",
-        "projectPath": "C:\\AlertaGT\\auth-service\\src\\AuthService.Api\\AuthService.Api.csproj",
-        "packagesPath": "C:\\Users\\diego\\.nuget\\packages\\",
-        "outputPath": "C:\\AlertaGT\\auth-service\\src\\AuthService.Api\\obj\\",
+        "projectPath": "c:\\Users\\Informatica\\Downloads\\alerta\\AlertaGT\\auth-service\\src\\AuthService.Api\\AuthService.Api.csproj",
+        "packagesPath": "C:\\Users\\Informatica\\.nuget\\packages\\",
+        "outputPath": "c:\\Users\\Informatica\\Downloads\\alerta\\AlertaGT\\auth-service\\src\\AuthService.Api\\obj\\",
         "projectStyle": "PackageReference",
         "configFilePaths": [
-          "C:\\Users\\diego\\AppData\\Roaming\\NuGet\\NuGet.Config"
+          "C:\\Users\\Informatica\\AppData\\Roaming\\NuGet\\NuGet.Config"
         ],
         "originalTargetFrameworks": [
           "net8.0"
@@ -26,11 +26,11 @@
           "net8.0": {
             "targetAlias": "net8.0",
             "projectReferences": {
-              "C:\\AlertaGT\\auth-service\\src\\AuthService.Application\\AuthService.Application.csproj": {
-                "projectPath": "C:\\AlertaGT\\auth-service\\src\\AuthService.Application\\AuthService.Application.csproj"
+              "c:\\Users\\Informatica\\Downloads\\alerta\\AlertaGT\\auth-service\\src\\AuthService.Application\\AuthService.Application.csproj": {
+                "projectPath": "c:\\Users\\Informatica\\Downloads\\alerta\\AlertaGT\\auth-service\\src\\AuthService.Application\\AuthService.Application.csproj"
               },
-              "C:\\AlertaGT\\auth-service\\src\\AuthService.Persistence\\AuthService.Persistence.csproj": {
-                "projectPath": "C:\\AlertaGT\\auth-service\\src\\AuthService.Persistence\\AuthService.Persistence.csproj"
+              "c:\\Users\\Informatica\\Downloads\\alerta\\AlertaGT\\auth-service\\src\\AuthService.Persistence\\AuthService.Persistence.csproj": {
+                "projectPath": "c:\\Users\\Informatica\\Downloads\\alerta\\AlertaGT\\auth-service\\src\\AuthService.Persistence\\AuthService.Persistence.csproj"
               }
             }
           }
@@ -104,21 +104,21 @@
               "privateAssets": "all"
             }
           },
-          "runtimeIdentifierGraphPath": "C:\\Program Files\\dotnet\\sdk\\8.0.420/PortableRuntimeIdentifierGraph.json"
+          "runtimeIdentifierGraphPath": "C:\\Program Files\\dotnet\\sdk\\8.0.417/PortableRuntimeIdentifierGraph.json"
         }
       }
     },
-    "C:\\AlertaGT\\auth-service\\src\\AuthService.Application\\AuthService.Application.csproj": {
+    "c:\\Users\\Informatica\\Downloads\\alerta\\AlertaGT\\auth-service\\src\\AuthService.Application\\AuthService.Application.csproj": {
       "version": "1.0.0",
       "restore": {
-        "projectUniqueName": "C:\\AlertaGT\\auth-service\\src\\AuthService.Application\\AuthService.Application.csproj",
+        "projectUniqueName": "c:\\Users\\Informatica\\Downloads\\alerta\\AlertaGT\\auth-service\\src\\AuthService.Application\\AuthService.Application.csproj",
         "projectName": "AuthService.Application",
-        "projectPath": "C:\\AlertaGT\\auth-service\\src\\AuthService.Application\\AuthService.Application.csproj",
-        "packagesPath": "C:\\Users\\diego\\.nuget\\packages\\",
-        "outputPath": "C:\\AlertaGT\\auth-service\\src\\AuthService.Application\\obj\\",
+        "projectPath": "c:\\Users\\Informatica\\Downloads\\alerta\\AlertaGT\\auth-service\\src\\AuthService.Application\\AuthService.Application.csproj",
+        "packagesPath": "C:\\Users\\Informatica\\.nuget\\packages\\",
+        "outputPath": "c:\\Users\\Informatica\\Downloads\\alerta\\AlertaGT\\auth-service\\src\\AuthService.Application\\obj\\",
         "projectStyle": "PackageReference",
         "configFilePaths": [
-          "C:\\Users\\diego\\AppData\\Roaming\\NuGet\\NuGet.Config"
+          "C:\\Users\\Informatica\\AppData\\Roaming\\NuGet\\NuGet.Config"
         ],
         "originalTargetFrameworks": [
           "net8.0"
@@ -130,8 +130,8 @@
           "net8.0": {
             "targetAlias": "net8.0",
             "projectReferences": {
-              "C:\\AlertaGT\\auth-service\\src\\AuthService.Domain\\AuthService.Domain.csproj": {
-                "projectPath": "C:\\AlertaGT\\auth-service\\src\\AuthService.Domain\\AuthService.Domain.csproj"
+              "c:\\Users\\Informatica\\Downloads\\alerta\\AlertaGT\\auth-service\\src\\AuthService.Domain\\AuthService.Domain.csproj": {
+                "projectPath": "c:\\Users\\Informatica\\Downloads\\alerta\\AlertaGT\\auth-service\\src\\AuthService.Domain\\AuthService.Domain.csproj"
               }
             }
           }
@@ -208,21 +208,21 @@
               "privateAssets": "all"
             }
           },
-          "runtimeIdentifierGraphPath": "C:\\Program Files\\dotnet\\sdk\\8.0.420/PortableRuntimeIdentifierGraph.json"
+          "runtimeIdentifierGraphPath": "C:\\Program Files\\dotnet\\sdk\\8.0.417/PortableRuntimeIdentifierGraph.json"
         }
       }
     },
-    "C:\\AlertaGT\\auth-service\\src\\AuthService.Domain\\AuthService.Domain.csproj": {
+    "c:\\Users\\Informatica\\Downloads\\alerta\\AlertaGT\\auth-service\\src\\AuthService.Domain\\AuthService.Domain.csproj": {
       "version": "1.0.0",
       "restore": {
-        "projectUniqueName": "C:\\AlertaGT\\auth-service\\src\\AuthService.Domain\\AuthService.Domain.csproj",
+        "projectUniqueName": "c:\\Users\\Informatica\\Downloads\\alerta\\AlertaGT\\auth-service\\src\\AuthService.Domain\\AuthService.Domain.csproj",
         "projectName": "AuthService.Domain",
-        "projectPath": "C:\\AlertaGT\\auth-service\\src\\AuthService.Domain\\AuthService.Domain.csproj",
-        "packagesPath": "C:\\Users\\diego\\.nuget\\packages\\",
-        "outputPath": "C:\\AlertaGT\\auth-service\\src\\AuthService.Domain\\obj\\",
+        "projectPath": "c:\\Users\\Informatica\\Downloads\\alerta\\AlertaGT\\auth-service\\src\\AuthService.Domain\\AuthService.Domain.csproj",
+        "packagesPath": "C:\\Users\\Informatica\\.nuget\\packages\\",
+        "outputPath": "c:\\Users\\Informatica\\Downloads\\alerta\\AlertaGT\\auth-service\\src\\AuthService.Domain\\obj\\",
         "projectStyle": "PackageReference",
         "configFilePaths": [
-          "C:\\Users\\diego\\AppData\\Roaming\\NuGet\\NuGet.Config"
+          "C:\\Users\\Informatica\\AppData\\Roaming\\NuGet\\NuGet.Config"
         ],
         "originalTargetFrameworks": [
           "net8.0"
@@ -272,21 +272,21 @@
               "privateAssets": "all"
             }
           },
-          "runtimeIdentifierGraphPath": "C:\\Program Files\\dotnet\\sdk\\8.0.420/PortableRuntimeIdentifierGraph.json"
+          "runtimeIdentifierGraphPath": "C:\\Program Files\\dotnet\\sdk\\8.0.417/PortableRuntimeIdentifierGraph.json"
         }
       }
     },
-    "C:\\AlertaGT\\auth-service\\src\\AuthService.Persistence\\AuthService.Persistence.csproj": {
+    "c:\\Users\\Informatica\\Downloads\\alerta\\AlertaGT\\auth-service\\src\\AuthService.Persistence\\AuthService.Persistence.csproj": {
       "version": "1.0.0",
       "restore": {
-        "projectUniqueName": "C:\\AlertaGT\\auth-service\\src\\AuthService.Persistence\\AuthService.Persistence.csproj",
+        "projectUniqueName": "c:\\Users\\Informatica\\Downloads\\alerta\\AlertaGT\\auth-service\\src\\AuthService.Persistence\\AuthService.Persistence.csproj",
         "projectName": "AuthService.Persistence",
-        "projectPath": "C:\\AlertaGT\\auth-service\\src\\AuthService.Persistence\\AuthService.Persistence.csproj",
-        "packagesPath": "C:\\Users\\diego\\.nuget\\packages\\",
-        "outputPath": "C:\\AlertaGT\\auth-service\\src\\AuthService.Persistence\\obj\\",
+        "projectPath": "c:\\Users\\Informatica\\Downloads\\alerta\\AlertaGT\\auth-service\\src\\AuthService.Persistence\\AuthService.Persistence.csproj",
+        "packagesPath": "C:\\Users\\Informatica\\.nuget\\packages\\",
+        "outputPath": "c:\\Users\\Informatica\\Downloads\\alerta\\AlertaGT\\auth-service\\src\\AuthService.Persistence\\obj\\",
         "projectStyle": "PackageReference",
         "configFilePaths": [
-          "C:\\Users\\diego\\AppData\\Roaming\\NuGet\\NuGet.Config"
+          "C:\\Users\\Informatica\\AppData\\Roaming\\NuGet\\NuGet.Config"
         ],
         "originalTargetFrameworks": [
           "net8.0"
@@ -298,11 +298,11 @@
           "net8.0": {
             "targetAlias": "net8.0",
             "projectReferences": {
-              "C:\\AlertaGT\\auth-service\\src\\AuthService.Application\\AuthService.Application.csproj": {
-                "projectPath": "C:\\AlertaGT\\auth-service\\src\\AuthService.Application\\AuthService.Application.csproj"
+              "c:\\Users\\Informatica\\Downloads\\alerta\\AlertaGT\\auth-service\\src\\AuthService.Application\\AuthService.Application.csproj": {
+                "projectPath": "c:\\Users\\Informatica\\Downloads\\alerta\\AlertaGT\\auth-service\\src\\AuthService.Application\\AuthService.Application.csproj"
               },
-              "C:\\AlertaGT\\auth-service\\src\\AuthService.Domain\\AuthService.Domain.csproj": {
-                "projectPath": "C:\\AlertaGT\\auth-service\\src\\AuthService.Domain\\AuthService.Domain.csproj"
+              "c:\\Users\\Informatica\\Downloads\\alerta\\AlertaGT\\auth-service\\src\\AuthService.Domain\\AuthService.Domain.csproj": {
+                "projectPath": "c:\\Users\\Informatica\\Downloads\\alerta\\AlertaGT\\auth-service\\src\\AuthService.Domain\\AuthService.Domain.csproj"
               }
             }
           }
@@ -360,7 +360,7 @@
               "privateAssets": "all"
             }
           },
-          "runtimeIdentifierGraphPath": "C:\\Program Files\\dotnet\\sdk\\8.0.420/PortableRuntimeIdentifierGraph.json"
+          "runtimeIdentifierGraphPath": "C:\\Program Files\\dotnet\\sdk\\8.0.417/PortableRuntimeIdentifierGraph.json"
         }
       }
     }
