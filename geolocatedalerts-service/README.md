@@ -1,74 +1,76 @@
 # Geolocation Service
 
-Servicio de geolocalización encargado de:
-- Almacenar ubicaciones de usuarios
-- Buscar usuarios dentro de un rango de distancia (2km)
-- Obtener FCM tokens de usuarios cercanos para enviar notificaciones
+Servicio de geolocalización para AlertaGT, responsable de almacenar ubicación de usuarios y buscar proximidad para notificaciones.
 
-## Stack
+## Qué hace
 
-- **Node.js + Express**
-- **MongoDB** (con índices geoespaciales 2dsphere)
-- **Geoqueries** para búsquedas por proximidad
+- Guarda la ubicación de usuarios autenticados
+- Proporciona búsquedas geoespaciales de usuarios y tokens FCM cercanos
+- Permite activar/desactivar el envío de notificaciones por usuario
+- Documentación Swagger disponible en `/api-docs`
 
-## Endpoints
+## Tecnologías
 
-### POST `/api/v1/locations`
-Actualiza la ubicación de un usuario
-```json
-{
-  "userId": "user-123",
-  "latitude": -34.6037,
-  "longitude": -58.3816,
-  "address": "Av. Siempre Viva 123",
-  "fcmToken": "token-firebase"
-}
+- Node.js
+- Express
+- MongoDB
+- Mongoose
+- Swagger (swagger-jsdoc + swagger-ui-express)
+
+## Uso rápido
+
+```bash
+cd geolocatedalerts-service
+pnpm install
+pnpm start
 ```
 
-### GET `/api/v1/locations/nearby/users?latitude=-34.6037&longitude=-58.3816&maxDistance=2000`
-Obtiene usuarios cercanos
-- No requiere autenticación
-- `maxDistance` en metros (default 2000 = 2km)
+Para desarrollo:
 
-### GET `/api/v1/locations/nearby/tokens?latitude=-34.6037&longitude=-58.3816`
-Obtiene FCM tokens de usuarios cercanos (para enviar notificaciones)
-- No requiere autenticación
-
-### GET `/api/v1/locations/my-location`
-Obtiene la ubicación actual del usuario
-- Requiere JWT
-
-### PUT `/api/v1/locations/fcm-token`
-Actualiza el FCM token del usuario
-- Requiere JWT
-```json
-{
-  "fcmToken": "nuevo-token"
-}
+```bash
+pnpm dev
 ```
 
-### PUT `/api/v1/locations/inactive`
-Marca usuario como inactivo
-- Requiere JWT
+La API corre por defecto en `http://localhost:3022` y la documentación está en `http://localhost:3022/api-docs`.
 
-### PUT `/api/v1/locations/active`
-Marca usuario como activo
-- Requiere JWT
+## Variables de entorno
 
-### DELETE `/api/v1/locations`
-Elimina la ubicación del usuario
-- Requiere JWT
+Crea un archivo `.env` con estos valores:
+
+```env
+PORT=3022
+MONGODB_URI=mongodb://localhost:27017
+DATABASE_NAME=AlertaGT_Geo
+AUTH_SERVICE_URL=http://localhost:3010/api/v1
+SERVICE_TOKEN=your-service-token
+RATE_LIMIT_REQUESTS_PER_MINUTE=100
+CORS_ORIGINS=http://localhost:3000,http://localhost:3001
+LOG_LEVEL=info
+```
+
+## Endpoints principales
+
+- `POST /api/v1/locations` — Actualiza o crea ubicación de usuario
+- `GET /api/v1/locations/nearby/users` — Obtiene usuarios cercanos sin autenticación
+- `GET /api/v1/locations/nearby/tokens` — Obtiene tokens FCM cercanos sin autenticación
+- `GET /api/v1/locations/my-location` — Recupera ubicación actual del usuario (JWT requerido)
+- `PUT /api/v1/locations/fcm-token` — Actualiza token FCM del usuario (JWT requerido)
+- `PUT /api/v1/locations/inactive` — Marca usuario como inactivo (JWT requerido)
+- `PUT /api/v1/locations/active` — Marca usuario como activo (JWT requerido)
+- `DELETE /api/v1/locations` — Elimina ubicación de usuario (JWT requerido)
+- `PUT /api/v1/locations/toggle-sharing` — Cambia estado de compartición de ubicación
+- `GET /api/v1/locations/status` — Consulta estado de ubicación y disponibilidad
 
 ## Flujo de notificaciones
 
-1. Usuario publica alerta en posts-service
-2. Sistema obtiene ubicación de la alerta
-3. Llamar a `/api/v1/locations/nearby/tokens` para obtener usuarios cercanos
-4. Usar los FCM tokens para enviar notificaciones via notifications-service
-5. Las notificaciones se guardan en la BD de notificaciones
+1. `posts-service` crea una alerta con ubicación
+2. Se consultan usuarios cercanos via `geolocatedalerts-service`
+3. Se obtienen tokens FCM para notificaciones locales
+4. `notifications-service` envía los mensajes push
 
 ## Notas
 
-- Los índices geoespaciales de MongoDB requieren que `coordinates` esté en formato GeoJSON [longitude, latitude]
-- El servicio no requiere autenticación para búsquedas de proximidad (público)
-- Las operaciones que requieren autenticación necesitan validación con el servicio de Auth
+- Las coordenadas deben enviarse en GeoJSON: `[longitude, latitude]`
+- Búsquedas por proximidad usan índices geoespaciales `2dsphere` en MongoDB
+- La ruta `/nearby` es pública; sólo las rutas de perfil requieren JWT
+- Swagger se genera desde los comentarios JSDoc en `src/locations/*.routes.js`

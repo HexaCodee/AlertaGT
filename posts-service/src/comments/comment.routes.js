@@ -32,6 +32,16 @@ const router = Router();
  *     responses:
  *       200:
  *         description: Lista de comentarios
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/CommentListResponse'
+ *       404:
+ *         description: Publicación no encontrada
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/ApiError'
  */
 router.get('/post/:postId', asyncHandler(getCommentsByPostId));
 
@@ -49,15 +59,26 @@ router.get('/post/:postId', asyncHandler(getCommentsByPostId));
  *       content:
  *         application/json:
  *           schema:
- *             type: object
- *             properties:
- *               postId:
- *                 type: string
- *               text:
- *                 type: string
+ *             $ref: '#/components/schemas/CreateCommentRequest'
  *     responses:
  *       201:
  *         description: Comentario creado
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/CommentResponse'
+ *       400:
+ *         description: Datos de comentario inválidos
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/ApiError'
+ *       401:
+ *         description: Token JWT inválido o ausente
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/ApiError'
  */
 router.post('/', validateJWT, validateCreateComment, asyncHandler(createComment));
 /**
@@ -80,13 +101,26 @@ router.post('/', validateJWT, validateCreateComment, asyncHandler(createComment)
  *       content:
  *         application/json:
  *           schema:
- *             type: object
- *             properties:
- *               text:
- *                 type: string
+ *             $ref: '#/components/schemas/UpdateCommentRequest'
  *     responses:
  *       200:
  *         description: Comentario actualizado
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/CommentResponse'
+ *       404:
+ *         description: Comentario no encontrado o no tienes permisos
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/ApiError'
+ *       401:
+ *         description: Token JWT inválido o ausente
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/ApiError'
  */
 router.put('/:id', validateJWT, validateUpdateComment, asyncHandler(updateComment));
 /**
@@ -107,6 +141,22 @@ router.put('/:id', validateJWT, validateUpdateComment, asyncHandler(updateCommen
  *     responses:
  *       200:
  *         description: Comentario eliminado
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/SuccessMessageResponse'
+ *       404:
+ *         description: Comentario no encontrado o no tienes permisos
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/ApiError'
+ *       401:
+ *         description: Token JWT inválido o ausente
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/ApiError'
  */
 router.delete('/:id', validateJWT, asyncHandler(deleteComment));
 

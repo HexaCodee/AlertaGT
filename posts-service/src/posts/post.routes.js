@@ -30,9 +30,31 @@ const router = Router();
  *     summary: Lista todas las publicaciones
  *     tags:
  *       - Posts
+ *     parameters:
+ *       - in: query
+ *         name: page
+ *         required: false
+ *         schema:
+ *           type: integer
+ *           default: 1
+ *       - in: query
+ *         name: limit
+ *         required: false
+ *         schema:
+ *           type: integer
+ *           default: 10
+ *       - in: query
+ *         name: category
+ *         required: false
+ *         schema:
+ *           type: string
  *     responses:
  *       200:
  *         description: Lista de publicaciones
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/PostListResponse'
  */
 router.get('/', asyncHandler(getPosts));               // Listar publicaciones
 
@@ -43,9 +65,42 @@ router.get('/', asyncHandler(getPosts));               // Listar publicaciones
  *     summary: Busca publicaciones por proximidad
  *     tags:
  *       - Posts
+ *     parameters:
+ *       - in: query
+ *         name: latitude
+ *         required: true
+ *         schema:
+ *           type: number
+ *       - in: query
+ *         name: longitude
+ *         required: true
+ *         schema:
+ *           type: number
+ *       - in: query
+ *         name: maxDistance
+ *         required: false
+ *         schema:
+ *           type: number
+ *           default: 2000
+ *       - in: query
+ *         name: page
+ *         required: false
+ *         schema:
+ *           type: integer
+ *           default: 1
+ *       - in: query
+ *         name: limit
+ *         required: false
+ *         schema:
+ *           type: integer
+ *           default: 10
  *     responses:
  *       200:
  *         description: Resultados de búsqueda por proximidad
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/PostListResponse'
  */
 router.get('/proximity/search', asyncHandler(getPostsByProximity));  // Buscar por ubicación (2km)
 
@@ -65,6 +120,16 @@ router.get('/proximity/search', asyncHandler(getPostsByProximity));  // Buscar p
  *     responses:
  *       200:
  *         description: Publicación encontrada
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/PostResponse'
+ *       404:
+ *         description: Publicación no encontrada
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/ApiError'
  */
 router.get('/:id', asyncHandler(getPostById));        // Obtener publicación por ID
 
@@ -86,8 +151,20 @@ router.get('/:id', asyncHandler(getPostById));        // Obtener publicación po
  *             properties:
  *               title:
  *                 type: string
- *               description:
+ *               category:
  *                 type: string
+ *               riskType:
+ *                 type: string
+ *               text:
+ *                 type: string
+ *               location:
+ *                 type: string
+ *                 description: JSON string con latitude, longitude y address
+ *               isPublished:
+ *                 type: boolean
+ *               image:
+ *                 type: string
+ *                 format: binary
  *               attachments:
  *                 type: array
  *                 items:
@@ -96,6 +173,22 @@ router.get('/:id', asyncHandler(getPostById));        // Obtener publicación po
  *     responses:
  *       201:
  *         description: Publicación creada
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/PostResponse'
+ *       400:
+ *         description: Datos de publicación inválidos
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/ApiError'
+ *       401:
+ *         description: Token JWT inválido o ausente
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/ApiError'
  */
 router.post('/', validateJWT, upload.array('attachments', 6), validateAttachmentsMiddleware, validateCreatePost, asyncHandler(createPost));
 
@@ -123,8 +216,20 @@ router.post('/', validateJWT, upload.array('attachments', 6), validateAttachment
  *             properties:
  *               title:
  *                 type: string
- *               description:
+ *               category:
  *                 type: string
+ *               riskType:
+ *                 type: string
+ *               text:
+ *                 type: string
+ *               location:
+ *                 type: string
+ *                 description: JSON string con latitude, longitude y address
+ *               isPublished:
+ *                 type: boolean
+ *               image:
+ *                 type: string
+ *                 format: binary
  *               attachments:
  *                 type: array
  *                 items:
@@ -133,6 +238,22 @@ router.post('/', validateJWT, upload.array('attachments', 6), validateAttachment
  *     responses:
  *       200:
  *         description: Publicación actualizada
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/PostResponse'
+ *       400:
+ *         description: Datos de publicación inválidos o faltantes
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/ApiError'
+ *       401:
+ *         description: Token JWT inválido o ausente
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/ApiError'
  */
 router.put('/:id', validateJWT, upload.array('attachments', 6), validateAttachmentsMiddleware, validateUpdatePost, asyncHandler(updatePost));
 
@@ -154,6 +275,22 @@ router.put('/:id', validateJWT, upload.array('attachments', 6), validateAttachme
  *     responses:
  *       200:
  *         description: Publicación eliminada
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/SuccessMessageResponse'
+ *       404:
+ *         description: Publicación no encontrada o no tienes permisos
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/ApiError'
+ *       401:
+ *         description: Token JWT inválido o ausente
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/ApiError'
  */
 router.delete('/:id', validateJWT, asyncHandler(deletePost));
 
@@ -172,9 +309,38 @@ router.delete('/:id', validateJWT, asyncHandler(deletePost));
  *         required: true
  *         schema:
  *           type: string
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             properties:
+ *               status:
+ *                 type: string
+ *                 example: APPROVED
+ *               comments:
+ *                 type: string
+ *                 example: 'Revisión completada'
  *     responses:
  *       200:
  *         description: Publicación moderada
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/PostResponse'
+ *       404:
+ *         description: Publicación no encontrada
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/ApiError'
+ *       401:
+ *         description: Token JWT inválido o ausente
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/ApiError'
  */
 router.put('/:id/moderate', validateJWT, requireRole('ADMIN_ROLE','MODERATOR_ROLE'), asyncHandler(moderatePost));
 
@@ -194,6 +360,16 @@ router.put('/:id/moderate', validateJWT, requireRole('ADMIN_ROLE','MODERATOR_ROL
  *     responses:
  *       200:
  *         description: Publicación marcada como reportada
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/PostResponse'
+ *       404:
+ *         description: Publicación no encontrada
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/ApiError'
  */
 router.post('/:id/flag', asyncHandler(flagPost));
 
