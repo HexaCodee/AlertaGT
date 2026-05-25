@@ -2,119 +2,114 @@
 
 Servicio de publicaciones y comentarios para AlertaGT, construido con Node.js y Express.
 
-## Características
+## Qué contiene
 
-- ✅ Creación, edición y eliminación de publicaciones
-- ✅ Sistema de comentarios en publicaciones
-- ✅ Moderación de contenido
-- ✅ Búsqueda geoespacial de publicaciones cercanas
-- ✅ Integración con Cloudinary para imágenes
-- ✅ Validación de archivos y contenido
-- ✅ Manejo centralizado de errores
+- Publicaciones con campos de ubicación y moderación
+- Comentarios asociados a publicaciones
+- Subida y gestión de imágenes con Cloudinary
+- Búsqueda geoespacial de publicaciones cercanas
+- Documentación Swagger en `/api-docs`
 
-## Stack Tecnológico
+## Tecnologías
 
-- **Node.js 18+**
-- **Express.js**
-- **MongoDB** con índices geoespaciales
-- **Mongoose** para modelado de datos
-- **Cloudinary** para gestión de imágenes
-- **Multer** para subida de archivos
-- **Express-validator** para validaciones
+- Node.js
+- Express
+- MongoDB
+- Mongoose
+- Cloudinary
+- Multer
+- Swagger (swagger-jsdoc + swagger-ui-express)
 
-## Arquitectura
+## Uso rápido
+
+```bash
+cd posts-service
+pnpm install
+pnpm start
+```
+
+Para desarrollo:
+
+```bash
+pnpm dev
+```
+
+La API se expone por defecto en `http://localhost:3020` y la documentación Swagger en `http://localhost:3020/api-docs`.
+
+## Variables de entorno
+
+Crea un archivo `.env` con los valores necesarios:
+
+```env
+PORT=3020
+MONGODB_URI=mongodb://localhost:27017
+DATABASE_NAME=AlertaGT_Posts
+SERVICE_TOKEN=your-service-token
+AUTH_SERVICE_URL=http://localhost:3010/api/v1
+GEO_SERVICE_URL=http://localhost:3022/api/v1
+NOTIFICATIONS_SERVICE_URL=http://localhost:3021/api/v1
+CLOUDINARY_CLOUD_NAME=your-cloud-name
+CLOUDINARY_API_KEY=your-api-key
+CLOUDINARY_API_SECRET=your-api-secret
+RATE_LIMIT_REQUESTS_PER_MINUTE=100
+CORS_ORIGINS=http://localhost:3000,http://localhost:3001
+LOG_LEVEL=info
+```
+
+## Endpoints principales
+
+### Publicaciones
+
+- `GET /api/v1/posts` — Lista publicaciones
+- `GET /api/v1/posts/:id` — Obtiene publicación por ID
+- `GET /api/v1/posts/proximity/search` — Búsqueda por proximidad
+- `POST /api/v1/posts` — Crea publicación (JWT requerido)
+- `PUT /api/v1/posts/:id` — Actualiza publicación
+- `DELETE /api/v1/posts/:id` — Elimina publicación
+
+### Comentarios
+
+- `GET /api/v1/comments/post/:postId` — Lista comentarios de una publicación
+- `POST /api/v1/comments` — Crea comentario (JWT requerido)
+- `PUT /api/v1/comments/:id` — Actualiza comentario
+- `DELETE /api/v1/comments/:id` — Elimina comentario
+
+### Moderación y reporte
+
+- `PUT /api/v1/posts/:id/moderate` — Moderar publicación (ADMIN_ROLE, MODERATOR_ROLE)
+- `POST /api/v1/posts/:id/flag` — Reportar publicación
+
+## Arquitectura de carpetas
 
 ```
 posts-service/
 ├── configs/
-│   ├── app.js              # Configuración principal
-│   ├── db.configuration.js # Conexión MongoDB
-│   └── cloudinary.config.js # Config Cloudinary
-├── src/
-│   ├── posts/
-│   │   ├── post.model.js   # Modelo Mongoose
-│   │   ├── post.service.js # Lógica de negocio
-│   │   ├── post.controller.js # Controladores
-│   │   └── post.routes.js  # Rutas Express
-│   └── comments/
-│       ├── comment.model.js
-│       ├── comment.service.js
-│       ├── comment.controller.js
-│       └── comment.routes.js
+│   ├── app.js
+│   ├── db.configuration.js
+│   ├── cloudinary.config.js
+│   └── documentation.js
 ├── middlewares/
-│   ├── validate-JWT.js     # Validación JWT
-│   ├── upload.js           # Config Multer
-│   ├── post.validator.js   # Validaciones posts
-│   └── comment.validator.js # Validaciones comments
-└── scripts/
-    ├── create-indexes.js   # Migraciones índices
-    └── seed-data.js        # Datos de prueba
+├── scripts/
+├── src/
+│   ├── comments/
+│   └── posts/
+└── index.js
 ```
 
-## Endpoints Principales
-
-### Publicaciones
-- `GET /api/v1/posts` - Lista de publicaciones
-- `GET /api/v1/posts/:id` - Obtener publicación por ID
-- `GET /api/v1/posts/proximity/search` - Búsqueda por proximidad
-- `POST /api/v1/posts` - Crear publicación (JWT requerido)
-- `PUT /api/v1/posts/:id` - Actualizar publicación (autor)
-- `DELETE /api/v1/posts/:id` - Eliminar publicación (autor)
-
-### Comentarios
-- `GET /api/v1/comments/post/:postId` - Comentarios de una publicación
-- `POST /api/v1/comments` - Crear comentario (JWT requerido)
-- `PUT /api/v1/comments/:id` - Actualizar comentario (autor)
-- `DELETE /api/v1/comments/:id` - Eliminar comentario (autor)
-
-### Moderación
-- `PUT /api/v1/posts/:id/moderate` - Moderar publicación (ADMIN/MODERATOR)
-- `POST /api/v1/posts/:id/flag` - Reportar publicación
-
-## Variables de Entorno
-
-```env
-# Base de datos
-MONGODB_URI=mongodb://localhost:27017
-DATABASE_NAME=AlertaGT_Posts
-
-# Autenticación
-SERVICE_TOKEN=your-service-token
-AUTH_SERVICE_URL=http://localhost:3010/api/v1
-
-# Cloudinary
-CLOUDINARY_CLOUD_NAME=your-cloud-name
-CLOUDINARY_API_KEY=your-api-key
-CLOUDINARY_API_SECRET=your-api-secret
-
-# Servicios externos
-GEO_SERVICE_URL=http://localhost:3022/api/v1
-NOTIFICATIONS_SERVICE_URL=http://localhost:3021/api/v1
-```
-
-## Migraciones
+## Scripts útiles
 
 ```bash
-# Crear índices de base de datos
+pnpm install
+pnpm dev
+pnpm start
 node scripts/create-indexes.js
-
-# Ejecutar seed de datos
 node scripts/seed-data.js
 ```
 
-## Flujo de Publicación
+## Notas
 
-1. Usuario crea publicación con ubicación
-2. Se valida contenido y archivos
-3. Se suben imágenes a Cloudinary
-4. Se guarda en MongoDB
-5. Se dispara notificación asíncrona a usuarios cercanos
-6. Se envían push notifications via FCM
-
-## Notas Técnicas
-
-- Las coordenadas deben estar en formato GeoJSON `[longitude, latitude]`
-- Los índices geoespaciales permiten búsquedas eficientes por proximidad
-- La moderación permite estados: PENDING, APPROVED, REJECTED
-- Las imágenes se almacenan en Cloudinary con optimización automática</content>
+- Asegura que MongoDB esté disponible en la URI configurada.
+- La documentación Swagger está activa en `/api-docs`.
+- Las coordenadas de ubicación usan GeoJSON: `[longitude, latitude]`.
+- El servicio requiere `SERVICE_TOKEN` y `AUTH_SERVICE_URL` para comunicación con otros microservicios.</content>
 <parameter name="filePath">c:\AlertaGT\posts-service\README.md

@@ -6,22 +6,25 @@ import {
   getNearbyUserTokens,
   updateUserFCMToken,
   markUserInactive,
-  markUserActive,
-  removeUserLocation,
-  toggleLocationSharingController,
-  getLocationStatusController,
-} from './location.controller.js';
-import { validateJWT } from '../../middlewares/validate-JWT.js';
-import { validateServiceToken } from '../../middlewares/validate-service-token.js';
-import { asyncHandler } from '../middlewares/async-handler.js';
-
-const router = Router();
-
-/**
- * @swagger
- * /api/v1/locations:
- *   post:
- *     summary: Actualiza la ubicación del usuario
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             $ref: '#/components/schemas/LocationUpdateRequest'
+ *     responses:
+ *       200:
+ *         description: Ubicación actualizada correctamente
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/BooleanStatusResponse'
+ *       400:
+ *         description: Datos de ubicación inválidos o faltantes
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/ApiError'
  *     tags:
  *       - Locations
  *     requestBody:
@@ -48,9 +51,42 @@ router.post('/', asyncHandler(updateUserLocation));
  *     summary: Obtiene usuarios cercanos
  *     tags:
  *       - Locations
+ *     parameters:
+ *       - in: query
+ *         name: latitude
+ *         required: true
+ *         schema:
+ *           type: number
+ *       - in: query
+ *         name: longitude
+ *         required: true
+ *         schema:
+ *           type: number
+ *       - in: query
+ *         name: maxDistance
+ *         required: false
+ *         schema:
+ *           type: number
+ *           default: 2000
+ *       - in: query
+ *         name: limit
+ *         required: false
+ *         schema:
+ *           type: integer
+ *           default: 100
  *     responses:
  *       200:
  *         description: Lista de usuarios cercanos
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/NearbyUsersResponse'
+ *       400:
+ *         description: Parámetros de búsqueda inválidos
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/ApiError'
  */
 router.get('/nearby/users', asyncHandler(getNearbyUsers));
 
@@ -63,9 +99,42 @@ router.get('/nearby/users', asyncHandler(getNearbyUsers));
  *       - Locations
  *     security:
  *       - serviceToken: []
+ *     parameters:
+ *       - in: query
+ *         name: latitude
+ *         required: true
+ *         schema:
+ *           type: number
+ *       - in: query
+ *         name: longitude
+ *         required: true
+ *         schema:
+ *           type: number
+ *       - in: query
+ *         name: maxDistance
+ *         required: false
+ *         schema:
+ *           type: number
+ *           default: 2000
  *     responses:
  *       200:
  *         description: Tokens obtenidos correctamente
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/NearbyTokensResponse'
+ *       400:
+ *         description: Parámetros de búsqueda inválidos
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/ApiError'
+ *       401:
+ *         description: Token de servicio inválido o ausente
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/ApiError'
  */
 router.get('/nearby/tokens', validateServiceToken, asyncHandler(getNearbyUserTokens));
 
@@ -84,6 +153,22 @@ router.use(validateJWT);
  *     responses:
  *       200:
  *         description: Ubicación del usuario obtenida
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/BooleanStatusResponse'
+ *       400:
+ *         description: Falta userId o token
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/ApiError'
+ *       401:
+ *         description: Token JWT inválido o ausente
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/ApiError'
  */
 router.get('/my-location', asyncHandler(getUserCurrentLocation));
 
@@ -101,13 +186,26 @@ router.get('/my-location', asyncHandler(getUserCurrentLocation));
  *       content:
  *         application/json:
  *           schema:
- *             type: object
- *             properties:
- *               token:
- *                 type: string
+ *             $ref: '#/components/schemas/UpdateFcmTokenRequest'
  *     responses:
  *       200:
  *         description: Token FCM actualizado
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/BooleanStatusResponse'
+ *       400:
+ *         description: Faltan campos obligatorios o token inválido
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/ApiError'
+ *       401:
+ *         description: Token JWT inválido o ausente
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/ApiError'
  */
 router.put('/fcm-token', asyncHandler(updateUserFCMToken));
 
@@ -123,6 +221,16 @@ router.put('/fcm-token', asyncHandler(updateUserFCMToken));
  *     responses:
  *       200:
  *         description: Usuario marcado como inactivo
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/BooleanStatusResponse'
+ *       401:
+ *         description: Token JWT inválido o ausente
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/ApiError'
  */
 router.put('/inactive', asyncHandler(markUserInactive));
 
@@ -138,6 +246,16 @@ router.put('/inactive', asyncHandler(markUserInactive));
  *     responses:
  *       200:
  *         description: Usuario marcado como activo
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/BooleanStatusResponse'
+ *       401:
+ *         description: Token JWT inválido o ausente
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/ApiError'
  */
 router.put('/active', asyncHandler(markUserActive));
 
@@ -153,6 +271,16 @@ router.put('/active', asyncHandler(markUserActive));
  *     responses:
  *       200:
  *         description: Ubicación eliminada correctamente
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/BooleanStatusResponse'
+ *       401:
+ *         description: Token JWT inválido o ausente
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/ApiError'
  */
 router.delete('/', asyncHandler(removeUserLocation));
 
@@ -168,6 +296,16 @@ router.delete('/', asyncHandler(removeUserLocation));
  *     responses:
  *       200:
  *         description: Estado de compartir ubicación actualizado
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/BooleanStatusResponse'
+ *       401:
+ *         description: Token JWT inválido o ausente
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/ApiError'
  */
 router.put('/toggle-sharing', asyncHandler(toggleLocationSharingController));
 
@@ -183,6 +321,16 @@ router.put('/toggle-sharing', asyncHandler(toggleLocationSharingController));
  *     responses:
  *       200:
  *         description: Estado obtenido correctamente
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/StatusResponse'
+ *       401:
+ *         description: Token JWT inválido o ausente
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/ApiError'
  */
 router.get('/status', asyncHandler(getLocationStatusController));
 

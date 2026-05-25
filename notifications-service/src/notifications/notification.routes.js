@@ -28,17 +28,26 @@ const router = Router();
  *       content:
  *         application/json:
  *           schema:
- *             type: object
- *             properties:
- *               title:
- *                 type: string
- *               message:
- *                 type: string
- *               userId:
- *                 type: string
+ *             $ref: '#/components/schemas/CreateNotificationRequest'
  *     responses:
  *       201:
  *         description: Notificación creada correctamente
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/NotificationResponse'
+ *       400:
+ *         description: Faltan campos requeridos o inválidos
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/ApiError'
+ *       401:
+ *         description: Token de servicio inválido o ausente
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/ApiError'
  */
 router.post('/', validateServiceToken, asyncHandler(createNotificationController));
 
@@ -54,9 +63,37 @@ router.use(validateJWT);
  *       - Notifications
  *     security:
  *       - bearerAuth: []
+ *     parameters:
+ *       - in: query
+ *         name: page
+ *         required: false
+ *         schema:
+ *           type: integer
+ *           default: 1
+ *       - in: query
+ *         name: limit
+ *         required: false
+ *         schema:
+ *           type: integer
+ *           default: 20
+ *       - in: query
+ *         name: unread
+ *         required: false
+ *         schema:
+ *           type: boolean
  *     responses:
  *       200:
  *         description: Lista de notificaciones
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/NotificationListResponse'
+ *       401:
+ *         description: Token JWT inválido o ausente
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/ApiError'
  */
 router.get('/', asyncHandler(getNotifications));
 
@@ -78,6 +115,22 @@ router.get('/', asyncHandler(getNotifications));
  *     responses:
  *       200:
  *         description: Notificación encontrada
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/NotificationResponse'
+ *       404:
+ *         description: Notificación no encontrada
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/ApiError'
+ *       401:
+ *         description: Token JWT inválido o ausente
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/ApiError'
  */
 router.get('/:id', asyncHandler(getNotificationById));
 
@@ -99,6 +152,22 @@ router.get('/:id', asyncHandler(getNotificationById));
  *     responses:
  *       200:
  *         description: Notificación marcada como leída
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/NotificationResponse'
+ *       404:
+ *         description: Notificación no encontrada
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/ApiError'
+ *       401:
+ *         description: Token JWT inválido o ausente
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/ApiError'
  */
 router.put('/:id/read', asyncHandler(setNotificationAsRead));
 
@@ -114,6 +183,23 @@ router.put('/:id/read', asyncHandler(setNotificationAsRead));
  *     responses:
  *       200:
  *         description: Todas las notificaciones marcadas como leídas
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 success:
+ *                   type: boolean
+ *                 message:
+ *                   type: string
+ *                 modifiedCount:
+ *                   type: integer
+ *       401:
+ *         description: Token JWT inválido o ausente
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/ApiError'
  */
 router.put('/read-all', asyncHandler(setAllNotificationsAsRead));
 
@@ -135,6 +221,22 @@ router.put('/read-all', asyncHandler(setAllNotificationsAsRead));
  *     responses:
  *       200:
  *         description: Notificación eliminada
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/SuccessMessageResponse'
+ *       404:
+ *         description: Notificación no encontrada
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/ApiError'
+ *       401:
+ *         description: Token JWT inválido o ausente
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/ApiError'
  */
 router.delete('/:id', asyncHandler(removeNotification));
 
@@ -150,6 +252,23 @@ router.delete('/:id', asyncHandler(removeNotification));
  *     responses:
  *       200:
  *         description: Todas las notificaciones eliminadas
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 success:
+ *                   type: boolean
+ *                 message:
+ *                   type: string
+ *                 deletedCount:
+ *                   type: integer
+ *       401:
+ *         description: Token JWT inválido o ausente
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/ApiError'
  */
 router.delete('/', asyncHandler(removeAllUserNotifications));
 
