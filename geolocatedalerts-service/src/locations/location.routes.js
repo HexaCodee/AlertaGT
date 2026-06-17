@@ -6,6 +6,24 @@ import {
   getNearbyUserTokens,
   updateUserFCMToken,
   markUserInactive,
+  markUserActive,
+  removeUserLocation,
+  toggleLocationSharingController,
+  getLocationStatusController,
+} from './location.controller.js';
+import { asyncHandler } from '../middlewares/async-handler.js';
+import { validateJWT } from '../../middlewares/validate-JWT.js';
+import { validateServiceToken } from '../../middlewares/validate-service-token.js';
+
+const router = Router();
+
+/**
+ * @swagger
+ * /api/v1/locations:
+ *   post:
+ *     summary: Actualiza la ubicación del usuario
+ *     tags:
+ *       - Locations
  *     requestBody:
  *       required: true
  *       content:
@@ -25,22 +43,6 @@ import {
  *           application/json:
  *             schema:
  *               $ref: '#/components/schemas/ApiError'
- *     tags:
- *       - Locations
- *     requestBody:
- *       required: true
- *       content:
- *         application/json:
- *           schema:
- *             type: object
- *             properties:
- *               latitude:
- *                 type: number
- *               longitude:
- *                 type: number
- *     responses:
- *       200:
- *         description: Ubicación actualizada correctamente
  */
 router.post('/', asyncHandler(updateUserLocation));
 

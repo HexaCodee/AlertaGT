@@ -23,6 +23,17 @@ import { validateAttachmentsMiddleware } from '../../middlewares/attachment-vali
 
 const router = Router();
 
+const parseLocationMiddleware = (req, res, next) => {
+  if (req.body.location && typeof req.body.location === 'string') {
+    try {
+      req.body.location = JSON.parse(req.body.location)
+    } catch (e) {
+      // dejar como está
+    }
+  }
+  next()
+}
+
 /**
  * @swagger
  * /api/v1/posts:
@@ -190,7 +201,18 @@ router.get('/:id', asyncHandler(getPostById));        // Obtener publicación po
  *             schema:
  *               $ref: '#/components/schemas/ApiError'
  */
-router.post('/', validateJWT, upload.array('attachments', 6), validateAttachmentsMiddleware, validateCreatePost, asyncHandler(createPost));
+router.post(
+  '/',
+  validateJWT,
+  upload.fields([
+    { name: 'image', maxCount: 1 },
+    { name: 'attachments', maxCount: 6 },
+  ]),
+  validateAttachmentsMiddleware,
+  parseLocationMiddleware,
+  validateCreatePost,
+  asyncHandler(createPost)
+);
 
 /**
  * @swagger
@@ -255,7 +277,18 @@ router.post('/', validateJWT, upload.array('attachments', 6), validateAttachment
  *             schema:
  *               $ref: '#/components/schemas/ApiError'
  */
-router.put('/:id', validateJWT, upload.array('attachments', 6), validateAttachmentsMiddleware, validateUpdatePost, asyncHandler(updatePost));
+router.put(
+  '/:id',
+  validateJWT,
+  upload.fields([
+    { name: 'image', maxCount: 1 },
+    { name: 'attachments', maxCount: 6 },
+  ]),
+  validateAttachmentsMiddleware,
+  parseLocationMiddleware,
+  validateUpdatePost,
+  asyncHandler(updatePost)
+);
 
 /**
  * @swagger

@@ -15,7 +15,7 @@ public class JwtTokenService(IConfiguration configuration) : IJwtTokenService
         var secretKey = jwtSettings["SecretKey"] ?? throw new InvalidOperationException("JWT SecretKey not configured");
         var issuer = jwtSettings["Issuer"] ?? "AlertaGT";
         var audience = jwtSettings["Audience"] ?? "AlertaGT";
-        var expiryInMinutes = int.Parse(jwtSettings["ExpiryInMinutes"] ?? "60");
+        var expiryInMinutes = int.Parse(jwtSettings["ExpirationMinutes"] ?? "60");
 
         var key = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(secretKey));
         var credentials = new SigningCredentials(key, SecurityAlgorithms.HmacSha256);
@@ -51,6 +51,10 @@ public class JwtTokenService(IConfiguration configuration) : IJwtTokenService
             var issuer = jwtSettings["Issuer"] ?? "AlertaGT";
             var audience = jwtSettings["Audience"] ?? "AlertaGT";
 
+            Console.WriteLine($"[DEBUG] ValidateToken - SecretKey length: {secretKey.Length}");
+            Console.WriteLine($"[DEBUG] ValidateToken - Issuer: {issuer}");
+            Console.WriteLine($"[DEBUG] ValidateToken - Audience: {audience}");
+
             var key = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(secretKey));
             var tokenHandler = new JwtSecurityTokenHandler();
 
@@ -66,11 +70,16 @@ public class JwtTokenService(IConfiguration configuration) : IJwtTokenService
                 ClockSkew = TimeSpan.Zero
             }, out SecurityToken validatedToken);
 
-            var userId = principal.FindFirst(JwtRegisteredClaimNames.Sub)?.Value;
+            Console.WriteLine($"[DEBUG] All claims: {string.Join(", ", principal.Claims.Select(c => $"{c.Type}={c.Value}"))}");
+            var userId = principal.FindFirst(JwtRegisteredClaimNames.Sub)?.Value
+                ?? principal.FindFirst("sub")?.Value
+                ?? principal.FindFirst(ClaimTypes.NameIdentifier)?.Value;
+            Console.WriteLine($"[DEBUG] ValidateToken - Success, userId: {userId}");
             return (!string.IsNullOrEmpty(userId), userId ?? "");
         }
-        catch (Exception)
+        catch (Exception ex)
         {
+            Console.WriteLine($"[DEBUG] ValidateToken - Exception: {ex.GetType().Name}: {ex.Message}");
             return (false, "");
         }
     }

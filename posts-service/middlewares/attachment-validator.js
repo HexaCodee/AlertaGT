@@ -90,7 +90,13 @@ export const sanitizeText = (text) => {
  * Middleware para validar adjuntos en requests
  */
 export const validateAttachmentsMiddleware = (req, res, next) => {
-  const validation = validateAttachments(req.files);
+  const attachmentFiles = Array.isArray(req.files)
+    ? req.files
+    : Array.isArray(req.files?.attachments)
+      ? req.files.attachments
+      : [];
+
+  const validation = validateAttachments(attachmentFiles);
 
   if (!validation.isValid) {
     return res.status(400).json({

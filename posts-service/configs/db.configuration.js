@@ -5,11 +5,12 @@ dotenv.config();
 
 export const dbConnection = async () => {
   try {
-    const mongoURI = process.env.MONGODB_URI || 'mongodb://localhost:27017/AlertaGT_Posts';
+    const mongoURI = process.env.MONGODB_URI || 'mongodb://localhost:27017';
+    const dbName = process.env.DATABASE_NAME || 'AlertaGT_Posts';
     
-    await mongoose.connect(mongoURI);
+    await mongoose.connect(mongoURI, { dbName });
 
-    console.log('✓ Conexión a MongoDB exitosa');
+    console.log(`✓ MongoDB conectado: ${mongoURI}/${dbName}`);
     return mongoose.connection;
   } catch (error) {
     console.error('✗ Error conectando a MongoDB:', error.message);
