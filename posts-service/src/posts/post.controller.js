@@ -15,22 +15,37 @@ const GEO_SERVICE_URL = process.env.GEO_SERVICE_URL || 'http://localhost:3022/ap
 const NOTIFICATIONS_SERVICE_URL = process.env.NOTIFICATIONS_SERVICE_URL || 'http://localhost:3021/api/v1';
 const SERVICE_TOKEN = process.env.SERVICE_TOKEN;
 
+const normalizeUploadedFiles = (files) => {
+  if (Array.isArray(files)) {
+    return {
+      imageFile: files.find((file) => file.fieldname === 'image') || null,
+      attachmentFiles: files.filter((file) => file.fieldname === 'attachments'),
+    };
+  }
+
+  return {
+    imageFile: files?.image?.[0] ?? null,
+    attachmentFiles: files?.attachments ?? [],
+  };
+};
+
 // Crear publicación
 export const createPost = async (req, res, next) => {
   try {
+    const { imageFile, attachmentFiles } = normalizeUploadedFiles(req.files);
+
     // Procesar imagen principal (si existe)
-    const image = req.files?.find(f => f.fieldname === 'image') 
+    const image = imageFile
       ? {
-          public_id: req.files.find(f => f.fieldname === 'image')?.filename || req.files.find(f => f.fieldname === 'image')?.public_id,
-          url: req.files.find(f => f.fieldname === 'image')?.path || req.files.find(f => f.fieldname === 'image')?.secure_url || req.files.find(f => f.fieldname === 'image')?.url,
-          mimeType: req.files.find(f => f.fieldname === 'image')?.mimetype,
-          originalName: req.files.find(f => f.fieldname === 'image')?.originalname,
+          public_id: imageFile.filename || imageFile.public_id,
+          url: imageFile.path || imageFile.secure_url || imageFile.url,
+          mimeType: imageFile.mimetype,
+          originalName: imageFile.originalname,
         }
       : null;
 
     // Procesar attachments adicionales
-    const attachments = (req.files || [])
-      .filter(f => f.fieldname === 'attachments')
+    const attachments = attachmentFiles
       .map((f) => ({
         public_id: f.filename || f.public_id,
         url: f.path || f.secure_url || f.url,
@@ -125,20 +140,20 @@ export const getPostById = async (req, res, next) => {
 export const updatePost = async (req, res, next) => {
   try {
     const { id } = req.params;
+    const { imageFile, attachmentFiles } = normalizeUploadedFiles(req.files);
 
     // Procesar imagen principal si viene en la actualización
-    const image = req.files?.find(f => f.fieldname === 'image') 
+    const image = imageFile
       ? {
-          public_id: req.files.find(f => f.fieldname === 'image')?.filename || req.files.find(f => f.fieldname === 'image')?.public_id,
-          url: req.files.find(f => f.fieldname === 'image')?.path || req.files.find(f => f.fieldname === 'image')?.secure_url || req.files.find(f => f.fieldname === 'image')?.url,
-          mimeType: req.files.find(f => f.fieldname === 'image')?.mimetype,
-          originalName: req.files.find(f => f.fieldname === 'image')?.originalname,
+          public_id: imageFile.filename || imageFile.public_id,
+          url: imageFile.path || imageFile.secure_url || imageFile.url,
+          mimeType: imageFile.mimetype,
+          originalName: imageFile.originalname,
         }
       : null;
 
     // Procesar attachments adicionales
-    const attachments = (req.files || [])
-      .filter(f => f.fieldname === 'attachments')
+    const attachments = attachmentFiles
       .map((f) => ({
         public_id: f.filename || f.public_id,
         url: f.path || f.secure_url || f.url,

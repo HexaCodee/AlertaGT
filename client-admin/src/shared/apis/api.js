@@ -1,4 +1,4 @@
-const AUTH_BASE_URL = import.meta.env.VITE_AUTH_URL ?? 'http://localhost:5079/api/v1/Auth'
+const AUTH_BASE_URL = import.meta.env.VITE_AUTH_URL ?? 'http://localhost:3010/api/v1/Auth'
 
 const normalizePath = (path) => `${AUTH_BASE_URL.replace(/\/+$/, '')}/${String(path).replace(/^\/+/, '')}`
 

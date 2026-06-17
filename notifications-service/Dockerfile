@@ -4,6 +4,9 @@ FROM node:18-alpine AS base
 # Instalar pnpm
 RUN npm install -g pnpm
 
+# Herramientas mínimas para healthchecks
+RUN apk add --no-cache curl
+
 # Establecer directorio de trabajo
 WORKDIR /app
 

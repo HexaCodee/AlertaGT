@@ -1,10 +1,10 @@
 {
   "version": 2,
-  "dgSpecHash": "5h7niiD+XW0=",
+  "dgSpecHash": "ssuSN12unhs=",
   "success": true,
-  "projectFilePath": "c:\\Users\\Informatica\\Downloads\\alerta\\AlertaGT\\auth-service\\src\\AuthService.Domain\\AuthService.Domain.csproj",
+  "projectFilePath": "C:\\IN6AM\\AlertaGT\\auth-service\\src\\AuthService.Domain\\AuthService.Domain.csproj",
   "expectedPackageFiles": [
-    "C:\\Users\\Informatica\\.nuget\\packages\\system.componentmodel.annotations\\5.0.0\\system.componentmodel.annotations.5.0.0.nupkg.sha512"
+    "C:\\Users\\Joshua Solares\\.nuget\\packages\\system.componentmodel.annotations\\5.0.0\\system.componentmodel.annotations.5.0.0.nupkg.sha512"
   ],
   "logs": []
 }

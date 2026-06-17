@@ -8749,19 +8749,19 @@
     ]
   },
   "packageFolders": {
-    "C:\\Users\\Informatica\\.nuget\\packages\\": {}
+    "C:\\Users\\Joshua Solares\\.nuget\\packages\\": {}
   },
   "project": {
     "version": "1.0.0",
     "restore": {
-      "projectUniqueName": "c:\\Users\\Informatica\\Downloads\\alerta\\AlertaGT\\auth-service\\src\\AuthService.Api\\AuthService.Api.csproj",
+      "projectUniqueName": "C:\\IN6AM\\AlertaGT\\auth-service\\src\\AuthService.Api\\AuthService.Api.csproj",
       "projectName": "AuthService.Api",
-      "projectPath": "c:\\Users\\Informatica\\Downloads\\alerta\\AlertaGT\\auth-service\\src\\AuthService.Api\\AuthService.Api.csproj",
-      "packagesPath": "C:\\Users\\Informatica\\.nuget\\packages\\",
-      "outputPath": "c:\\Users\\Informatica\\Downloads\\alerta\\AlertaGT\\auth-service\\src\\AuthService.Api\\obj\\",
+      "projectPath": "C:\\IN6AM\\AlertaGT\\auth-service\\src\\AuthService.Api\\AuthService.Api.csproj",
+      "packagesPath": "C:\\Users\\Joshua Solares\\.nuget\\packages\\",
+      "outputPath": "C:\\IN6AM\\AlertaGT\\auth-service\\src\\AuthService.Api\\obj\\",
       "projectStyle": "PackageReference",
       "configFilePaths": [
-        "C:\\Users\\Informatica\\AppData\\Roaming\\NuGet\\NuGet.Config"
+        "C:\\Users\\Joshua Solares\\AppData\\Roaming\\NuGet\\NuGet.Config"
       ],
       "originalTargetFrameworks": [
         "net8.0"
@@ -8773,11 +8773,11 @@
         "net8.0": {
           "targetAlias": "net8.0",
           "projectReferences": {
-            "c:\\Users\\Informatica\\Downloads\\alerta\\AlertaGT\\auth-service\\src\\AuthService.Application\\AuthService.Application.csproj": {
-              "projectPath": "c:\\Users\\Informatica\\Downloads\\alerta\\AlertaGT\\auth-service\\src\\AuthService.Application\\AuthService.Application.csproj"
+            "C:\\IN6AM\\AlertaGT\\auth-service\\src\\AuthService.Application\\AuthService.Application.csproj": {
+              "projectPath": "C:\\IN6AM\\AlertaGT\\auth-service\\src\\AuthService.Application\\AuthService.Application.csproj"
             },
-            "c:\\Users\\Informatica\\Downloads\\alerta\\AlertaGT\\auth-service\\src\\AuthService.Persistence\\AuthService.Persistence.csproj": {
-              "projectPath": "c:\\Users\\Informatica\\Downloads\\alerta\\AlertaGT\\auth-service\\src\\AuthService.Persistence\\AuthService.Persistence.csproj"
+            "C:\\IN6AM\\AlertaGT\\auth-service\\src\\AuthService.Persistence\\AuthService.Persistence.csproj": {
+              "projectPath": "C:\\IN6AM\\AlertaGT\\auth-service\\src\\AuthService.Persistence\\AuthService.Persistence.csproj"
             }
           }
         }

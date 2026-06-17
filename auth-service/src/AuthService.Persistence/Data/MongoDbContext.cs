@@ -11,8 +11,10 @@ public class MongoDbContext
 
     public MongoDbContext(IConfiguration configuration)
     {
-        var connectionString = configuration.GetConnectionString("DefaultConnection");
-        var databaseName = configuration.GetConnectionString("MongoDbDatabase");
+        var connectionString = configuration["MONGODB_URI"]
+            ?? configuration.GetConnectionString("DefaultConnection");
+        var databaseName = configuration["DATABASE_NAME"]
+            ?? configuration.GetConnectionString("MongoDbDatabase");
 
         _mongoClient = new MongoClient(connectionString);
         _database = _mongoClient.GetDatabase(databaseName);
