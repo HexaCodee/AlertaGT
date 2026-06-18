@@ -12,90 +12,81 @@ export const HomePage = () => {
   const [selectedCategory, setSelectedCategory] = useState('all')
   const [sortBy, setSortBy] = useState('distance')
   const [activeNav, setActiveNav] = useState('home')
-  const [locationText, setLocationText] = useState('Cargando ubicación...')
+  const [locationText, setLocationText] = useState('Buscando señal GPS...')
   const [locationStatus, setLocationStatus] = useState('')
-  
   const [realAlerts, setRealAlerts] = useState([])
   const [loadingAlerts, setLoadingAlerts] = useState(true)
 
   useEffect(() => {
-    const token = window.localStorage.getItem('authToken') || window.localStorage.getItem('token')
-    if (!token) {
-      setLocationText('Ubicación activa • Zona 10, Guatemala')
-      setLocationStatus('Inicia sesión para leer la ubicación guardada')
+    if (!navigator.geolocation) {
+      setLocationText('Geolocalización no soportada')
+      setLocationStatus('Error')
+      setLoadingAlerts(false)
       return
     }
 
-    const controller = new AbortController()
-    const loadLocation = async () => {
-      try {
-        const [locationResponse, statusResponse] = await Promise.all([
-          fetch(`${GEOLOCATION_API_BASE}/locations/my-location`, {
-            headers: { Authorization: `Bearer ${token}`, Accept: 'application/json' },
-            signal: controller.signal
-          }),
-          fetch(`${GEOLOCATION_API_BASE}/locations/status`, {
-            headers: { Authorization: `Bearer ${token}`, Accept: 'application/json' },
-            signal: controller.signal
-          })
-        ])
-
-        if (locationResponse.ok) {
-          const result = await locationResponse.json()
-          const location = result?.data ?? {}
-          setLocationText(location.address || 'Ubicación guardada')
-          setLocationStatus(location.latitude && location.longitude ? `${Number(location.latitude).toFixed(4)}, ${Number(location.longitude).toFixed(4)}` : '')
-          return
-        }
-
-        if (statusResponse.ok) {
-          const result = await statusResponse.json()
-          const status = result?.data ?? {}
-          setLocationText(status.isActive ? 'Ubicación activa' : 'Ubicación inactiva')
-          setLocationStatus(status.lastUpdate ? `Última actualización: ${new Date(status.lastUpdate).toLocaleString('es-GT')}` : '')
-          return
-        }
-      } catch {
-        setLocationText('Ubicación activa • Zona 10, Guatemala')
-        setLocationStatus('Error en el servicio de geolocalización')
-      }
+    const handleSuccess = (position) => {
+      const lat = position.coords.latitude
+      const lng = position.coords.longitude
+      setLocationText(`Lat: ${lat.toFixed(4)}, Lng: ${lng.toFixed(4)}`)
+      setLocationStatus(`${lat}, ${lng}`)
     }
 
-    loadLocation()
-    return () => controller.abort()
+    const handleError = () => {
+      setLocationText('Error al obtener ubicación')
+      setLocationStatus('Error')
+      setLoadingAlerts(false)
+    }
+
+    navigator.geolocation.getCurrentPosition(handleSuccess, handleError)
+    const watchId = navigator.geolocation.watchPosition(handleSuccess, handleError)
+
+    return () => navigator.geolocation.clearWatch(watchId)
   }, [])
 
   const fetchAlerts = useCallback(async () => {
+    if (!locationStatus || locationStatus === 'Error') {
+      setLoadingAlerts(false)
+      return
+    }
+
     setLoadingAlerts(true)
     try {
-      const response = await fetch(`${POSTS_API_BASE}/posts`, {
+      let url = `${POSTS_API_BASE}/posts`
+      const [lat, lng] = locationStatus.split(',').map(coord => coord.trim())
+      
+      if (lat && lng && !isNaN(lat) && !isNaN(lng)) {
+        url = `${POSTS_API_BASE}/posts/proximity/search?latitude=${lat}&longitude=${lng}&maxDistance=2000`
+      }
+
+      const response = await fetch(url, {
         headers: { Accept: 'application/json' }
       })
+
       if (response.ok) {
         const data = await response.json()
         const rawAlerts = Array.isArray(data) ? data : data.data || []
-        
+
         const formattedAlerts = rawAlerts.map(alert => ({
           ...alert,
-          id: alert._id, 
+          id: alert._id,
           date: alert.createdAt,
-          location: alert.location && typeof alert.location === 'object' 
-            ? alert.location.address || 'Ubicación desconocida' 
+          location: alert.location && typeof alert.location === 'object'
+            ? alert.location.address || 'Ubicación desconocida'
             : alert.location || 'Sin ubicación'
         }))
-        
+
         setRealAlerts(formattedAlerts)
       }
-    } catch (error) {
-      console.error('Error conectando a posts-service:', error)
+    } catch {
     } finally {
       setLoadingAlerts(false)
     }
-  }, [])
+  }, [locationStatus])
 
   useEffect(() => {
     fetchAlerts()
-  }, [fetchAlerts])
+  }, [fetchAlerts, locationStatus])
 
   const filteredAlerts = useMemo(() => {
     let filtered = [...realAlerts]
@@ -132,7 +123,6 @@ export const HomePage = () => {
                 <div className='location-box' aria-live='polite'>
                   <span className='location-box-title'>Ubicación activa</span>
                   <span className='location-text'>{locationText}</span>
-                  {locationStatus && <span className='location-status'>{locationStatus}</span>}
                 </div>
               </div>
             </div>
@@ -167,7 +157,7 @@ export const HomePage = () => {
               ) : (
                 <div className='no-alerts'>
                   <svg viewBox='0 0 24 24' fill='none' stroke='currentColor' strokeWidth='2'><circle cx='12' cy='12' r='10' /><path d='M12 6v6m0 4v.01' /></svg>
-                  <p>No hay alertas disponibles</p>
+                  <p>No hay alertas disponibles en tu rango actual</p>
                 </div>
               )}
             </div>

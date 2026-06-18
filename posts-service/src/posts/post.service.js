@@ -8,8 +8,9 @@ export const createPostRecord = async ({ postData, authorId, image = null, attac
     image,
     attachments,
     flaggedCount: 0,
-    isPublished: postData.isPublished ?? false,
-    moderation: postData.moderation ?? undefined,
+    isActive: true,
+    isPublished: postData.isPublished ?? true,
+    moderation: postData.moderation ?? { status: 'APPROVED' }
   };
 
   const post = new Post(data);
@@ -74,10 +75,10 @@ export const fetchPostsByProximity = async ({ latitude, longitude, maxDistance =
     const R = 6371000; // Radio de la Tierra en metros
     const dLat = (postLat - latitude) * Math.PI / 180;
     const dLng = (postLng - longitude) * Math.PI / 180;
-    const a = Math.sin(dLat/2) * Math.sin(dLat/2) +
-              Math.cos(latitude * Math.PI / 180) * Math.cos(postLat * Math.PI / 180) *
-              Math.sin(dLng/2) * Math.sin(dLng/2);
-    const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1-a));
+    const a = Math.sin(dLat / 2) * Math.sin(dLat / 2) +
+      Math.cos(latitude * Math.PI / 180) * Math.cos(postLat * Math.PI / 180) *
+      Math.sin(dLng / 2) * Math.sin(dLng / 2);
+    const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
     const distance = R * c;
 
     return {
