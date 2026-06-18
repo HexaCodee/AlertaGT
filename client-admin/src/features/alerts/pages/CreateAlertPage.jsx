@@ -170,8 +170,9 @@ export const CreateAlertPage = () => {
 
         formData.append('title', title.trim())
         formData.append('category', CATEGORY_TO_API[category])
-        formData.append('riskType', RISK_TO_API[riskLevel])
+        formData.append('riskLevel', RISK_TO_API[riskLevel])
         formData.append('text', description.trim())
+        formData.append('isPublished', 'true')
 
         if (locationPayload) {
             formData.append('location', JSON.stringify(locationPayload))

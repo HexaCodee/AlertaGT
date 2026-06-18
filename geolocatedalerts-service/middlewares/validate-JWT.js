@@ -1,4 +1,5 @@
 import axios from 'axios';
+import { jwtDecode } from 'jwt-decode';
 
 export const validateJWT = async (req, res, next) => {
   try {
@@ -11,7 +12,17 @@ export const validateJWT = async (req, res, next) => {
     const authUrl = process.env.AUTH_SERVICE_URL || 'http://localhost:3010/api/v1';
     try {
       const resp = await axios.post(`${authUrl}/auth/verify`, { token });
-      req.user = resp.data.user;
+      
+      const payload = jwtDecode(token);
+      const extractedId = payload.sub || payload.id;
+
+      req.user = {
+        ...resp.data.user, 
+        id: extractedId 
+      };
+
+      req.userId = extractedId;
+
       return next();
     } catch (err) {
       return res.status(401).json({ success: false, message: 'Token inválido o expirado', error: err.message });
