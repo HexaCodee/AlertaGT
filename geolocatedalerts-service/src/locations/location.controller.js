@@ -11,13 +11,34 @@ import {
   deleteUserLocation,
 } from './location.service.js';
 import { validateGpsCoordinates, validateSearchRadius, validateFCMToken } from '../../middlewares/geo-validators.js';
+import { jwtDecode } from 'jwt-decode';
+
+const extractUserId = (req) => {
+  // Intentar obtenerlo si el middleware JWT ya lo resolvió correctamente
+  let userId = req.user?.id || req.userId || req.body.userId || req.params.userId;
+  
+  // Fallback: Si no viene, lo decodificamos directamente del Header de Authorization
+  if (!userId) {
+    const authHeader = req.headers.authorization;
+    if (authHeader && authHeader.startsWith('Bearer ')) {
+      try {
+        const token = authHeader.split(' ')[1];
+        const payload = jwtDecode(token);
+        userId = payload.sub || payload.id;
+      } catch (e) {
+        console.error("Error decodificando token en controlador:", e.message);
+      }
+    }
+  }
+  return userId;
+};
 
 // Actualizar ubicación del usuario
 export const updateUserLocation = async (req, res, next) => {
   try {
     const { latitude, longitude, address } = req.body;
-    const userId = req.user?.id || req.body.userId;
     const fcmToken = req.body.fcmToken;
+    const userId = extractUserId(req);
 
     if (!latitude || !longitude) {
       return res.status(400).json({
@@ -71,7 +92,7 @@ export const updateUserLocation = async (req, res, next) => {
 // Obtener ubicación del usuario
 export const getUserCurrentLocation = async (req, res, next) => {
   try {
-    const userId = req.user?.id || req.params.userId;
+    const userId = extractUserId(req);
 
     if (!userId) {
       return res.status(400).json({
@@ -178,7 +199,7 @@ export const getNearbyUserTokens = async (req, res, next) => {
 export const updateUserFCMToken = async (req, res, next) => {
   try {
     const { fcmToken } = req.body;
-    const userId = req.user?.id || req.body.userId;
+    const userId = extractUserId(req);
 
     if (!userId || !fcmToken) {
       return res.status(400).json({
@@ -202,7 +223,7 @@ export const updateUserFCMToken = async (req, res, next) => {
 // Marcar usuario como inactivo
 export const markUserInactive = async (req, res, next) => {
   try {
-    const userId = req.user?.id || req.params.userId;
+    const userId = extractUserId(req);
 
     if (!userId) {
       return res.status(400).json({
@@ -226,7 +247,7 @@ export const markUserInactive = async (req, res, next) => {
 // Marcar usuario como activo
 export const markUserActive = async (req, res, next) => {
   try {
-    const userId = req.user?.id || req.params.userId;
+    const userId = extractUserId(req);
 
     if (!userId) {
       return res.status(400).json({
@@ -250,7 +271,7 @@ export const markUserActive = async (req, res, next) => {
 // Eliminar ubicación de usuario
 export const removeUserLocation = async (req, res, next) => {
   try {
-    const userId = req.user?.id || req.params.userId;
+    const userId = extractUserId(req);
 
     if (!userId) {
       return res.status(400).json({
@@ -273,7 +294,7 @@ export const removeUserLocation = async (req, res, next) => {
 // Toggle compartir ubicación
 export const toggleLocationSharingController = async (req, res, next) => {
   try {
-    const userId = req.user?.id || req.params.userId;
+    const userId = extractUserId(req);
 
     if (!userId) {
       return res.status(400).json({
@@ -300,7 +321,7 @@ export const toggleLocationSharingController = async (req, res, next) => {
 // Obtener estado de ubicación
 export const getLocationStatusController = async (req, res, next) => {
   try {
-    const userId = req.user?.id || req.params.userId;
+    const userId = extractUserId(req);
 
     if (!userId) {
       return res.status(400).json({

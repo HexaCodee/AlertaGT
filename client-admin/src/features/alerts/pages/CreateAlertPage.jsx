@@ -171,8 +171,9 @@ export const CreateAlertPage = () => {
         // Campos de texto obligatorios
         formData.append('title', title.trim())
         formData.append('category', CATEGORY_TO_API[category])
-        formData.append('riskType', RISK_TO_API[riskLevel])
+        formData.append('riskLevel', RISK_TO_API[riskLevel])
         formData.append('text', description.trim())
+        formData.append('isPublished', 'true')
 
         formData.append('isPublished', 'true')
         formData.append('moderation.status', 'APPROVED')

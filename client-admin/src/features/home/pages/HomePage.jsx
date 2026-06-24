@@ -12,17 +12,16 @@ export const HomePage = () => {
   const [selectedCategory, setSelectedCategory] = useState('all')
   const [sortBy, setSortBy] = useState('distance')
   const [activeNav, setActiveNav] = useState('home')
-  const [locationText, setLocationText] = useState('Cargando ubicación...')
+  const [locationText, setLocationText] = useState('Buscando señal GPS...')
   const [locationStatus, setLocationStatus] = useState('')
-
   const [realAlerts, setRealAlerts] = useState([])
   const [loadingAlerts, setLoadingAlerts] = useState(true)
 
   useEffect(() => {
-    const token = window.localStorage.getItem('authToken') || window.localStorage.getItem('token')
-    if (!token) {
-      setLocationText('Ubicación activa • Zona 10, Guatemala')
-      setLocationStatus('Inicia sesión para leer la ubicación guardada')
+    if (!navigator.geolocation) {
+      setLocationText('Geolocalización no soportada')
+      setLocationStatus('Error')
+      setLoadingAlerts(false)
       return
     }
 
@@ -102,6 +101,11 @@ export const HomePage = () => {
   }, [])
 
   const fetchAlerts = useCallback(async () => {
+    if (!locationStatus || locationStatus === 'Error') {
+      setLoadingAlerts(false)
+      return
+    }
+
     setLoadingAlerts(true)
     try {
       const lat = window.sessionStorage.getItem('user_lat')
@@ -132,16 +136,15 @@ export const HomePage = () => {
 
         setRealAlerts(formattedAlerts)
       }
-    } catch (error) {
-      console.error('Error conectando a posts-service:', error)
+    } catch {
     } finally {
       setLoadingAlerts(false)
     }
-  }, [])
+  }, [locationStatus])
 
   useEffect(() => {
     fetchAlerts()
-  }, [fetchAlerts])
+  }, [fetchAlerts, locationStatus])
 
   const filteredAlerts = useMemo(() => {
     let filtered = [...realAlerts]
@@ -178,7 +181,6 @@ export const HomePage = () => {
                 <div className='location-box' aria-live='polite'>
                   <span className='location-box-title'>Ubicación activa</span>
                   <span className='location-text'>{locationText}</span>
-                  {locationStatus && <span className='location-status'>{locationStatus}</span>}
                 </div>
               </div>
             </div>
@@ -213,7 +215,7 @@ export const HomePage = () => {
               ) : (
                 <div className='no-alerts'>
                   <svg viewBox='0 0 24 24' fill='none' stroke='currentColor' strokeWidth='2'><circle cx='12' cy='12' r='10' /><path d='M12 6v6m0 4v.01' /></svg>
-                  <p>No hay alertas disponibles</p>
+                  <p>No hay alertas disponibles en tu rango actual</p>
                 </div>
               )}
             </div>
