@@ -25,23 +25,79 @@ export const HomePage = () => {
       return
     }
 
-    const handleSuccess = (position) => {
-      const lat = position.coords.latitude
-      const lng = position.coords.longitude
-      setLocationText(`Lat: ${lat.toFixed(4)}, Lng: ${lng.toFixed(4)}`)
-      setLocationStatus(`${lat}, ${lng}`)
+    const controller = new AbortController()
+
+    const syncUserLocation = async () => {
+      if (!navigator.geolocation) {
+        setLocationText('Zona 10, Guatemala')
+        setLocationStatus('Geolocalización no soportada por el navegador')
+        return
+      }
+
+      navigator.geolocation.getCurrentPosition(
+        async (position) => {
+          const { latitude, longitude } = position.coords
+
+          window.sessionStorage.setItem('user_lat', latitude)
+          window.sessionStorage.setItem('user_lng', longitude)
+
+          try {
+            // 1. Decodificar el JWT localmente para extraer el ID de usuario
+            let userId = null;
+            try {
+              const base64Url = token.split('.')[1];
+              const base64 = base64Url.replace(/-/g, '+').replace(/_/g, '/');
+              const jsonPayload = decodeURIComponent(window.atob(base64).split('').map(function (c) {
+                return '%' + ('00' + c.charCodeAt(0).toString(16)).slice(-2);
+              }).join(''));
+
+              const parsedToken = JSON.parse(jsonPayload);
+              // Intentamos con 'id', 'userId' o 'sub' (estándar de JWT)
+              userId = parsedToken.id || parsedToken.userId || parsedToken.sub;
+            } catch (e) {
+              console.error("Error al decodificar el token:", e);
+            }
+
+            // 2. Enviar la petición incluyendo el userId requerido
+            const response = await fetch(`${GEOLOCATION_API_BASE}/locations`, {
+              method: 'POST',
+              headers: {
+                'Content-Type': 'application/json',
+                'Authorization': `Bearer ${token}`,
+                'Accept': 'application/json'
+              },
+              body: JSON.stringify({
+                latitude,
+                longitude,
+                userId: userId // 👈 Aquí inyectamos el userId que pide tu backend
+              }),
+              signal: controller.signal
+            })
+
+            if (response.ok) {
+              const result = await response.json()
+              const location = result?.data ?? {}
+              setLocationText(location.address || 'Ubicación actualizada en vivo')
+              setLocationStatus(`${latitude.toFixed(4)}, ${longitude.toFixed(4)}`)
+            } else {
+              setLocationText('Ubicación GPS local')
+              setLocationStatus(`${latitude.toFixed(4)}, ${longitude.toFixed(4)}`)
+            }
+          } catch (err) {
+            if (err.name !== 'AbortError') {
+              setLocationText('Ubicación GPS local (Servicio Geo Offline)')
+              setLocationStatus(`${latitude.toFixed(4)}, ${longitude.toFixed(4)}`)
+            }
+          }
+        },
+        (error) => {
+          setLocationStatus('Permiso de ubicación denegado')
+        }
+      )
     }
 
-    const handleError = () => {
-      setLocationText('Error al obtener ubicación')
-      setLocationStatus('Error')
-      setLoadingAlerts(false)
-    }
-
-    navigator.geolocation.getCurrentPosition(handleSuccess, handleError)
-    const watchId = navigator.geolocation.watchPosition(handleSuccess, handleError)
-
-    return () => navigator.geolocation.clearWatch(watchId)
+    syncUserLocation()
+    return () => controller.abort()
   }, [])
 
   const fetchAlerts = useCallback(async () => {
@@ -52,11 +108,12 @@ export const HomePage = () => {
 
     setLoadingAlerts(true)
     try {
+      const lat = window.sessionStorage.getItem('user_lat')
+      const lng = window.sessionStorage.getItem('user_lng')
+
       let url = `${POSTS_API_BASE}/posts`
-      const [lat, lng] = locationStatus.split(',').map(coord => coord.trim())
-      
-      if (lat && lng && !isNaN(lat) && !isNaN(lng)) {
-        url = `${POSTS_API_BASE}/posts/proximity/search?latitude=${lat}&longitude=${lng}&maxDistance=2000`
+      if (lat && lng) {
+        url = `${POSTS_API_BASE}/posts?latitude=${lat}&longitude=${lng}`
       }
 
       const response = await fetch(url, {
@@ -71,6 +128,7 @@ export const HomePage = () => {
           ...alert,
           id: alert._id,
           date: alert.createdAt,
+          distance: alert.distance ?? 0,
           location: alert.location && typeof alert.location === 'object'
             ? alert.location.address || 'Ubicación desconocida'
             : alert.location || 'Sin ubicación'

@@ -8,9 +8,8 @@ export const createPostRecord = async ({ postData, authorId, image = null, attac
     image,
     attachments,
     flaggedCount: 0,
-    isActive: true,
     isPublished: postData.isPublished ?? true,
-    moderation: postData.moderation ?? { status: 'APPROVED' }
+    moderation: postData.moderation,
   };
 
   const post = new Post(data);
@@ -134,7 +133,7 @@ export const deletePostRecord = async ({ id, authorId }) => {
 
   // Verificar que es el autor
   if (post.authorId !== authorId) {
-    throw new Error('No tienes permisos para eliminar esta publicaciÃ³n');
+    throw new Error('No tienes permisos para eliminar esta publicación');
   }
 
   await post.deleteOne();

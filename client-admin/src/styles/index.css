@@ -34,8 +34,11 @@ button {
 
 .auth-shell {
   width: 100%;
+  min-height: 100vh;        
+  background: #d2000b;      
   display: flex;
   justify-content: center;
+  align-items: center;
   padding: 2rem;
 }
 
