@@ -14,7 +14,7 @@ export const HomePage = () => {
   const [activeNav, setActiveNav] = useState('home')
   const [locationText, setLocationText] = useState('Cargando ubicación...')
   const [locationStatus, setLocationStatus] = useState('')
-  
+
   const [realAlerts, setRealAlerts] = useState([])
   const [loadingAlerts, setLoadingAlerts] = useState(true)
 
@@ -27,63 +27,109 @@ export const HomePage = () => {
     }
 
     const controller = new AbortController()
-    const loadLocation = async () => {
-      try {
-        const [locationResponse, statusResponse] = await Promise.all([
-          fetch(`${GEOLOCATION_API_BASE}/locations/my-location`, {
-            headers: { Authorization: `Bearer ${token}`, Accept: 'application/json' },
-            signal: controller.signal
-          }),
-          fetch(`${GEOLOCATION_API_BASE}/locations/status`, {
-            headers: { Authorization: `Bearer ${token}`, Accept: 'application/json' },
-            signal: controller.signal
-          })
-        ])
 
-        if (locationResponse.ok) {
-          const result = await locationResponse.json()
-          const location = result?.data ?? {}
-          setLocationText(location.address || 'Ubicación guardada')
-          setLocationStatus(location.latitude && location.longitude ? `${Number(location.latitude).toFixed(4)}, ${Number(location.longitude).toFixed(4)}` : '')
-          return
-        }
-
-        if (statusResponse.ok) {
-          const result = await statusResponse.json()
-          const status = result?.data ?? {}
-          setLocationText(status.isActive ? 'Ubicación activa' : 'Ubicación inactiva')
-          setLocationStatus(status.lastUpdate ? `Última actualización: ${new Date(status.lastUpdate).toLocaleString('es-GT')}` : '')
-          return
-        }
-      } catch {
-        setLocationText('Ubicación activa • Zona 10, Guatemala')
-        setLocationStatus('Error en el servicio de geolocalización')
+    const syncUserLocation = async () => {
+      if (!navigator.geolocation) {
+        setLocationText('Zona 10, Guatemala')
+        setLocationStatus('Geolocalización no soportada por el navegador')
+        return
       }
+
+      navigator.geolocation.getCurrentPosition(
+        async (position) => {
+          const { latitude, longitude } = position.coords
+
+          window.sessionStorage.setItem('user_lat', latitude)
+          window.sessionStorage.setItem('user_lng', longitude)
+
+          try {
+            // 1. Decodificar el JWT localmente para extraer el ID de usuario
+            let userId = null;
+            try {
+              const base64Url = token.split('.')[1];
+              const base64 = base64Url.replace(/-/g, '+').replace(/_/g, '/');
+              const jsonPayload = decodeURIComponent(window.atob(base64).split('').map(function (c) {
+                return '%' + ('00' + c.charCodeAt(0).toString(16)).slice(-2);
+              }).join(''));
+
+              const parsedToken = JSON.parse(jsonPayload);
+              // Intentamos con 'id', 'userId' o 'sub' (estándar de JWT)
+              userId = parsedToken.id || parsedToken.userId || parsedToken.sub;
+            } catch (e) {
+              console.error("Error al decodificar el token:", e);
+            }
+
+            // 2. Enviar la petición incluyendo el userId requerido
+            const response = await fetch(`${GEOLOCATION_API_BASE}/locations`, {
+              method: 'POST',
+              headers: {
+                'Content-Type': 'application/json',
+                'Authorization': `Bearer ${token}`,
+                'Accept': 'application/json'
+              },
+              body: JSON.stringify({
+                latitude,
+                longitude,
+                userId: userId // 👈 Aquí inyectamos el userId que pide tu backend
+              }),
+              signal: controller.signal
+            })
+
+            if (response.ok) {
+              const result = await response.json()
+              const location = result?.data ?? {}
+              setLocationText(location.address || 'Ubicación actualizada en vivo')
+              setLocationStatus(`${latitude.toFixed(4)}, ${longitude.toFixed(4)}`)
+            } else {
+              setLocationText('Ubicación GPS local')
+              setLocationStatus(`${latitude.toFixed(4)}, ${longitude.toFixed(4)}`)
+            }
+          } catch (err) {
+            if (err.name !== 'AbortError') {
+              setLocationText('Ubicación GPS local (Servicio Geo Offline)')
+              setLocationStatus(`${latitude.toFixed(4)}, ${longitude.toFixed(4)}`)
+            }
+          }
+        },
+        (error) => {
+          setLocationStatus('Permiso de ubicación denegado')
+        }
+      )
     }
 
-    loadLocation()
+    syncUserLocation()
     return () => controller.abort()
   }, [])
 
   const fetchAlerts = useCallback(async () => {
     setLoadingAlerts(true)
     try {
-      const response = await fetch(`${POSTS_API_BASE}/posts`, {
+      const lat = window.sessionStorage.getItem('user_lat')
+      const lng = window.sessionStorage.getItem('user_lng')
+
+      let url = `${POSTS_API_BASE}/posts`
+      if (lat && lng) {
+        url = `${POSTS_API_BASE}/posts?latitude=${lat}&longitude=${lng}`
+      }
+
+      const response = await fetch(url, {
         headers: { Accept: 'application/json' }
       })
+
       if (response.ok) {
         const data = await response.json()
         const rawAlerts = Array.isArray(data) ? data : data.data || []
-        
+
         const formattedAlerts = rawAlerts.map(alert => ({
           ...alert,
-          id: alert._id, 
+          id: alert._id,
           date: alert.createdAt,
-          location: alert.location && typeof alert.location === 'object' 
-            ? alert.location.address || 'Ubicación desconocida' 
+          distance: alert.distance ?? 0,
+          location: alert.location && typeof alert.location === 'object'
+            ? alert.location.address || 'Ubicación desconocida'
             : alert.location || 'Sin ubicación'
         }))
-        
+
         setRealAlerts(formattedAlerts)
       }
     } catch (error) {

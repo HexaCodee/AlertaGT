@@ -3,7 +3,7 @@ import { useNavigate } from 'react-router-dom'
 import '../styles/create-alert.css'
 
 const POSTS_API_BASE = import.meta.env.VITE_POSTS_API_URL ?? 'http://localhost:3020/api/v1'
-const DEFAULT_LOCATION_LABEL = 'Zona 10, Guatemala'
+const DEFAULT_LOCATION_LABEL = 'Ciudad de Guatemala (Predeterminada)'
 const DEFAULT_LATITUDE = 14.6168
 const DEFAULT_LONGITUDE = -90.5133
 
@@ -78,7 +78,7 @@ export const CreateAlertPage = () => {
             (position) => {
                 const { latitude, longitude } = position.coords
                 setCurrentCoordinates({ latitude, longitude })
-                setLocationLabel(DEFAULT_LOCATION_LABEL)
+                setLocationLabel('Coordenadas GPS detectadas')
             },
             () => {
                 setCurrentCoordinates({ latitude: DEFAULT_LATITUDE, longitude: DEFAULT_LONGITUDE })
@@ -98,7 +98,7 @@ export const CreateAlertPage = () => {
         }
 
         setCurrentCoordinates(null)
-        setLocationLabel(DEFAULT_LOCATION_LABEL)
+        setLocationLabel('Dirección especificada manualmente')
     }, [useCurrentLocation])
 
     const canPublish = useMemo(() => {
@@ -168,10 +168,14 @@ export const CreateAlertPage = () => {
         const locationPayload = buildLocationPayload()
         const formData = new FormData()
 
+        // Campos de texto obligatorios
         formData.append('title', title.trim())
         formData.append('category', CATEGORY_TO_API[category])
         formData.append('riskType', RISK_TO_API[riskLevel])
         formData.append('text', description.trim())
+
+        formData.append('isPublished', 'true')
+        formData.append('moderation.status', 'APPROVED')
 
         if (locationPayload) {
             formData.append('location', JSON.stringify(locationPayload))
@@ -373,7 +377,7 @@ export const CreateAlertPage = () => {
                             <svg viewBox='0 0 24 24' fill='none' stroke='currentColor' strokeWidth='2'>
                                 <path d='m21 3-8 18-2.5-7.5L3 11l18-8Z' />
                             </svg>
-                            Usar ubicación actual
+                            Actualizar coordenadas GPS
                         </button>
                     </section>
 

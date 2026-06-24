@@ -45,13 +45,12 @@ export const createPost = async (req, res, next) => {
       : null;
 
     // Procesar attachments adicionales
-    const attachments = attachmentFiles
-      .map((f) => ({
-        public_id: f.filename || f.public_id,
-        url: f.path || f.secure_url || f.url,
-        mimeType: f.mimetype,
-        originalName: f.originalname,
-      }));
+    const attachments = attachmentFiles.map((f) => ({
+      public_id: f.filename || f.public_id,
+      url: f.path || f.secure_url || f.url,
+      mimeType: f.mimetype,
+      originalName: f.originalname,
+    }));
 
     // Parsear location si viene como string JSON
     let location = req.body.location;
@@ -68,6 +67,29 @@ export const createPost = async (req, res, next) => {
       location.coordinates = [location.longitude, location.latitude];
     }
 
+    // 🛠️ CAPTURA DE MODERACIÓN: Soporta tanto el objeto original como la notación con puntos de FormData
+    let moderation = undefined;
+    if (req.body['moderation.status']) {
+      moderation = { status: req.body['moderation.status'] };
+    } else if (req.body.moderation) {
+      let rawModeration = req.body.moderation;
+      if (typeof rawModeration === 'string') {
+        try {
+          moderation = JSON.parse(rawModeration);
+        } catch (e) {
+          moderation = undefined;
+        }
+      } else {
+        moderation = rawModeration;
+      }
+    }
+
+    // Manejar booleanos explícitos enviados como string en FormData
+    let isPublished = req.body.isPublished;
+    if (isPublished === 'true') isPublished = true;
+    if (isPublished === 'false') isPublished = false;
+    if (isPublished === undefined) isPublished = true;
+
     const post = await createPostRecord({
       postData: { 
         title: sanitizeText(req.body.title),
@@ -75,24 +97,26 @@ export const createPost = async (req, res, next) => {
         riskType: req.body.riskType,
         text: sanitizeText(req.body.text),
         location,
-        isPublished: req.body.isPublished ?? false,
-        moderation: req.body.moderation ?? undefined
+        isPublished,
+        moderation
       },
       authorId: req.user.id,
       image,
       attachments,
     });
 
-    // Disparar notificaciones de forma asíncrona (no bloquear la respuesta)
-    void triggerNotifications(post).catch((e) => {
-      console.error('Error triggering notifications:', e.message);
-    });
-
+    // Responder de inmediato al cliente para liberar el botón del frontend
     res.status(201).json({
       success: true,
       message: 'Publicación creada exitosamente',
       data: post,
     });
+
+    // Ejecutar notificaciones en segundo plano sin bloquear la respuesta de Express
+    void triggerNotifications(post).catch((e) => {
+      console.error('Error triggering notifications:', e.message);
+    });
+
   } catch (err) {
     next(err);
   }
@@ -153,15 +177,14 @@ export const updatePost = async (req, res, next) => {
       : null;
 
     // Procesar attachments adicionales
-    const attachments = attachmentFiles
-      .map((f) => ({
-        public_id: f.filename || f.public_id,
-        url: f.path || f.secure_url || f.url,
-        mimeType: f.mimetype,
-        originalName: f.originalname,
-      }));
+    const attachments = attachmentFiles.map((f) => ({
+      public_id: f.filename || f.public_id,
+      url: f.path || f.secure_url || f.url,
+      mimeType: f.mimetype,
+      originalName: f.originalname,
+    }));
 
-    // Parsear location si viene como string JSON
+    // Parsear campos si vienen como string JSON
     let updateData = { ...req.body };
     if (updateData.location && typeof updateData.location === 'string') {
       try {
@@ -170,6 +193,19 @@ export const updatePost = async (req, res, next) => {
         // Si falla el parse, dejar como está
       }
     }
+
+    if (updateData['moderation.status']) {
+      updateData.moderation = { status: updateData['moderation.status'] };
+      delete updateData['moderation.status'];
+    } else if (updateData.moderation && typeof updateData.moderation === 'string') {
+      try {
+        updateData.moderation = JSON.parse(updateData.moderation);
+      } catch (e) {
+      }
+    }
+
+    if (updateData.isPublished === 'true') updateData.isPublished = true;
+    if (updateData.isPublished === 'false') updateData.isPublished = false;
 
     // Añadir coordinates en formato GeoJSON si existe location
     if (updateData.location && updateData.location.latitude && updateData.location.longitude) {
