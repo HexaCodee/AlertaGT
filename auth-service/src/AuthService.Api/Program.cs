@@ -60,7 +60,7 @@ app.UseSecurityHeaders(policies => policies
     .AddXssProtectionBlock()
     .AddContentTypeOptionsNoSniff()
     .AddReferrerPolicyStrictOriginWhenCrossOrigin()
-    .AddContentSecurityPolicy(builder =>
+    /*.AddContentSecurityPolicy(builder =>
     {
         builder.AddDefaultSrc().Self();
         builder.AddScriptSrc().Self().UnsafeInline();
@@ -71,7 +71,7 @@ app.UseSecurityHeaders(policies => policies
         builder.AddFrameAncestors().None();
         builder.AddBaseUri().Self();
         builder.AddFormAction().Self();
-    })
+    })*/
     .AddCustomHeader("Permissions-Policy", "geolocation=(), microphone=(), camera=()")
     .AddCustomHeader("Cache-Control", "no-store, no-cache, must-revalidate, private")
 );

@@ -761,6 +761,43 @@
     font-size: 0.7rem;
   }
 }
+/* Estilos Clean para los Badges de Riesgo */
+.risk-badge-inline {
+  padding: 2px 8px;
+  font-size: 0.7rem;
+  font-weight: 600;
+  border-radius: 4px;
+  text-transform: uppercase;
+  letter-spacing: 0.025em;
+  border: 1px solid transparent;
+  display: inline-flex;
+  align-items: center;
+  height: fit-content;
+}
+
+.risk-high {
+  background-color: #fef2f2;
+  color: #dc2626;
+  border-color: #fee2e2;
+}
+
+.risk-medium {
+  background-color: #fffbeb;
+  color: #d97706;
+  border-color: #fef3c7;
+}
+
+.risk-low {
+  background-color: #f0fdf4;
+  color: #16a34a;
+  border-color: #dcfce7;
+}
+
+.risk-default {
+  background-color: #f3f4f6;
+  color: #4b5563;
+  border-color: #e5e7eb;
+}
 
 /* Performance optimizations */
 .alert-image {

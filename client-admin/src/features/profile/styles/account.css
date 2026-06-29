@@ -1,0 +1,257 @@
+/* Contenedor principal con fondo gris claro y espacio para el bottom-nav */
+.account-container-replica {
+    background-color: #f7f7f7;
+    min-height: 100vh;
+    padding-bottom: 90px; /* Vital para que el nav no tape el contenido */
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+}
+
+/* Cabecera Roja */
+.header-red-banner {
+    background-color: #d30000;
+    padding: 2rem 1.5rem 3.5rem 1.5rem; /* Extra padding abajo para superponer la tarjeta */
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+    color: white;
+}
+
+.header-avatar {
+    width: 75px;
+    height: 75px;
+    min-width: 75px;
+    min-height: 75px;
+    max-width: 75px; 
+    max-height: 75px;
+    border-radius: 50%;
+    object-fit: cover;
+    border: 2px solid rgba(255, 255, 255, 0.4);
+    background-color: #ccc;
+    flex-shrink: 0;
+    overflow: hidden;
+}
+
+.header-user-info {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
+}
+
+.header-name {
+    font-size: 1.3rem;
+    font-weight: 700;
+    margin: 0;
+    line-height: 1.2;
+}
+
+.header-username {
+    font-size: 0.9rem;
+    margin: 0.2rem 0 0.5rem 0;
+    opacity: 0.9;
+}
+
+.header-badge {
+    background-color: rgba(255, 255, 255, 0.2);
+    padding: 2px 10px;
+    border-radius: 12px;
+    font-size: 0.75rem;
+    font-weight: 500;
+}
+
+/* Tarjeta de Estadísticas Superpuesta */
+.stats-card-overlay {
+    background-color: white;
+    border-radius: 12px;
+    margin: -30px 1rem 1rem 1rem; /* Margen negativo para subir encima de lo rojo */
+    padding: 1.5rem 1rem;
+    display: flex;
+    justify-content: space-between;
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.05);
+    position: relative;
+    z-index: 10;
+}
+
+.stat-column {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    text-align: center;
+    flex: 1;
+}
+
+.stat-icon {
+    width: 24px;
+    height: 24px;
+    color: #d30000;
+    margin-bottom: 0.5rem;
+}
+
+.stat-number {
+    font-size: 1.3rem;
+    font-weight: 600;
+    color: #222;
+    margin: 0 0 0.2rem 0;
+}
+
+.stat-label {
+    font-size: 0.75rem;
+    color: #666;
+    margin: 0;
+}
+
+/* Tarjetas Generales (Contacto y Opciones) */
+.contact-info-card,
+.options-list-card {
+    background-color: white;
+    border-radius: 12px;
+    margin: 0 1rem 1.5rem 1rem;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.03);
+}
+
+/* Información de contacto específica */
+.contact-info-card {
+    padding: 1.5rem 1rem;
+}
+
+.section-title {
+    font-size: 0.95rem;
+    font-weight: 600;
+    color: #333;
+    margin: 0 0 1rem 0;
+}
+
+.contact-row {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+    margin-bottom: 1rem;
+}
+
+.contact-row:last-child {
+    margin-bottom: 0;
+}
+
+.contact-icon {
+    width: 20px;
+    height: 20px;
+    color: #666;
+}
+
+.contact-text {
+    display: flex;
+    flex-direction: column;
+}
+
+.contact-label {
+    font-size: 0.75rem;
+    color: #888;
+}
+
+.contact-value {
+    font-size: 0.9rem;
+    color: #333;
+    font-weight: 500;
+}
+
+/* Lista de opciones */
+.options-list-card {
+    padding: 0 1rem;
+}
+
+.option-item {
+    display: flex;
+    align-items: center;
+    padding: 1.2rem 0;
+    border-bottom: 1px solid #f0f0f0;
+    cursor: pointer;
+}
+
+.option-item.border-none {
+    border-bottom: none;
+}
+
+.option-icon {
+    width: 20px;
+    height: 20px;
+    color: #555;
+    margin-right: 1rem;
+}
+
+.option-name {
+    flex: 1;
+    font-size: 0.95rem;
+    font-weight: 600;
+    color: #222;
+}
+
+.badge-coming-soon {
+    background-color: #e8f0fe;
+    color: #1a73e8;
+    font-size: 0.7rem;
+    padding: 3px 8px;
+    border-radius: 12px;
+    margin-right: 0.5rem;
+    font-weight: 500;
+}
+
+.option-arrow {
+    color: #aaa;
+    font-size: 1.2rem;
+    font-weight: 300;
+}
+
+/* Botón Cerrar Sesión */
+.logout-btn {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.5rem;
+    width: calc(100% - 2rem);
+    margin: 0 1rem 2rem 1rem;
+    padding: 1rem;
+    background-color: white;
+    border: 1px solid #d30000;
+    color: #d30000;
+    border-radius: 12px;
+    font-size: 1rem;
+    font-weight: 600;
+    cursor: pointer;
+}
+
+/* Texto del footer */
+.app-footer-info {
+    text-align: center;
+    color: #999;
+    font-size: 0.8rem;
+    margin-bottom: 2rem;
+}
+
+.app-footer-info p {
+    margin: 0.2rem 0;
+}
+
+/* Estado de carga estilizado con la paleta de AlertaGT */
+.profile-loading {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  min-height: 100vh;
+  background-color: #f9fafb;
+  gap: 1.5rem;
+  color: #333333;
+  font-family: inherit;
+}
+.profile-spinner {
+  width: 48px;
+  height: 48px;
+  border: 4px solid rgba(211, 47, 47, 0.15);
+  border-top-color: #d32f2f; /* Rojo característico de AlertaGT */
+  border-radius: 50%;
+  animation: spin 1s linear infinite;
+}
+@keyframes spin {
+  to {
+    transform: rotate(360deg);
+  }
+}

@@ -7,6 +7,6 @@ cloudinary.config({
   secure: true,
 });
 
-export const CLOUDINARY_FOLDER = process.env.CLOUDINARY_FOLDER || 'posts';
+export const CLOUDINARY_FOLDER = process.env.CLOUDINARY_FOLDER || 'alerts_posts/posts';
 
 export default cloudinary;

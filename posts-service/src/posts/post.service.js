@@ -45,53 +45,45 @@ export const fetchPosts = async ({ page = 1, limit = 10, category, onlyPublished
 };
 
 // Obtener posts dentro de un rango de distancia (en metros)
-export const fetchPostsByProximity = async ({ latitude, longitude, maxDistance = 2000, category, onlyPublished = true }) => {
-  const filter = {
-    isActive: true,
-    location: {
-      $nearSphere: {
-        $geometry: {
-          type: 'Point',
-          coordinates: [longitude, latitude], // [lng, lat] en GeoJSON
+export const fetchPostsByProximity = async ({ latitude, longitude, maxDistance = 20000, category, onlyPublished = false }) => { // 👈 Cambiado a false por defecto para pruebas locales
+  const lng = parseFloat(longitude);
+  const lat = parseFloat(latitude);
+  const maxDistNum = parseInt(maxDistance) || 20000;
+
+  // 1. Condiciones básicas: solo arrastramos que esté activa
+  const matchConditions = { isActive: true };
+  
+  if (category && category.toLowerCase() !== 'all') {
+    matchConditions.category = category.trim().toUpperCase();
+  }
+
+  // 2. Pipeline de agregación geoespacial
+  const pipeline = [
+    {
+      $geoNear: {
+        near: {
+          type: "Point",
+          coordinates: [lng, lat]
         },
-        $maxDistance: maxDistance, // en metros
-      },
+        distanceField: "distance", 
+        maxDistance: maxDistNum,
+        spherical: true,
+        key: "location.coordinates" 
+      }
     },
-  };
+    {
+      $match: matchConditions
+    },
+    {
+      $sort: { distance: 1 } 
+    }
+  ];
 
-  if (category) filter.category = category;
-  if (onlyPublished) filter.isPublished = true;
-
-  // Obtener posts con información de distancia
-  const posts = await Post.find(filter).sort({ createdAt: -1 });
-
-  // Calcular distancia para cada post y ordenar por distancia
-  const postsWithDistance = posts.map(post => {
-    const postLng = post.location.coordinates[0];
-    const postLat = post.location.coordinates[1];
-
-    // Calcular distancia aproximada usando fórmula de Haversine (en metros)
-    const R = 6371000; // Radio de la Tierra en metros
-    const dLat = (postLat - latitude) * Math.PI / 180;
-    const dLng = (postLng - longitude) * Math.PI / 180;
-    const a = Math.sin(dLat / 2) * Math.sin(dLat / 2) +
-      Math.cos(latitude * Math.PI / 180) * Math.cos(postLat * Math.PI / 180) *
-      Math.sin(dLng / 2) * Math.sin(dLng / 2);
-    const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
-    const distance = R * c;
-
-    return {
-      ...post.toObject(),
-      distance: Math.round(distance), // Distancia en metros, redondeada
-    };
-  });
-
-  // Ordenar por distancia ascendente (más cercanos primero)
-  postsWithDistance.sort((a, b) => a.distance - b.distance);
+  const posts = await Post.aggregate(pipeline);
 
   return {
-    posts: postsWithDistance,
-    count: postsWithDistance.length,
+    posts: posts || [],
+    count: posts.length
   };
 };
 

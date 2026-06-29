@@ -54,7 +54,7 @@ export const CreateAlertPage = () => {
     const [title, setTitle] = useState('')
     const [description, setDescription] = useState('')
     const [category, setCategory] = useState('')
-    const [riskLevel, setRiskLevel] = useState('')
+    const [riskType, setriskType] = useState('')
     const [useCurrentLocation, setUseCurrentLocation] = useState(true)
     const [manualAddress, setManualAddress] = useState('')
     const [locationLabel, setLocationLabel] = useState(DEFAULT_LOCATION_LABEL)
@@ -68,28 +68,35 @@ export const CreateAlertPage = () => {
     const [isSubmitting, setIsSubmitting] = useState(false)
 
     const refreshCurrentLocation = () => {
-        if (!navigator.geolocation) {
-            setCurrentCoordinates({ latitude: DEFAULT_LATITUDE, longitude: DEFAULT_LONGITUDE })
-            setLocationLabel(DEFAULT_LOCATION_LABEL)
-            return
-        }
+    const savedLat = window.sessionStorage.getItem('user_lat')
+    const savedLng = window.sessionStorage.getItem('user_lng')
 
-        navigator.geolocation.getCurrentPosition(
-            (position) => {
-                const { latitude, longitude } = position.coords
-                setCurrentCoordinates({ latitude, longitude })
-                setLocationLabel('Coordenadas GPS detectadas')
-            },
-            () => {
+    if (!navigator.geolocation) {
+        setCurrentCoordinates(savedLat ? { latitude: parseFloat(savedLat), longitude: parseFloat(savedLng) } : { latitude: DEFAULT_LATITUDE, longitude: DEFAULT_LONGITUDE })
+        setLocationLabel(savedLat ? 'Ubicación de la sesión' : DEFAULT_LOCATION_LABEL)
+        return
+    }
+
+    navigator.geolocation.getCurrentPosition(
+        (position) => {
+            const { latitude, longitude } = position.coords
+            setCurrentCoordinates({ latitude, longitude })
+            setLocationLabel('Coordenadas GPS detectadas')
+        },
+        () => {
+            if (savedLat && savedLng) {
+                setCurrentCoordinates({ latitude: parseFloat(savedLat), longitude: parseFloat(savedLng) })
+                setLocationLabel('Ubicación de la sesión (Sensor previo)')
+            } else {
                 setCurrentCoordinates({ latitude: DEFAULT_LATITUDE, longitude: DEFAULT_LONGITUDE })
                 setLocationLabel(DEFAULT_LOCATION_LABEL)
-            },
-            {
-                enableHighAccuracy: true,
-                timeout: 7000
             }
-        )
-    }
+        },
+        {
+            enableHighAccuracy: true
+        }
+    )
+}
 
     useEffect(() => {
         if (useCurrentLocation) {
@@ -110,10 +117,10 @@ export const CreateAlertPage = () => {
             title.trim().length > 0 &&
             description.trim().length > 0 &&
             category.length > 0 &&
-            riskLevel.length > 0 &&
+            riskType.length > 0 &&
             hasLocation
         )
-    }, [category, currentCoordinates, description, manualAddress, riskLevel, title, useCurrentLocation])
+    }, [category, currentCoordinates, description, manualAddress, riskType, title, useCurrentLocation])
 
     const buildLocationPayload = () => {
         if (useCurrentLocation) {
@@ -171,10 +178,8 @@ export const CreateAlertPage = () => {
         // Campos de texto obligatorios
         formData.append('title', title.trim())
         formData.append('category', CATEGORY_TO_API[category])
-        formData.append('riskLevel', RISK_TO_API[riskLevel])
+        formData.append('riskType', RISK_TO_API[riskType])
         formData.append('text', description.trim())
-        formData.append('isPublished', 'true')
-
         formData.append('isPublished', 'true')
         formData.append('moderation.status', 'APPROVED')
 
@@ -298,7 +303,7 @@ export const CreateAlertPage = () => {
                         </p>
                         <div className='risk-list'>
                             {RISK_OPTIONS.map((risk) => {
-                                const selected = riskLevel === risk.id
+                                const selected = riskType === risk.id
 
                                 return (
                                     <label key={risk.id} className={`risk-card ${selected ? 'selected' : ''}`}>
@@ -307,7 +312,7 @@ export const CreateAlertPage = () => {
                                             name='risk-level'
                                             value={risk.id}
                                             checked={selected}
-                                            onChange={() => setRiskLevel(risk.id)}
+                                            onChange={() => setriskType(risk.id)}
                                         />
                                         <span className='risk-text'>
                                             <strong>{risk.title}</strong>

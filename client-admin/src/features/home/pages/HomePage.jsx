@@ -28,6 +28,8 @@ export const HomePage = () => {
     const controller = new AbortController()
 
     const syncUserLocation = async () => {
+      const token = window.localStorage.getItem('token') || window.sessionStorage.getItem('token') || ''
+
       if (!navigator.geolocation) {
         setLocationText('Zona 10, Guatemala')
         setLocationStatus('Geolocalización no soportada por el navegador')
@@ -40,25 +42,26 @@ export const HomePage = () => {
 
           window.sessionStorage.setItem('user_lat', latitude)
           window.sessionStorage.setItem('user_lng', longitude)
+          setLocationText('Ubicación GPS local')
+          setLocationStatus(`${latitude.toFixed(4)}, ${longitude.toFixed(4)}`)
 
           try {
-            // 1. Decodificar el JWT localmente para extraer el ID de usuario
             let userId = null;
-            try {
-              const base64Url = token.split('.')[1];
-              const base64 = base64Url.replace(/-/g, '+').replace(/_/g, '/');
-              const jsonPayload = decodeURIComponent(window.atob(base64).split('').map(function (c) {
-                return '%' + ('00' + c.charCodeAt(0).toString(16)).slice(-2);
-              }).join(''));
+            if (token) {
+              try {
+                const base64Url = token.split('.')[1];
+                const base64 = base64Url.replace(/-/g, '+').replace(/_/g, '/');
+                const jsonPayload = decodeURIComponent(window.atob(base64).split('').map(function (c) {
+                  return '%' + ('00' + c.charCodeAt(0).toString(16)).slice(-2);
+                }).join(''));
 
-              const parsedToken = JSON.parse(jsonPayload);
-              // Intentamos con 'id', 'userId' o 'sub' (estándar de JWT)
-              userId = parsedToken.id || parsedToken.userId || parsedToken.sub;
-            } catch (e) {
-              console.error("Error al decodificar el token:", e);
+                const parsedToken = JSON.parse(jsonPayload);
+                userId = parsedToken.id || parsedToken.userId || parsedToken.sub;
+              } catch (e) {
+                console.error(e);
+              }
             }
 
-            // 2. Enviar la petición incluyendo el userId requerido
             const response = await fetch(`${GEOLOCATION_API_BASE}/locations`, {
               method: 'POST',
               headers: {
@@ -69,7 +72,7 @@ export const HomePage = () => {
               body: JSON.stringify({
                 latitude,
                 longitude,
-                userId: userId // 👈 Aquí inyectamos el userId que pide tu backend
+                userId: userId
               }),
               signal: controller.signal
             })
@@ -78,20 +81,16 @@ export const HomePage = () => {
               const result = await response.json()
               const location = result?.data ?? {}
               setLocationText(location.address || 'Ubicación actualizada en vivo')
-              setLocationStatus(`${latitude.toFixed(4)}, ${longitude.toFixed(4)}`)
-            } else {
-              setLocationText('Ubicación GPS local')
-              setLocationStatus(`${latitude.toFixed(4)}, ${longitude.toFixed(4)}`)
             }
           } catch (err) {
             if (err.name !== 'AbortError') {
               setLocationText('Ubicación GPS local (Servicio Geo Offline)')
-              setLocationStatus(`${latitude.toFixed(4)}, ${longitude.toFixed(4)}`)
             }
           }
         },
         (error) => {
           setLocationStatus('Permiso de ubicación denegado')
+          setLocationText('Sin acceso a GPS')
         }
       )
     }
@@ -101,21 +100,14 @@ export const HomePage = () => {
   }, [])
 
   const fetchAlerts = useCallback(async () => {
-    if (!locationStatus || locationStatus === 'Error') {
-      setLoadingAlerts(false)
-      return
-    }
+    const lat = window.sessionStorage.getItem('user_lat')
+    const lng = window.sessionStorage.getItem('user_lng')
+
+    if (!lat || !lng) return
 
     setLoadingAlerts(true)
     try {
-      const lat = window.sessionStorage.getItem('user_lat')
-      const lng = window.sessionStorage.getItem('user_lng')
-
-      let url = `${POSTS_API_BASE}/posts`
-      if (lat && lng) {
-        url = `${POSTS_API_BASE}/posts?latitude=${lat}&longitude=${lng}`
-      }
-
+      let url = `${POSTS_API_BASE}/posts/proximity/search?latitude=${lat}&longitude=${lng}&maxDistance=10000`
       const response = await fetch(url, {
         headers: { Accept: 'application/json' }
       })
@@ -140,10 +132,12 @@ export const HomePage = () => {
     } finally {
       setLoadingAlerts(false)
     }
-  }, [locationStatus])
+  }, [])
 
   useEffect(() => {
-    fetchAlerts()
+    if (locationStatus !== '' && locationStatus !== 'Error') {
+      fetchAlerts()
+    }
   }, [fetchAlerts, locationStatus])
 
   const filteredAlerts = useMemo(() => {
@@ -167,7 +161,7 @@ export const HomePage = () => {
     { id: 'map', label: 'Mapa', icon: <svg viewBox='0 0 24 24' fill='none' stroke='currentColor' strokeWidth='2'><path d='M9 18 3 21V6l6-3 6 3 6-3v15l-6 3-6-3M9 3v15M15 6v15' /></svg> },
     { id: 'create', label: 'Crear', icon: <svg viewBox='0 0 24 24' fill='none' stroke='currentColor' strokeWidth='2'><path d='M12 5v14M5 12h14' /><circle cx='12' cy='12' r='10' /></svg> },
     { id: 'notifications', label: 'Notificaciones', icon: <svg viewBox='0 0 24 24' fill='none' stroke='currentColor' strokeWidth='2'><path d='M15 17H5l1.4-1.4A2 2 0 0 0 7 14.2V10a5 5 0 0 1 10 0v4.2c0 .5.2 1 .6 1.4L19 17h-4M10 20a2 2 0 0 0 4 0' /></svg> },
-    { id: 'account', label: 'Cuenta', icon: <svg viewBox='0 0 24 24' fill='none' stroke='currentColor' strokeWidth='2'><circle cx='12' cy='8' r='4' /><path d='M4 21a8 8 0 0 1 16 0' /></svg> }
+    { id: 'profile', label: 'Cuenta', icon: <svg viewBox='0 0 24 24' fill='none' stroke='currentColor' strokeWidth='2'><circle cx='12' cy='8' r='4' /><path d='M4 21a8 8 0 0 1 16 0' /></svg> }
   ]
 
   return (
@@ -227,7 +221,15 @@ export const HomePage = () => {
         {navItems.map((item) => {
           const isActive = activeNav === item.id
           return (
-            <button key={item.id} type='button' className={`bottom-nav-item ${isActive ? 'active' : ''}`} aria-pressed={isActive} onClick={() => item.id === 'create' ? navigate('/alerts/create') : setActiveNav(item.id)}>
+            <button key={item.id} type='button' className={`bottom-nav-item ${isActive ? 'active' : ''}`} aria-pressed={isActive} onClick={() => {
+                if (item.id === 'create') {
+                  navigate('/alerts/create');
+                } else if (item.id === 'profile') {
+                  navigate('/profile');
+                } else {
+                  setActiveNav(item.id);
+                }
+              }}>
               <span className='bottom-nav-icon'>{item.icon}</span>
               <span className='bottom-nav-label'>{item.label}</span>
             </button>
