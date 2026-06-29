@@ -1,5 +1,7 @@
 import { memo } from 'react'
+import defaultProfile from "../../../assets/img/defaultAlert.png";
 
+// Componente para la Categoría (Se queda sobre la imagen, limpio)
 const CategoryBadge = memo(({ category }) => {
   const categoryConfig = {
     ACCIDENTE: { label: 'Accidente', color: '#8b0000' },
@@ -21,6 +23,26 @@ const CategoryBadge = memo(({ category }) => {
 })
 
 CategoryBadge.displayName = 'CategoryBadge'
+
+const RiskBadge = memo(({ riskType }) => {
+  if (!riskType) return null
+
+  const riskConfig = {
+    GRAVE: { label: 'Grave', className: 'risk-high' },
+    MODERADO: { label: 'Moderado', className: 'risk-medium' },
+    LEVE: { label: 'Leve', className: 'risk-low' }
+  }
+
+  const config = riskConfig[riskType.toUpperCase()] || { label: riskType, className: 'risk-default' }
+
+  return (
+    <span className={`risk-badge-inline ${config.className}`}>
+      {config.label}
+    </span>
+  )
+})
+
+RiskBadge.displayName = 'RiskBadge'
 
 export const AlertCard = memo(({ alert }) => {
   const handleViewDetails = () => {
@@ -50,12 +72,22 @@ export const AlertCard = memo(({ alert }) => {
   return (
     <article className='alert-card'>
       <div className='alert-image-container'>
-        <img
-          src={alert.image}
-          alt={alert.title}
-          className='alert-image'
-          loading='lazy'
-        />
+      <img
+        src={
+          alert.image && typeof alert.image === 'object'
+            ? alert.image.url
+            : (alert.image || defaultProfile)
+        }
+        alt={alert.title}
+        className='alert-image'
+        loading='lazy'
+        onError={(e) => {
+          e.target.onerror = null; // Previene bucles infinitos
+          e.target.src = '/assets/img/error-image.png'; 
+          e.target.style.opacity = '0.5';
+        }}
+      />
+        {}
         <div className='alert-overlay'>
           <CategoryBadge category={alert.category} />
           <span className='distance-badge'>{alert.distance}m</span>
@@ -64,7 +96,11 @@ export const AlertCard = memo(({ alert }) => {
 
       <div className='alert-content'>
         <div className='alert-header'>
-          <h2 className='alert-title'>{alert.title}</h2>
+          {}
+          <div className='alert-title-container' style={{ display: 'flex', alignItems: 'center', gap: '8px', flexWrap: 'wrap' }}>
+            <h2 className='alert-title' style={{ margin: 0 }}>{alert.title}</h2>
+            <RiskBadge riskType={alert.riskType} />
+          </div>
           <time className='alert-time'>{formatDate(alert.date)}</time>
         </div>
 

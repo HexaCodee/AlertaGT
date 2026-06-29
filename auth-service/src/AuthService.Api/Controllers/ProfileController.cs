@@ -14,6 +14,13 @@ namespace AuthService.Api.Controllers;
 [Authorize]
 public class ProfileController(IUserService userService) : ControllerBase
 {
+    private string? GetUserId()
+    {
+        return User.FindFirst(System.Security.Claims.ClaimTypes.NameIdentifier)?.Value
+            ?? User.FindFirst("sub")?.Value
+            ?? User.FindFirst("userId")?.Value;
+    }
+
     /// <summary>
     /// Obtiene el perfil completo del usuario autenticado.
     /// </summary>
@@ -23,7 +30,7 @@ public class ProfileController(IUserService userService) : ControllerBase
     [ProducesResponseType(StatusCodes.Status401Unauthorized)]
     public async Task<ActionResult<UserDetailsDto>> GetProfile()
     {
-        var userId = User.FindFirst("userId")?.Value;
+        var userId = GetUserId();
         if (string.IsNullOrEmpty(userId))
             return Unauthorized();
 
@@ -42,7 +49,7 @@ public class ProfileController(IUserService userService) : ControllerBase
     [ProducesResponseType(StatusCodes.Status401Unauthorized)]
     public async Task<ActionResult<UserDetailsDto>> UpdateProfile([FromBody] UpdateProfileDto updateDto)
     {
-        var userId = User.FindFirst("userId")?.Value;
+        var userId = GetUserId();
         if (string.IsNullOrEmpty(userId))
             return Unauthorized();
 
@@ -59,7 +66,7 @@ public class ProfileController(IUserService userService) : ControllerBase
     [ProducesResponseType(StatusCodes.Status401Unauthorized)]
     public async Task<ActionResult<UserStatsDto>> GetStats()
     {
-        var userId = User.FindFirst("userId")?.Value;
+        var userId = GetUserId();
         if (string.IsNullOrEmpty(userId))
             return Unauthorized();
 
@@ -78,7 +85,7 @@ public class ProfileController(IUserService userService) : ControllerBase
     [ProducesResponseType(StatusCodes.Status401Unauthorized)]
     public async Task<ActionResult<UserPreferencesDto>> UpdatePreferences([FromBody] UserPreferencesDto preferencesDto)
     {
-        var userId = User.FindFirst("userId")?.Value;
+        var userId = GetUserId();
         if (string.IsNullOrEmpty(userId))
             return Unauthorized();
 

@@ -67,7 +67,6 @@ export const createPost = async (req, res, next) => {
       location.coordinates = [location.longitude, location.latitude];
     }
 
-    // 🛠️ CAPTURA DE MODERACIÓN: Soporta tanto el objeto original como la notación con puntos de FormData
     let moderation = undefined;
     if (req.body['moderation.status']) {
       moderation = { status: req.body['moderation.status'] };
@@ -350,10 +349,10 @@ async function triggerNotifications(post) {
   }
 }
 
-// Obtener posts por proximidad (2km por defecto)
+// Obtener posts por proximidad
 export const getPostsByProximity = async (req, res, next) => {
   try {
-    const { latitude, longitude, maxDistance = 2000, category } = req.query;
+    const { latitude, longitude, maxDistance, category } = req.query;
 
     if (!latitude || !longitude) {
       return res.status(400).json({
@@ -362,21 +361,27 @@ export const getPostsByProximity = async (req, res, next) => {
       });
     }
 
+    const searchRadius = maxDistance ? parseInt(maxDistance) : 10000;
+
     const { posts, count } = await fetchPostsByProximity({
       latitude: parseFloat(latitude),
       longitude: parseFloat(longitude),
-      maxDistance: parseInt(maxDistance),
+      maxDistance: searchRadius,
       category,
-      onlyPublished: true,
+      onlyPublished: false,
     });
 
-    res.status(200).json({
+    return res.status(200).json({
       success: true,
-      data: posts,
-      count,
-      location: { latitude, longitude },
-      searchRadius: maxDistance,
+      data: posts || [], // Asegura mapear un arreglo al frontend para evitar romper el .map() de React
+      count: count || 0,
+      location: { 
+        latitude: parseFloat(latitude), 
+        longitude: parseFloat(longitude) 
+      },
+      searchRadius: searchRadius,
     });
+
   } catch (err) {
     next(err);
   }
