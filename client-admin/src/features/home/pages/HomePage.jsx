@@ -210,6 +210,8 @@ export const HomePage = () => {
                   navigate('/alerts/create');
                 } else if (item.id === 'profile') {
                   navigate('/profile');
+                } else if (item.id === 'notifications') {
+                  navigate('/notifications');
                 } else {
                   setActiveNav(item.id);
                 }

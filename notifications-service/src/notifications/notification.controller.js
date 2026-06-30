@@ -134,8 +134,8 @@ export const removeAllUserNotifications = async (req, res, next) => {
 export const createNotificationController = async (req, res, next) => {
   try {
     const { userId, postId, type, title, body, data = {}, fcmToken = null } = req.body;
-    if (!userId || !postId || !title || !body) {
-      return res.status(400).json({ success: false, message: 'Faltan campos requeridos' });
+    if (!userId || !postId || !title) {
+      return res.status(400).json({ success: false, message: 'Faltan campos requeridos: userId, postId, title' });
     }
 
     const notification = await createNotification({ userId, postId, type, title, body, data, fcmToken });
