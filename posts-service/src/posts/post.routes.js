@@ -8,6 +8,8 @@ import {
   moderatePost,
   flagPost,
   getPostsByProximity,
+  getUserPostCount,
+  getUserCommunityHelped,
 } from './post.controller.js';
 
 import {
@@ -20,7 +22,7 @@ import { validateJWT } from '../../middlewares/validate-JWT.js';
 import { requireRole } from '../../middlewares/validate-role.js';
 import upload from '../../middlewares/upload.js';
 import { validateAttachmentsMiddleware } from '../../middlewares/attachment-validator.js';
-
+console.log("Cargando rutas de posts...");
 const router = Router();
 
 const parseLocationMiddleware = (req, res, next) => {
@@ -28,11 +30,37 @@ const parseLocationMiddleware = (req, res, next) => {
     try {
       req.body.location = JSON.parse(req.body.location)
     } catch (e) {
-      // dejar como está
     }
   }
   next()
 }
+
+/**
+ * @swagger
+ * /api/v1/posts/user/{userId}/count:
+ * get:
+ * summary: Cuenta las publicaciones de un usuario
+ * tags:
+ * - Posts
+ * parameters:
+ * - in: path
+ * name: userId
+ * required: true
+ * schema:
+ * type: string
+ * responses:
+ * 200:
+ * description: Cantidad de publicaciones
+ * content:
+ * application/json:
+ * schema:
+ * type: object
+ * properties:
+ * success: { type: boolean }
+ * count: { type: number }
+ */
+router.get('/user/:userId/count', asyncHandler(getUserPostCount));
+router.get('/user/:userId/views', asyncHandler(getUserCommunityHelped));
 
 /**
  * @swagger
@@ -114,6 +142,8 @@ router.get('/', asyncHandler(getPosts));               // Listar publicaciones
  *               $ref: '#/components/schemas/PostListResponse'
  */
 router.get('/proximity/search', asyncHandler(getPostsByProximity));  // Buscar por ubicación (2km)
+
+
 
 /**
  * @swagger

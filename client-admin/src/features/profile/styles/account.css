@@ -2,14 +2,16 @@
 .account-container-replica {
     background-color: #f7f7f7;
     min-height: 100vh;
-    padding-bottom: 90px; /* Vital para que el nav no tape el contenido */
+    padding-bottom: 90px;
+    /* Vital para que el nav no tape el contenido */
     font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
 }
 
 /* Cabecera Roja */
 .header-red-banner {
     background-color: #d30000;
-    padding: 2rem 1.5rem 3.5rem 1.5rem; /* Extra padding abajo para superponer la tarjeta */
+    padding: 2rem 1.5rem 3.5rem 1.5rem;
+    /* Extra padding abajo para superponer la tarjeta */
     display: flex;
     align-items: center;
     gap: 1rem;
@@ -17,18 +19,12 @@
 }
 
 .header-avatar {
-    width: 75px;
-    height: 75px;
-    min-width: 75px;
-    min-height: 75px;
-    max-width: 75px; 
-    max-height: 75px;
+    width: 72px;
+    height: 72px;
     border-radius: 50%;
     object-fit: cover;
-    border: 2px solid rgba(255, 255, 255, 0.4);
-    background-color: #ccc;
+    object-position: center;
     flex-shrink: 0;
-    overflow: hidden;
 }
 
 .header-user-info {
@@ -62,7 +58,8 @@
 .stats-card-overlay {
     background-color: white;
     border-radius: 12px;
-    margin: -30px 1rem 1rem 1rem; /* Margen negativo para subir encima de lo rojo */
+    margin: -30px 1rem 1rem 1rem;
+    /* Margen negativo para subir encima de lo rojo */
     padding: 1.5rem 1rem;
     display: flex;
     justify-content: space-between;
@@ -232,26 +229,29 @@
 
 /* Estado de carga estilizado con la paleta de AlertaGT */
 .profile-loading {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  justify-content: center;
-  min-height: 100vh;
-  background-color: #f9fafb;
-  gap: 1.5rem;
-  color: #333333;
-  font-family: inherit;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    min-height: 100vh;
+    background-color: #f9fafb;
+    gap: 1.5rem;
+    color: #333333;
+    font-family: inherit;
 }
+
 .profile-spinner {
-  width: 48px;
-  height: 48px;
-  border: 4px solid rgba(211, 47, 47, 0.15);
-  border-top-color: #d32f2f; /* Rojo característico de AlertaGT */
-  border-radius: 50%;
-  animation: spin 1s linear infinite;
+    width: 48px;
+    height: 48px;
+    border: 4px solid rgba(211, 47, 47, 0.15);
+    border-top-color: #d32f2f;
+    /* Rojo característico de AlertaGT */
+    border-radius: 50%;
+    animation: spin 1s linear infinite;
 }
+
 @keyframes spin {
-  to {
-    transform: rotate(360deg);
-  }
+    to {
+        transform: rotate(360deg);
+    }
 }

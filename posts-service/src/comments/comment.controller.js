@@ -3,6 +3,7 @@ import {
   createCommentRecord,
   updateCommentRecord,
   deleteCommentRecord,
+  countCommentsByAuthor,
 } from './comment.service.js';
 
 // Crear comentario
@@ -60,6 +61,21 @@ export const updateComment = async (req, res, next) => {
       success: true,
       message: 'Comentario actualizado exitosamente',
       data: comment,
+    });
+  } catch (err) {
+    next(err);
+  }
+};
+
+// Contar comentarios de un usuario
+export const getUserCommentCount = async (req, res, next) => {
+  try {
+    const { userId } = req.params;
+    const count = await countCommentsByAuthor(userId);
+
+    res.status(200).json({
+      success: true,
+      count,
     });
   } catch (err) {
     next(err);

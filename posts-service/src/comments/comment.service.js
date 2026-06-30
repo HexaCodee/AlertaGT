@@ -29,6 +29,11 @@ export const updateCommentRecord = async ({ id, text, authorId }) => {
   return comment;
 };
 
+// Contar comentarios de un usuario
+export const countCommentsByAuthor = async (authorId) => {
+  return await Comment.countDocuments({ authorId, isActive: true });
+};
+
 // Eliminar comentario (solo autor)
 export const deleteCommentRecord = async ({ id, authorId }) => {
   const comment = await Comment.findById(id);

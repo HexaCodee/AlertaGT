@@ -1,16 +1,24 @@
 import { apiRequest } from '../../../shared/apis/api.js'
 
-/**
- * Obtiene los datos completos del perfil del usuario autenticado
- * (información personal + estadísticas de actividad).
- *
- * @returns {Promise<{ profile: object, stats: object }>}
- */
 export const getProfileData = async () => {
   const [profile, stats] = await Promise.all([
-    apiRequest('Profile'),
-    apiRequest('Profile/stats')
+    apiRequest('Profile'),              // GET /api/v1/Profile
+    apiRequest('Profile/stats')         // GET /api/v1/Profile/stats
   ])
 
   return { profile, stats }
+}
+
+export const updateProfile = async (updateDto) => {
+  return await apiRequest('Profile', {
+    method: 'PUT',
+    body: updateDto
+  })
+}
+
+export const updatePreferences = async (preferencesDto) => {
+  return await apiRequest('Profile/preferences', {
+    method: 'PUT',
+    body: preferencesDto
+  })
 }

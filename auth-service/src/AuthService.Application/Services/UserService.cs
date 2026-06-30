@@ -9,7 +9,8 @@ namespace AuthService.Application.Services;
 public class UserService(
     IUserRepository userRepository,
     IRoleRepository roleRepository,
-    IPostsServiceClient postsServiceClient) : IUserService
+    IPostsServiceClient postsServiceClient,
+    ICloudinaryService cloudinaryService) : IUserService
 {
     public async Task<UserDetailsDto> GetUserProfileAsync(string userId)
     {
@@ -27,7 +28,7 @@ public class UserService(
             Email = user.Email,
             Name = user.Name,
             Surname = user.Surname,
-            ProfilePicture = user.UserProfile?.ProfilePicture ?? string.Empty,
+            ProfilePicture = cloudinaryService.GetFullImageUrl(user.UserProfile?.ProfilePicture ?? string.Empty),
             Phone = user.UserProfile?.Phone ?? string.Empty,
             City = user.UserProfile?.City ?? string.Empty,
             Address = user.UserProfile?.Address ?? string.Empty,

@@ -9,7 +9,7 @@ export const createPostRecord = async ({ postData, authorId, image = null, attac
     attachments,
     flaggedCount: 0,
     isPublished: postData.isPublished ?? true,
-    moderation: postData.moderation,
+    moderation: postData.moderation ?? { status: 'APPROVED' },
   };
 
   const post = new Post(data);
@@ -169,4 +169,24 @@ export const flagPostRecord = async ({ id }) => {
 
   await post.save();
   return post;
+};
+
+//Contar publicaciones aprobadas y publicadas de un autor
+export const countPostsByAuthor = async (authorId) => {
+  return await Post.countDocuments({
+    authorId,
+    isActive: true,
+    isPublished: true,
+    'moderation.status': 'APPROVED',
+  });
+};
+
+// Contar total de comentarios recibidos en las publicaciones del usuario
+export const countCommunityHelpedByAuthor = async (authorId) => {
+  const posts = await Post.find({ authorId, isActive: true }, { _id: 1 }).lean();
+  const postIds = posts.map((p) => p._id);
+  if (postIds.length === 0) return 0;
+
+  const Comment = (await import('../comments/comment.model.js')).default;
+  return await Comment.countDocuments({ postId: { $in: postIds }, isActive: true });
 };

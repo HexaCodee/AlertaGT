@@ -289,6 +289,7 @@
 
 .categories-scroll {
   display: flex;
+  justify-content: center;
   gap: 0.5rem;
   overflow-x: auto;
   padding: 0.25rem 0;
