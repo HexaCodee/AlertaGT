@@ -82,15 +82,20 @@ export const AlertCard = memo(({ alert }) => {
         className='alert-image'
         loading='lazy'
         onError={(e) => {
-          e.target.onerror = null; // Previene bucles infinitos
-          e.target.src = '/assets/img/error-image.png'; 
-          e.target.style.opacity = '0.5';
+          e.target.onerror = null;
+          e.target.src = defaultProfile;
+          e.target.style.objectFit = 'contain';
         }}
+        style={
+          !(alert.image && (typeof alert.image === 'object' ? alert.image.url : alert.image))
+            ? { objectFit: 'contain' }
+            : {}
+        }
       />
         {}
         <div className='alert-overlay'>
           <CategoryBadge category={alert.category} />
-          <span className='distance-badge'>{alert.distance}m</span>
+          <span className='distance-badge'>{Math.round(alert.distance)}m</span>
         </div>
       </div>
 

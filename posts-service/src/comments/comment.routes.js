@@ -4,6 +4,7 @@ import {
   getCommentsByPostId,
   updateComment,
   deleteComment,
+  getUserCommentCount,
 } from './comment.controller.js';
 
 import {
@@ -44,6 +45,7 @@ const router = Router();
  *               $ref: '#/components/schemas/ApiError'
  */
 router.get('/post/:postId', asyncHandler(getCommentsByPostId));
+router.get('/user/:userId/count', asyncHandler(getUserCommentCount));
 
 /**
  * @swagger

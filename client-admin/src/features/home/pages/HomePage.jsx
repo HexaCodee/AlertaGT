@@ -1,4 +1,4 @@
-import { useState, useMemo, useCallback, useEffect } from 'react'
+import { useState, useMemo, useCallback, useEffect, useRef } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { AlertCard } from '../components/AlertCard'
 import { AlertFilters } from '../components/AlertFilters'
@@ -17,7 +17,9 @@ export const HomePage = () => {
   const [realAlerts, setRealAlerts] = useState([])
   const [loadingAlerts, setLoadingAlerts] = useState(true)
 
-  useEffect(() => {
+  const controllerRef = useRef(null)
+
+  const syncUserLocation = useCallback(async () => {
     if (!navigator.geolocation) {
       setLocationText('Geolocalización no soportada')
       setLocationStatus('Error')
@@ -25,79 +27,61 @@ export const HomePage = () => {
       return
     }
 
-    const controller = new AbortController()
+    if (controllerRef.current) controllerRef.current.abort()
+    controllerRef.current = new AbortController()
+    const signal = controllerRef.current.signal
 
-    const syncUserLocation = async () => {
-      const token = window.localStorage.getItem('token') || window.sessionStorage.getItem('token') || ''
+    const token = window.localStorage.getItem('authToken') || window.localStorage.getItem('token') || window.sessionStorage.getItem('token') || ''
 
-      if (!navigator.geolocation) {
-        setLocationText('Zona 10, Guatemala')
-        setLocationStatus('Geolocalización no soportada por el navegador')
-        return
-      }
+    navigator.geolocation.getCurrentPosition(
+      async (position) => {
+        const { latitude, longitude } = position.coords
 
-      navigator.geolocation.getCurrentPosition(
-        async (position) => {
-          const { latitude, longitude } = position.coords
+        window.sessionStorage.setItem('user_lat', latitude)
+        window.sessionStorage.setItem('user_lng', longitude)
+        setLocationText('Ubicación GPS local')
+        setLocationStatus(`${latitude.toFixed(4)}, ${longitude.toFixed(4)}`)
 
-          window.sessionStorage.setItem('user_lat', latitude)
-          window.sessionStorage.setItem('user_lng', longitude)
-          setLocationText('Ubicación GPS local')
-          setLocationStatus(`${latitude.toFixed(4)}, ${longitude.toFixed(4)}`)
-
-          try {
-            let userId = null;
-            if (token) {
-              try {
-                const base64Url = token.split('.')[1];
-                const base64 = base64Url.replace(/-/g, '+').replace(/_/g, '/');
-                const jsonPayload = decodeURIComponent(window.atob(base64).split('').map(function (c) {
-                  return '%' + ('00' + c.charCodeAt(0).toString(16)).slice(-2);
-                }).join(''));
-
-                const parsedToken = JSON.parse(jsonPayload);
-                userId = parsedToken.id || parsedToken.userId || parsedToken.sub;
-              } catch (e) {
-                console.error(e);
-              }
-            }
-
-            const response = await fetch(`${GEOLOCATION_API_BASE}/locations`, {
-              method: 'POST',
-              headers: {
-                'Content-Type': 'application/json',
-                'Authorization': `Bearer ${token}`,
-                'Accept': 'application/json'
-              },
-              body: JSON.stringify({
-                latitude,
-                longitude,
-                userId: userId
-              }),
-              signal: controller.signal
-            })
-
-            if (response.ok) {
-              const result = await response.json()
-              const location = result?.data ?? {}
-              setLocationText(location.address || 'Ubicación actualizada en vivo')
-            }
-          } catch (err) {
-            if (err.name !== 'AbortError') {
-              setLocationText('Ubicación GPS local (Servicio Geo Offline)')
-            }
+        try {
+          let userId = null
+          if (token) {
+            try {
+              const base64Url = token.split('.')[1]
+              const base64 = base64Url.replace(/-/g, '+').replace(/_/g, '/')
+              const jsonPayload = decodeURIComponent(window.atob(base64).split('').map(c =>
+                '%' + ('00' + c.charCodeAt(0).toString(16)).slice(-2)
+              ).join(''))
+              const parsed = JSON.parse(jsonPayload)
+              userId = parsed.id || parsed.userId || parsed.sub
+            } catch (e) { console.error(e) }
           }
-        },
-        (error) => {
-          setLocationStatus('Permiso de ubicación denegado')
-          setLocationText('Sin acceso a GPS')
-        }
-      )
-    }
 
-    syncUserLocation()
-    return () => controller.abort()
+          const response = await fetch(`${GEOLOCATION_API_BASE}/locations`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${token}`, 'Accept': 'application/json' },
+            body: JSON.stringify({ latitude, longitude, userId }),
+            signal
+          })
+
+          if (response.ok) {
+            const result = await response.json()
+            setLocationText(result?.data?.address || 'Ubicación actualizada en vivo')
+          }
+        } catch (err) {
+          if (err.name !== 'AbortError') setLocationText('Ubicación GPS local (Servicio Geo Offline)')
+        }
+      },
+      () => {
+        setLocationStatus('Permiso de ubicación denegado')
+        setLocationText('Sin acceso a GPS')
+      }
+    )
   }, [])
+
+  useEffect(() => {
+    syncUserLocation()
+    return () => controllerRef.current?.abort()
+  }, [syncUserLocation])
 
   const fetchAlerts = useCallback(async () => {
     const lat = window.sessionStorage.getItem('user_lat')
@@ -178,7 +162,7 @@ export const HomePage = () => {
                 </div>
               </div>
             </div>
-            <button onClick={fetchAlerts} className='refresh-button' aria-label='Actualizar alertas'>
+            <button onClick={syncUserLocation} className='refresh-button' aria-label='Actualizar alertas'>
               <svg viewBox='0 0 24 24' fill='none' stroke='currentColor' strokeWidth='2'><path d='M1 4v6h6M23 20v-6h-6M20.49 9A9 9 0 0 0 5.64 5.64L1 10m22 4l-4.64 4.36A9 9 0 0 1 3.51 15' /></svg>
             </button>
           </div>

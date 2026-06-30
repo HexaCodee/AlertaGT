@@ -1,5 +1,5 @@
 'use strict'
- 
+
 import express from 'express';
 import cors from 'cors';
 import helmet from 'helmet';
@@ -9,22 +9,22 @@ import swaggerUi from 'swagger-ui-express';
 import { corsOptions } from './cors.configuration.js';
 import { helmetOptions } from './helmet.configuration.js';
 import { dbConnection } from './db.configuration.js';
- 
+
 import errorHandler from '../src/middlewares/error-handler.js';
- 
+
 // Rutas para Posts y Comments
 import postRoutes from '../src/posts/post.routes.js';
 import commentRoutes from '../src/comments/comment.routes.js';
 import swaggerDocumentation from './documentation.js';
- 
+
 const BASE_PATH = '/api/v1';
 const swaggerSpec = swaggerJsdoc(swaggerDocumentation);
- 
+
 const routes = (app) => {
     app.use('/api-docs', swaggerUi.serve, swaggerUi.setup(swaggerSpec));
     app.use(`${BASE_PATH}/posts`, postRoutes);
     app.use(`${BASE_PATH}/comments`, commentRoutes);
- 
+
     // Healthcheck
     app.get(`${BASE_PATH}/health`, (req, res) => {
         res.status(200).json({
@@ -33,7 +33,7 @@ const routes = (app) => {
             service: 'AlertaGT - Publications & Comments API',
         });
     });
- 
+
     // 404 para endpoints no encontrados
     app.use((req, res) => {
         res.status(404).json({
@@ -41,11 +41,11 @@ const routes = (app) => {
             message: 'Endpoint no encontrado',
         });
     });
- 
+
     // Manejo centralizado de errores
     app.use(errorHandler);
 }
- 
+
 const middlewares = (app) => {
     app.use(express.json({ limit: '10mb' }));
     app.use(express.urlencoded({ extended: false, limit: '10mb' }));
@@ -53,16 +53,16 @@ const middlewares = (app) => {
     app.use(helmet(helmetOptions));
     app.use(morgan('dev'));
 }
- 
+
 export const initServer = async () => {
     const app = express();
     const PORT = process.env.PORT || 3020;
- 
+
     try {
         await dbConnection();
         middlewares(app);
         routes(app);
- 
+
         app.listen(PORT, () => {
             console.log(`\n✓ AlertaGT Publications API running on port ${PORT}`);
             console.log(`✓ Health check: http://localhost:${PORT}${BASE_PATH}/health\n`);

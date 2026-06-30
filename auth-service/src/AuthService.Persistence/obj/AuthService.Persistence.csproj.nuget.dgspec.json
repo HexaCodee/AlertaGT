@@ -147,6 +147,10 @@
         "net8.0": {
           "targetAlias": "net8.0",
           "dependencies": {
+            "MongoDB.Driver": {
+              "target": "Package",
+              "version": "[3.9.0, )"
+            },
             "System.ComponentModel.Annotations": {
               "target": "Package",
               "version": "[5.0.0, )"
@@ -233,7 +237,7 @@
             },
             "MongoDB.Driver": {
               "target": "Package",
-              "version": "[2.27.0, )"
+              "version": "[3.9.0, )"
             },
             "Npgsql.EntityFrameworkCore.PostgreSQL": {
               "target": "Package",

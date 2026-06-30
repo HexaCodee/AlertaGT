@@ -49,18 +49,18 @@ export const getAuthToken = () =>
  * @param {object} options - Opciones de la petición (method, body, headers, signal).
  * @returns {Promise<any>} La respuesta parseada del servidor.
  */
-export const apiRequest = async (path, { method = 'GET', body, headers, signal } = {}) => {
-  const token = getAuthToken()
+export const apiRequest = async (path, { method = 'GET', body, headers, signal, isFormData = false, isPublic = false } = {}) => {
+  const token = isPublic ? null : getAuthToken() // Si es pública, ignoramos el token
 
   const response = await fetch(normalizePath(path), {
     method,
     headers: {
-      'Content-Type': 'application/json',
+      ...(isFormData ? {} : { 'Content-Type': 'application/json' }),
       Accept: 'application/json',
-      ...(token ? { Authorization: `Bearer ${token}` } : {}),
+      ...(token ? { Authorization: `Bearer ${token}` } : {}), // Solo añade el token si existe
       ...(headers ?? {})
     },
-    body: body ? JSON.stringify(body) : undefined,
+    body: isFormData ? body : (body ? JSON.stringify(body) : undefined),
     signal
   })
 

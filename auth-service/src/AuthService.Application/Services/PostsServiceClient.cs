@@ -33,7 +33,7 @@ public class PostsServiceClient(
     {
         return await ExecuteWithRetryAsync(async () =>
         {
-            var response = await _httpClient.GetAsync($"/posts/user/{Uri.EscapeDataString(userId)}/count");
+            var response = await _httpClient.GetAsync($"posts/user/{Uri.EscapeDataString(userId)}/count");
             return await ParseCountResponseAsync(response);
         }, "GetUserAlertsCountAsync");
     }
@@ -42,7 +42,7 @@ public class PostsServiceClient(
     {
         return await ExecuteWithRetryAsync(async () =>
         {
-            var response = await _httpClient.GetAsync($"/comments/user/{Uri.EscapeDataString(userId)}/count");
+            var response = await _httpClient.GetAsync($"comments/user/{Uri.EscapeDataString(userId)}/count");
             return await ParseCountResponseAsync(response);
         }, "GetUserCommentsCountAsync");
     }
@@ -51,7 +51,7 @@ public class PostsServiceClient(
     {
         return await ExecuteWithRetryAsync(async () =>
         {
-            var response = await _httpClient.GetAsync($"/posts/user/{Uri.EscapeDataString(userId)}/views");
+            var response = await _httpClient.GetAsync($"posts/user/{Uri.EscapeDataString(userId)}/views");
             return await ParseCountResponseAsync(response);
         }, "GetUserCommunityHelpedAsync");
     }

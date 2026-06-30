@@ -215,7 +215,12 @@ export const CreateAlertPage = () => {
             const payload = await parseResponsePayload(response)
 
             if (!response.ok) {
-                const apiMessage = payload?.message || payload?.error || 'No se pudo publicar la alerta.'
+                let apiMessage = payload?.message || payload?.error || 'No se pudo publicar la alerta.'
+                if (payload?.errors && Array.isArray(payload.errors) && payload.errors.length > 0) {
+                    const detailedErrors = payload.errors.map(err => err.message).join(' | ');
+                    apiMessage = `${apiMessage}: ${detailedErrors}`; 
+                }
+
                 throw new Error(apiMessage)
             }
 
@@ -447,7 +452,7 @@ export const CreateAlertPage = () => {
                     </svg>
                     <span>Notificaciones</span>
                 </button>
-                <button type='button' className='create-bottom-nav-item'>
+                <button type='button' className='create-bottom-nav-item' onClick={() => navigate('/profile')}>
                     <svg viewBox='0 0 24 24' fill='none' stroke='currentColor' strokeWidth='2'>
                         <circle cx='12' cy='8' r='4' />
                         <path d='M4 21a8 8 0 0 1 16 0' />

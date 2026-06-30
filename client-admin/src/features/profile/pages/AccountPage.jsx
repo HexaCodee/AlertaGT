@@ -42,7 +42,7 @@ export const AccountPage = () => {
         <div className="account-container-replica">
             {/* Cabecera Roja */}
             <header className="header-red-banner">
-                <img src={profile.profilePicture || defaultAvatar} alt="Perfil" className="header-avatar" />
+                <img src={profile.profilePicture || defaultAvatar} alt="Perfil" className="header-avatar" onError={(e) => { e.target.src = defaultAvatar; }} />
                 <div className="header-user-info">
                     <h1 className="header-name">{profile.name} {profile.surname}</h1>
                     <p className="header-username">@{profile.username}</p>
@@ -125,7 +125,12 @@ export const AccountPage = () => {
             </section>
 
             {/* Botón Cerrar Sesión */}
-            <button className="logout-btn" onClick={() => {/* tu lógica de logout */}}>
+            <button className="logout-btn" onClick={() => {
+                window.localStorage.removeItem('authToken');
+                window.localStorage.removeItem('token');
+                window.sessionStorage.clear();
+                navigate('/');
+            }}>
                 <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" strokeWidth="2"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4M16 17l5-5-5-5M21 12H9"/></svg>
                 Cerrar sesión
             </button>

@@ -2,6 +2,8 @@
 import {
   fetchPosts,
   fetchPostById,
+  countPostsByAuthor,
+  countCommunityHelpedByAuthor,
   createPostRecord,
   updatePostRecord,
   deletePostRecord,
@@ -382,6 +384,34 @@ export const getPostsByProximity = async (req, res, next) => {
       searchRadius: searchRadius,
     });
 
+  } catch (err) {
+    next(err);
+  }
+};
+
+export const getUserPostCount = async (req, res, next) => {
+  try {
+    const { userId } = req.params;
+    const count = await countPostsByAuthor(userId);
+
+    res.status(200).json({
+      success: true,
+      count,
+    });
+  } catch (err) {
+    next(err);
+  }
+};
+
+export const getUserCommunityHelped = async (req, res, next) => {
+  try {
+    const { userId } = req.params;
+    const count = await countCommunityHelpedByAuthor(userId);
+
+    res.status(200).json({
+      success: true,
+      count,
+    });
   } catch (err) {
     next(err);
   }
