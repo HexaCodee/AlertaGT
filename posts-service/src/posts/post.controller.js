@@ -296,42 +296,38 @@ export const flagPost = async (req, res, next) => {
 // Disparar notificaciones a usuarios cercanos (llamadas inter-servicio)
 async function triggerNotifications(post) {
   try {
-    if (!post.location || !post.location.latitude || !post.location.longitude) return;
+    if (!post.location || !post.location.latitude || !post.location.longitude) {
+      console.log('[notify] skipped: no location on post', post._id);
+      return;
+    }
 
-    const nearbyResp = await axios.get(`${GEO_SERVICE_URL}/locations/nearby/tokens`, {
+    console.log(`[notify] querying nearby users for post ${post._id} at ${post.location.latitude},${post.location.longitude}`);
+    const nearbyResp = await axios.get(`${GEO_SERVICE_URL}/locations/nearby/users`, {
       params: {
         latitude: post.location.latitude,
         longitude: post.location.longitude,
         maxDistance: 2000,
       },
-      headers: { 'x-service-token': SERVICE_TOKEN },
     });
 
-    const tokens = nearbyResp.data?.data?.tokens || [];
-    if (!tokens.length) return;
+    const users = nearbyResp.data?.data || [];
+    console.log(`[notify] found ${users.length} nearby user(s):`, users.map(u => u.userId));
+    if (!users.length) return;
 
-    // Determinar tipo de notificación basado en el riesgo
     const notificationType = post.riskType === 'GRAVE' ? 'NEARBY_ALERT_CRITICAL' : 'NEW_ALERT';
 
-    // Crear notificaciones en notifications-service (y enviar FCM)
-    await Promise.all(tokens.map(async (t) => {
-      // Calcular distancia aproximada para este usuario
-      const userLocation = nearbyResp.data?.data?.users?.find(u => u.userId === t.userId);
-      let distance = null;
+    await Promise.all(users.map(async (user) => {
+      const R = 6371000;
+      const dLat = (user.latitude - post.location.latitude) * Math.PI / 180;
+      const dLng = (user.longitude - post.location.longitude) * Math.PI / 180;
+      const a = Math.sin(dLat / 2) * Math.sin(dLat / 2) +
+                Math.cos(post.location.latitude * Math.PI / 180) * Math.cos(user.latitude * Math.PI / 180) *
+                Math.sin(dLng / 2) * Math.sin(dLng / 2);
+      const distance = Math.round(R * 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a)));
 
-      if (userLocation) {
-        const R = 6371000; // Radio de la Tierra en metros
-        const dLat = (userLocation.latitude - post.location.latitude) * Math.PI / 180;
-        const dLng = (userLocation.longitude - post.location.longitude) * Math.PI / 180;
-        const a = Math.sin(dLat/2) * Math.sin(dLat/2) +
-                  Math.cos(post.location.latitude * Math.PI / 180) * Math.cos(userLocation.latitude * Math.PI / 180) *
-                  Math.sin(dLng/2) * Math.sin(dLng/2);
-        const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1-a));
-        distance = Math.round(R * c);
-      }
-
-      await axios.post(`${NOTIFICATIONS_SERVICE_URL}/notifications`, {
-        userId: t.userId,
+      console.log(`[notify] sending notification to userId=${user.userId}, postId=${post._id}, type=${notificationType}`);
+      const notifResp = await axios.post(`${NOTIFICATIONS_SERVICE_URL}/notifications`, {
+        userId: user.userId,
         postId: post._id,
         type: notificationType,
         title: post.title,
@@ -340,14 +336,16 @@ async function triggerNotifications(post) {
           postId: post._id,
           category: post.category,
           riskType: post.riskType,
-          distance: distance,
+          distance,
         },
+        fcmToken: user.fcmToken || null,
       }, {
         headers: { 'x-service-token': SERVICE_TOKEN }
       });
+      console.log(`[notify] notifications-service responded ${notifResp.status} for userId=${user.userId}`);
     }));
   } catch (err) {
-    console.error('triggerNotifications error:', err.message);
+    console.error('triggerNotifications error:', err.message, err.response?.data);
   }
 }
 

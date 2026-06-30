@@ -142,6 +142,8 @@ services:
       MONGODB_URI: mongodb://admin:password123@mongodb:27017
       DATABASE_NAME: AlertaGT_Geo
       AUTH_SERVICE_URL: http://auth-service:3010/api/v1
+      POSTS_SERVICE_URL: http://posts-service:3020/api/v1
+      NOTIFICATIONS_SERVICE_URL: http://notifications-service:3021/api/v1
       SERVICE_TOKEN: 0c819cbf650f3df2fd99dab2e552a1c04de54bcdb83dda3443ff2e5ce16f3648
       RATE_LIMIT_REQUESTS_PER_MINUTE: 100
       CORS_ORIGIN: http://localhost:3000,http://localhost:3001,http://localhost:5173,http://localhost:4173

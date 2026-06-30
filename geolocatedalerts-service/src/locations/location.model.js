@@ -67,7 +67,7 @@ const userLocationSchema = new Schema(
 );
 
 // Índice geoespacial para búsquedas por proximidad
-userLocationSchema.index({ 'location.2dsphere': '2dsphere' });
+userLocationSchema.index({ location: '2dsphere' });
 userLocationSchema.index({ userId: 1 });
 userLocationSchema.index({ isActive: 1 });
 

@@ -1,3 +1,4 @@
+import axios from 'axios';
 import {
   saveUserLocation,
   findUsersNearby,
@@ -12,6 +13,46 @@ import {
 } from './location.service.js';
 import { validateGpsCoordinates, validateSearchRadius, validateFCMToken } from '../../middlewares/geo-validators.js';
 import { jwtDecode } from 'jwt-decode';
+
+const POSTS_SERVICE_URL = process.env.POSTS_SERVICE_URL || 'http://localhost:3020/api/v1';
+const NOTIFICATIONS_SERVICE_URL = process.env.NOTIFICATIONS_SERVICE_URL || 'http://localhost:3021/api/v1';
+const SERVICE_TOKEN = process.env.SERVICE_TOKEN;
+
+async function notifyNearbyAlerts(userId, latitude, longitude) {
+  try {
+    const postsResp = await axios.get(`${POSTS_SERVICE_URL}/posts/proximity/search`, {
+      params: { latitude, longitude, maxDistance: 2000 },
+      headers: { 'x-service-token': SERVICE_TOKEN },
+    });
+    const posts = postsResp.data?.data || [];
+    if (!posts.length) return;
+
+    // Solo notificar sobre alertas creadas en las últimas 24 horas
+    const cutoff = new Date(Date.now() - 24 * 60 * 60 * 1000);
+    const recentPosts = posts.filter(p => new Date(p.createdAt) > cutoff);
+    if (!recentPosts.length) return;
+
+    await Promise.all(recentPosts.map(async (post) => {
+      const type = post.riskType === 'GRAVE' ? 'NEARBY_ALERT_CRITICAL' : 'NEW_ALERT';
+      await axios.post(`${NOTIFICATIONS_SERVICE_URL}/notifications`, {
+        userId,
+        postId: post._id,
+        type,
+        title: post.title,
+        body: post.text?.substring(0, 120) || '',
+        data: {
+          postId: post._id,
+          category: post.category,
+          riskType: post.riskType,
+          distance: Math.round(post.distance || 0),
+        },
+        fcmToken: null,
+      }, { headers: { 'x-service-token': SERVICE_TOKEN } });
+    }));
+  } catch (err) {
+    console.error('[geo] notifyNearbyAlerts error:', err.message);
+  }
+}
 
 const extractUserId = (req) => {
   // Intentar obtenerlo si el middleware JWT ya lo resolvió correctamente
@@ -71,10 +112,13 @@ export const updateUserLocation = async (req, res, next) => {
       });
     }
 
+    const lat = parseFloat(latitude);
+    const lng = parseFloat(longitude);
+
     const location = await saveUserLocation({
       userId,
-      latitude: parseFloat(latitude),
-      longitude: parseFloat(longitude),
+      latitude: lat,
+      longitude: lng,
       address,
       fcmToken,
     });
@@ -84,6 +128,8 @@ export const updateUserLocation = async (req, res, next) => {
       message: 'Ubicación actualizada',
       data: location,
     });
+
+    void notifyNearbyAlerts(userId, lat, lng);
   } catch (err) {
     next(err);
   }
@@ -131,8 +177,11 @@ export const getNearbyUsers = async (req, res, next) => {
       });
     }
 
+    const lat = parseFloat(latitude);
+    const lng = parseFloat(longitude);
+
     // Validar coordenadas GPS
-    const gpsValidation = validateGpsCoordinates(latitude, longitude);
+    const gpsValidation = validateGpsCoordinates(lat, lng);
     if (!gpsValidation.isValid) {
       return res.status(400).json({
         success: false,
@@ -145,8 +194,8 @@ export const getNearbyUsers = async (req, res, next) => {
     const finalRadius = radiusValidation.normalizedRadius;
 
     const users = await findUsersNearby({
-      latitude: parseFloat(latitude),
-      longitude: parseFloat(longitude),
+      latitude: lat,
+      longitude: lng,
       maxDistance: finalRadius,
       limit: parseInt(limit),
     });
@@ -178,7 +227,7 @@ export const getNearbyUserTokens = async (req, res, next) => {
     const { users, fcmTokens } = await getNearbyUsersFCMTokens({
       latitude: parseFloat(latitude),
       longitude: parseFloat(longitude),
-      maxDistance: parseInt(maxDistance),
+      maxDistance: parseInt(maxDistance) || 2000,
     });
 
     res.status(200).json({

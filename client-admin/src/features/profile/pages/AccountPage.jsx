@@ -151,6 +151,8 @@ export const AccountPage = () => {
                                 navigate('/home');
                             } else if (item.id === 'create') {
                                 navigate('/alerts/create');
+                            } else if (item.id === 'notifications') {
+                                navigate('/notifications');
                             } else if (item.id === 'profile') {
                                 // ya estamos en profile
                             }

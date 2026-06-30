@@ -1,8 +1,10 @@
 import Notification from './notification.model.js';
 import { sendPushNotification } from '../fcm/fcm.service.js';
 
-// Crear notificación
+// Crear notificación (idempotente: no duplica si ya existe el mismo userId+postId+type)
 export const createNotification = async ({ userId, postId, type, title, body, data = {}, fcmToken = null }) => {
+  const existing = await Notification.findOne({ userId, postId, type });
+  if (existing) return existing;
   // Si es una notificación de alerta cercana, incluir distancia en el título/cuerpo
   let enhancedTitle = title;
   let enhancedBody = body;

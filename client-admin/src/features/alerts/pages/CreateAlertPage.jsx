@@ -445,7 +445,7 @@ export const CreateAlertPage = () => {
                     <span className='create-dot' aria-hidden='true' />
                     <span>Crear</span>
                 </button>
-                <button type='button' className='create-bottom-nav-item'>
+                <button type='button' className='create-bottom-nav-item' onClick={() => navigate('/notifications')}>
                     <svg viewBox='0 0 24 24' fill='none' stroke='currentColor' strokeWidth='2'>
                         <path d='M15 17H5l1.4-1.4A2 2 0 0 0 7 14.2V10a5 5 0 0 1 10 0v4.2c0 .5.2 1 .6 1.4L19 17h-4' />
                         <path d='M10 20a2 2 0 0 0 4 0' />
