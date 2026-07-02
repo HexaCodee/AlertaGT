@@ -420,6 +420,13 @@ button {
   color: rgba(255, 255, 255, 0.72);
 }
 
+.register-terms a,
+.register-terms a:visited {
+  color: #ffffff;
+  font-weight: 600;
+  text-decoration: underline;
+}
+
 .dashboard-shell {
   min-height: 100vh;
   display: grid;

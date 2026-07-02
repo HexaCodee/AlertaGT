@@ -1,5 +1,5 @@
 import { useState, useRef } from 'react'
-import { useNavigate } from 'react-router-dom'
+import { useNavigate, Link } from 'react-router-dom'
 import { register } from '../../../shared/apis/auth.js'
 import alertaIcon from '../../../assets/img/AlertaIcono.png'
 
@@ -323,7 +323,10 @@ export const RegisterPage = () => {
           </button>
 
           <p className='register-terms'>
-            Al crear una cuenta, aceptas nuestros Términos de Servicio y Política de Privacidad
+            Al crear una cuenta, aceptas nuestros{' '}
+            <Link to='/terms' target='_blank' rel='noopener noreferrer'>Términos de Servicio</Link>
+            {' '}y{' '}
+            <Link to='/privacy' target='_blank' rel='noopener noreferrer'>Política de Privacidad</Link>
           </p>
         </form>
       </section>

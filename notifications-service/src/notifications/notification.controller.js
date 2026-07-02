@@ -11,7 +11,7 @@ import {
 // Obtener notificaciones del usuario autenticado
 export const getNotifications = async (req, res, next) => {
   try {
-    const { page = 1, limit = 20, unread = false } = req.query;
+    const { page = 1, limit = 20, unread = false, latitude, longitude } = req.query;
     const userId = req.user.id;
 
     const { notifications, pagination } = await fetchUserNotifications({
@@ -19,6 +19,8 @@ export const getNotifications = async (req, res, next) => {
       page,
       limit,
       onlyUnread: unread === 'true',
+      latitude: latitude != null ? parseFloat(latitude) : undefined,
+      longitude: longitude != null ? parseFloat(longitude) : undefined,
     });
 
     res.status(200).json({

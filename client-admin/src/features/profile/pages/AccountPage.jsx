@@ -1,6 +1,15 @@
 import { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { getProfileData } from '../services/profileService';
+import { getTheme, toggleTheme } from '../../../shared/utils/theme.js';
+import {
+    getAlertRadius,
+    setAlertRadius,
+    formatRadius,
+    ALERT_RADIUS_MIN,
+    ALERT_RADIUS_MAX,
+    ALERT_RADIUS_STEP,
+} from '../../../shared/utils/preferences.js';
 import defaultAvatar from '../../../assets/img/defaultAvatar.svg';
 import '../../home/styles/home.css';
 import '../styles/account.css';
@@ -9,6 +18,16 @@ export const AccountPage = () => {
     const navigate = useNavigate();
     const [data, setData] = useState(null);
     const [loading, setLoading] = useState(true);
+    const [theme, setTheme] = useState(getTheme());
+    const [radius, setRadius] = useState(getAlertRadius());
+
+    const handleToggleTheme = () => setTheme(toggleTheme());
+
+    const handleRadiusChange = (e) => {
+        const value = Number(e.target.value);
+        setRadius(value);
+        setAlertRadius(value);
+    };
 
     useEffect(() => {
         getProfileData()
@@ -101,6 +120,46 @@ export const AccountPage = () => {
             {/* Lista de Opciones */}
             <section className="options-list-card">
                 <div className="option-item">
+                    <span className="theme-toggle-row">
+                        <svg className="option-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                            {theme === 'dark'
+                                ? <path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"/>
+                                : <><circle cx="12" cy="12" r="5"/><path d="M12 1v2M12 21v2M4.22 4.22l1.42 1.42M18.36 18.36l1.42 1.42M1 12h2M21 12h2M4.22 19.78l1.42-1.42M18.36 5.64l1.42-1.42"/></>}
+                        </svg>
+                        <span className="option-name">Modo oscuro</span>
+                        <button
+                            type="button"
+                            className={`theme-switch ${theme === 'dark' ? 'on' : ''}`}
+                            role="switch"
+                            aria-checked={theme === 'dark'}
+                            aria-label="Alternar modo oscuro"
+                            onClick={handleToggleTheme}
+                        >
+                            <span className="theme-knob" />
+                        </button>
+                    </span>
+                </div>
+                <div className="option-item radius-option">
+                    <svg className="option-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><circle cx="12" cy="12" r="3"/><circle cx="12" cy="12" r="9"/></svg>
+                    <div className="radius-control">
+                        <div className="radius-control-head">
+                            <span className="option-name">Radio de alertas</span>
+                            <span className="radius-value">{formatRadius(radius)}</span>
+                        </div>
+                        <input
+                            type="range"
+                            className="radius-slider"
+                            min={ALERT_RADIUS_MIN}
+                            max={ALERT_RADIUS_MAX}
+                            step={ALERT_RADIUS_STEP}
+                            value={radius}
+                            onChange={handleRadiusChange}
+                            aria-label="Radio de alertas"
+                        />
+                        <p className="radius-hint">Muestra alertas y notificaciones dentro de este radio.</p>
+                    </div>
+                </div>
+                <div className="option-item">
                     <svg className="option-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"/><circle cx="12" cy="10" r="3"/></svg>
                     <span className="option-name">Estado de ubicación</span>
                     <span className="option-arrow">›</span>
@@ -153,6 +212,8 @@ export const AccountPage = () => {
                                 navigate('/alerts/create');
                             } else if (item.id === 'notifications') {
                                 navigate('/notifications');
+                            } else if (item.id === 'map') {
+                                navigate('/map');
                             } else if (item.id === 'profile') {
                                 // ya estamos en profile
                             }

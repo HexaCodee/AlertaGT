@@ -10,12 +10,12 @@
 
 .create-alert-header {
     height: 56px;
-    border-bottom: 1px solid #dfe3e8;
     display: grid;
     grid-template-columns: 40px 1fr 40px;
     align-items: center;
     padding: 0 14px;
-    background: #ffffff;
+    background: #d30000;
+    box-shadow: 0 4px 16px rgba(211, 0, 0, 0.28);
     position: sticky;
     top: 0;
     z-index: 50;
@@ -24,19 +24,24 @@
 .create-alert-header h1 {
     margin: 0;
     font-size: 1rem;
-    font-weight: 600;
+    font-weight: 700;
     text-align: center;
+    color: #ffffff;
 }
 
 .header-back-button {
     width: 34px;
     height: 34px;
     border-radius: 999px;
-    background: transparent;
+    background: rgba(255, 255, 255, 0.15);
     display: grid;
     place-items: center;
-    color: #111827;
+    color: #ffffff;
     cursor: pointer;
+}
+
+.header-back-button:hover {
+    background: rgba(255, 255, 255, 0.28);
 }
 
 .header-back-button svg {
@@ -329,51 +334,6 @@
 
 .submit-message {
     color: #334155;
-}
-
-.create-bottom-nav {
-    position: fixed;
-    left: 0;
-    right: 0;
-    bottom: 0;
-    z-index: 60;
-    display: grid;
-    grid-template-columns: repeat(5, minmax(0, 1fr));
-    background: rgba(255, 255, 255, 0.98);
-    border-top: 1px solid rgba(15, 23, 42, 0.1);
-    box-shadow: 0 -8px 24px rgba(15, 23, 42, 0.07);
-    padding: 6px 4px 10px;
-}
-
-.create-bottom-nav-item {
-    border: 0;
-    background: transparent;
-    min-height: 58px;
-    color: #64748b;
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    justify-content: center;
-    gap: 4px;
-    font-size: 1.2rem;
-    font-weight: 600;
-    cursor: pointer;
-}
-
-.create-bottom-nav-item svg {
-    width: 22px;
-    height: 22px;
-}
-
-.create-bottom-nav-item.active {
-    color: #d2000b;
-}
-
-.create-dot {
-    width: 20px;
-    height: 20px;
-    border-radius: 50%;
-    background: #d2000b;
 }
 
 @media (max-width: 960px) {

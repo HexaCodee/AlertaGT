@@ -1,0 +1,310 @@
+/* =========================================================
+   MODO OSCURO — se activa con <html data-theme="dark">
+   Sobreescribe las superficies y textos principales de la app.
+   ========================================================= */
+
+:root {
+  --dark-bg: #0f141b;
+  --dark-surface: #1a212b;
+  --dark-surface-2: #212a36;
+  --dark-border: rgba(255, 255, 255, 0.08);
+  --dark-text: #e6e8eb;
+  --dark-text-2: #aab2bd;
+  --dark-text-muted: #7b828d;
+}
+
+[data-theme='dark'] {
+  color-scheme: dark;
+}
+
+[data-theme='dark'] body {
+  background: var(--dark-bg);
+  color: var(--dark-text);
+}
+
+/* ---------- Home ---------- */
+[data-theme='dark'] .home-container { background: var(--dark-bg); }
+[data-theme='dark'] .alerts-container { background: var(--dark-bg); }
+[data-theme='dark'] .top-panel {
+  background: #141b24;
+  border-bottom: 1px solid var(--dark-border);
+}
+
+/* Pills de categoría y selector de orden */
+[data-theme='dark'] .category-button {
+  background: var(--dark-surface-2);
+  border-color: var(--dark-border);
+  color: var(--dark-text-2);
+}
+[data-theme='dark'] .sort-label { color: var(--dark-text-2); }
+[data-theme='dark'] .sort-select {
+  background: var(--dark-surface-2);
+  border-color: var(--dark-border);
+  color: var(--dark-text);
+}
+[data-theme='dark'] .search-input {
+  background: var(--dark-surface-2);
+  border-color: var(--dark-border);
+  color: var(--dark-text);
+}
+[data-theme='dark'] .app-title { color: var(--dark-text); }
+[data-theme='dark'] .location-box { background: rgba(239, 68, 68, 0.14); }
+[data-theme='dark'] .location-box-title { color: #fca5a5; }
+[data-theme='dark'] .location-text { color: #fecaca; }
+[data-theme='dark'] .filter-text,
+[data-theme='dark'] .filter-icon { color: var(--dark-text-2); }
+[data-theme='dark'] .alerts-count { color: var(--dark-text-2); }
+
+[data-theme='dark'] .alert-card {
+  background: var(--dark-surface);
+  border-color: var(--dark-border);
+}
+[data-theme='dark'] .alert-title { color: var(--dark-text); }
+[data-theme='dark'] .alert-description { color: var(--dark-text-2); }
+[data-theme='dark'] .alert-time { color: var(--dark-text-muted); }
+[data-theme='dark'] .meta-item { color: var(--dark-text-2); }
+[data-theme='dark'] .no-alerts { color: var(--dark-text-2); }
+
+/* ---------- Bottom nav (todas las páginas) ---------- */
+[data-theme='dark'] .bottom-nav {
+  background: rgba(20, 27, 36, 0.98);
+  border-top: 1px solid var(--dark-border);
+}
+[data-theme='dark'] .bottom-nav-item { color: var(--dark-text-muted); }
+[data-theme='dark'] .bottom-nav-item:hover { color: var(--dark-text-2); }
+
+/* ---------- Notificaciones ---------- */
+[data-theme='dark'] .notifications-container { background: var(--dark-bg); }
+[data-theme='dark'] .notification-card {
+  background: var(--dark-surface);
+  border-color: var(--dark-border);
+}
+[data-theme='dark'] .notification-title { color: var(--dark-text); }
+[data-theme='dark'] .notification-text { color: var(--dark-text-2); }
+[data-theme='dark'] .notification-date { color: var(--dark-text-muted); }
+[data-theme='dark'] .notifications-tabs {
+  background: #141b24;
+  border-bottom: 1px solid var(--dark-border);
+}
+[data-theme='dark'] .tab-btn { color: var(--dark-text-2); }
+
+/* ---------- Cuenta / Perfil ---------- */
+[data-theme='dark'] .account-container-replica { background: var(--dark-bg); }
+[data-theme='dark'] .stats-card-overlay,
+[data-theme='dark'] .options-list-card,
+[data-theme='dark'] .contact-info-card {
+  background: var(--dark-surface);
+  border-color: var(--dark-border);
+}
+[data-theme='dark'] .stat-number,
+[data-theme='dark'] .section-title,
+[data-theme='dark'] .contact-value,
+[data-theme='dark'] .option-name { color: var(--dark-text); }
+[data-theme='dark'] .stat-label,
+[data-theme='dark'] .contact-label { color: var(--dark-text-2); }
+[data-theme='dark'] .contact-row,
+[data-theme='dark'] .option-item { border-color: var(--dark-border); }
+[data-theme='dark'] .app-footer-info { color: var(--dark-text-muted); }
+
+/* ---------- Crear alerta ---------- */
+[data-theme='dark'] .create-alert-page { background: var(--dark-bg); }
+/* El header se mantiene rojo en modo oscuro (igual que el resto de la app) */
+[data-theme='dark'] .section-label { color: var(--dark-text); }
+[data-theme='dark'] .text-input,
+[data-theme='dark'] .text-area,
+[data-theme='dark'] .selection-card,
+[data-theme='dark'] .risk-card {
+  background: var(--dark-surface);
+  border-color: var(--dark-border);
+  color: var(--dark-text);
+}
+[data-theme='dark'] .risk-card.selected,
+[data-theme='dark'] .selection-card.selected { background: var(--dark-surface-2); }
+[data-theme='dark'] .selection-label,
+[data-theme='dark'] .risk-text strong,
+[data-theme='dark'] .location-current strong,
+[data-theme='dark'] .sub-label { color: var(--dark-text); }
+[data-theme='dark'] .risk-text small,
+[data-theme='dark'] .location-current small,
+[data-theme='dark'] .counter-text { color: var(--dark-text-2); }
+
+/* Zonas de subida de archivos */
+[data-theme='dark'] .upload-box,
+[data-theme='dark'] .attachment-button {
+  background: var(--dark-surface-2);
+  border-color: var(--dark-border);
+}
+[data-theme='dark'] .upload-box span,
+[data-theme='dark'] .attachment-button span { color: var(--dark-text-2); }
+
+/* ---------- Detalle de alerta ---------- */
+[data-theme='dark'] .detail-page {
+  background:
+    radial-gradient(1200px 400px at 50% -120px, rgba(239, 68, 68, 0.18), transparent 70%),
+    var(--dark-bg);
+}
+[data-theme='dark'] .detail-main-card,
+[data-theme='dark'] .detail-comments {
+  background: var(--dark-surface);
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.4), 0 8px 24px rgba(0, 0, 0, 0.3);
+}
+[data-theme='dark'] .detail-hero,
+[data-theme='dark'] .detail-hero.no-image,
+[data-theme='dark'] .detail-body { background: var(--dark-surface); }
+[data-theme='dark'] .detail-hero.no-image { background: var(--dark-surface-2); }
+[data-theme='dark'] .detail-title,
+[data-theme='dark'] .detail-comments-title,
+[data-theme='dark'] .detail-author-name,
+[data-theme='dark'] .detail-comment-name { color: var(--dark-text); }
+[data-theme='dark'] .detail-desc,
+[data-theme='dark'] .detail-meta-row,
+[data-theme='dark'] .detail-comment-text { color: var(--dark-text-2); }
+[data-theme='dark'] .detail-cat-label,
+[data-theme='dark'] .detail-author-label,
+[data-theme='dark'] .detail-comment-date,
+[data-theme='dark'] .detail-comments-empty,
+[data-theme='dark'] .detail-comments-loading { color: var(--dark-text-muted); }
+[data-theme='dark'] .detail-meta-row svg { color: var(--dark-text-muted); }
+[data-theme='dark'] .detail-author,
+[data-theme='dark'] .detail-comment { border-color: var(--dark-border); }
+[data-theme='dark'] .detail-comment-input {
+  background: var(--dark-surface-2);
+  border-color: var(--dark-border);
+  color: var(--dark-text);
+}
+[data-theme='dark'] .detail-loading,
+[data-theme='dark'] .detail-error { color: var(--dark-text-2); }
+
+/* ---------- Legal (Términos / Privacidad) ---------- */
+[data-theme='dark'] .legal-page {
+  background:
+    radial-gradient(1200px 400px at 50% -120px, rgba(239, 68, 68, 0.18), transparent 70%),
+    var(--dark-bg);
+}
+[data-theme='dark'] .legal-card {
+  background: var(--dark-surface);
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.4), 0 8px 24px rgba(0, 0, 0, 0.3);
+}
+[data-theme='dark'] .legal-doc-head { border-color: var(--dark-border); }
+[data-theme='dark'] .legal-doc-head h2,
+[data-theme='dark'] .legal-card h3 { color: var(--dark-text); }
+[data-theme='dark'] .legal-updated,
+[data-theme='dark'] .legal-toc-title,
+[data-theme='dark'] .legal-footer-note p { color: var(--dark-text-muted); }
+[data-theme='dark'] .legal-intro,
+[data-theme='dark'] .legal-card p,
+[data-theme='dark'] .legal-card li { color: var(--dark-text-2); }
+[data-theme='dark'] .legal-toc {
+  background: var(--dark-surface-2);
+  border-color: var(--dark-border);
+}
+[data-theme='dark'] .legal-footer-note { border-color: var(--dark-border); }
+
+/* =========================================================
+   Toggle de modo oscuro (fila en Perfil)
+   ========================================================= */
+.theme-toggle-row {
+  display: flex;
+  align-items: center;
+  gap: 0.9rem;
+  width: 100%;
+}
+
+.theme-toggle-row .option-name { flex: 1; }
+
+.theme-switch {
+  position: relative;
+  width: 48px;
+  height: 26px;
+  flex-shrink: 0;
+  border: none;
+  border-radius: 999px;
+  background: #cbd5e1;
+  cursor: pointer;
+  transition: background 0.25s ease;
+  padding: 0;
+}
+
+.theme-switch.on { background: linear-gradient(135deg, #f16f6f, #ef4444); }
+
+.theme-switch .theme-knob {
+  position: absolute;
+  top: 3px;
+  left: 3px;
+  width: 20px;
+  height: 20px;
+  border-radius: 50%;
+  background: #fff;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.3);
+  transition: transform 0.25s ease;
+}
+
+.theme-switch.on .theme-knob { transform: translateX(22px); }
+
+/* =========================================================
+   Slider de radio de alertas (fila en Perfil)
+   ========================================================= */
+.radius-option { align-items: flex-start; }
+
+.radius-control {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+  min-width: 0;
+}
+
+.radius-control-head {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 0.75rem;
+}
+
+.radius-value {
+  font-size: 0.9rem;
+  font-weight: 700;
+  color: #ef4444;
+}
+
+.radius-slider {
+  -webkit-appearance: none;
+  appearance: none;
+  width: 100%;
+  height: 6px;
+  border-radius: 999px;
+  background: #e5e7eb;
+  outline: none;
+  cursor: pointer;
+}
+
+.radius-slider::-webkit-slider-thumb {
+  -webkit-appearance: none;
+  appearance: none;
+  width: 20px;
+  height: 20px;
+  border-radius: 50%;
+  background: linear-gradient(135deg, #f16f6f, #ef4444);
+  border: 2px solid #fff;
+  box-shadow: 0 1px 4px rgba(0, 0, 0, 0.3);
+  cursor: pointer;
+}
+
+.radius-slider::-moz-range-thumb {
+  width: 20px;
+  height: 20px;
+  border-radius: 50%;
+  background: linear-gradient(135deg, #f16f6f, #ef4444);
+  border: 2px solid #fff;
+  box-shadow: 0 1px 4px rgba(0, 0, 0, 0.3);
+  cursor: pointer;
+}
+
+.radius-hint {
+  margin: 0;
+  font-size: 0.78rem;
+  color: #9ca3af;
+}
+
+[data-theme='dark'] .radius-slider { background: var(--dark-surface-2); }
+[data-theme='dark'] .radius-hint { color: var(--dark-text-muted); }

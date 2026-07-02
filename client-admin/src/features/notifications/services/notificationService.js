@@ -26,8 +26,16 @@ const request = async (path, { method = 'GET', body } = {}) => {
   return payload
 }
 
-export const fetchNotifications = ({ unread = false } = {}) =>
-  request(`notifications${unread ? '?unread=true' : ''}`)
+export const fetchNotifications = ({ unread = false, latitude, longitude } = {}) => {
+  const params = new URLSearchParams()
+  if (unread) params.set('unread', 'true')
+  if (latitude != null && longitude != null) {
+    params.set('latitude', latitude)
+    params.set('longitude', longitude)
+  }
+  const query = params.toString()
+  return request(`notifications${query ? `?${query}` : ''}`)
+}
 
 export const markAsRead = (id) =>
   request(`notifications/${id}/read`, { method: 'PUT' })
