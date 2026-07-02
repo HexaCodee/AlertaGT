@@ -1,4 +1,5 @@
 import { memo } from 'react'
+import { useNavigate } from 'react-router-dom'
 import defaultProfile from "../../../assets/img/defaultAlert.png";
 
 // Componente para la Categoría (Se queda sobre la imagen, limpio)
@@ -45,8 +46,10 @@ const RiskBadge = memo(({ riskType }) => {
 RiskBadge.displayName = 'RiskBadge'
 
 export const AlertCard = memo(({ alert }) => {
+  const navigate = useNavigate()
+
   const handleViewDetails = () => {
-    console.log('Ver detalles de alerta:', alert.id)
+    navigate(`/alerts/${alert.id}`, { state: { alert } })
   }
 
   const formatDate = (date) => {

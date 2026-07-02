@@ -2,6 +2,7 @@ import { useState, useMemo, useCallback, useEffect, useRef } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { AlertCard } from '../components/AlertCard'
 import { AlertFilters } from '../components/AlertFilters'
+import { getAlertRadius } from '../../../shared/utils/preferences.js'
 import '../styles/home.css'
 
 const GEOLOCATION_API_BASE = import.meta.env.VITE_GEOLOCATION_API_URL ?? 'http://localhost:3022/api/v1'
@@ -91,7 +92,7 @@ export const HomePage = () => {
 
     setLoadingAlerts(true)
     try {
-      let url = `${POSTS_API_BASE}/posts/proximity/search?latitude=${lat}&longitude=${lng}&maxDistance=10000`
+      let url = `${POSTS_API_BASE}/posts/proximity/search?latitude=${lat}&longitude=${lng}&maxDistance=${getAlertRadius()}`
       const response = await fetch(url, {
         headers: { Accept: 'application/json' }
       })
@@ -212,6 +213,8 @@ export const HomePage = () => {
                   navigate('/profile');
                 } else if (item.id === 'notifications') {
                   navigate('/notifications');
+                } else if (item.id === 'map') {
+                  navigate('/map');
                 } else {
                   setActiveNav(item.id);
                 }

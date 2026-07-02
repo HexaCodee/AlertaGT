@@ -22,7 +22,6 @@ async function notifyNearbyAlerts(userId, latitude, longitude) {
   try {
     const postsResp = await axios.get(`${POSTS_SERVICE_URL}/posts/proximity/search`, {
       params: { latitude, longitude, maxDistance: 2000 },
-      headers: { 'x-service-token': SERVICE_TOKEN },
     });
     const posts = postsResp.data?.data || [];
     if (!posts.length) return;
@@ -45,6 +44,8 @@ async function notifyNearbyAlerts(userId, latitude, longitude) {
           category: post.category,
           riskType: post.riskType,
           distance: Math.round(post.distance || 0),
+          latitude: post.location?.latitude,
+          longitude: post.location?.longitude,
         },
         fcmToken: null,
       }, { headers: { 'x-service-token': SERVICE_TOKEN } });
@@ -180,7 +181,6 @@ export const getNearbyUsers = async (req, res, next) => {
     const lat = parseFloat(latitude);
     const lng = parseFloat(longitude);
 
-    // Validar coordenadas GPS
     const gpsValidation = validateGpsCoordinates(lat, lng);
     if (!gpsValidation.isValid) {
       return res.status(400).json({

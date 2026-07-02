@@ -7,6 +7,7 @@ import {
   deleteNotification,
   deleteAllNotifications,
 } from '../services/notificationService'
+import { getAlertRadius } from '../../../shared/utils/preferences.js'
 import '../../home/styles/home.css'
 import '../styles/notifications.css'
 
@@ -63,6 +64,13 @@ const getNotifIcon = (notif) => {
   return TYPE_META[notif.type] ?? TYPE_META.SYSTEM
 }
 
+const formatDistance = (meters) => {
+  if (meters == null || Number.isNaN(Number(meters))) return null
+  const m = Math.round(Number(meters))
+  if (m < 1000) return `a ${m} m`
+  return `a ${(m / 1000).toFixed(1)} km`
+}
+
 const formatDate = (iso) => {
   if (!iso) return ''
   const d = new Date(iso)
@@ -79,26 +87,40 @@ export const NotificationsPage = () => {
   const [notifications, setNotifications] = useState([])
   const [tab, setTab] = useState('all')
   const [loading, setLoading] = useState(true)
-
-  const load = useCallback(async () => {
-    try {
-      const res = await fetchNotifications()
-      const list = Array.isArray(res) ? res : (res?.data ?? [])
-      setNotifications(list)
-    } catch (err) {
-      console.error('Error cargando notificaciones:', err)
-    } finally {
-      setLoading(false)
-    }
+  const load = useCallback((position) => {
+    fetchNotifications({ latitude: position?.latitude, longitude: position?.longitude })
+      .then((res) => {
+        const list = Array.isArray(res) ? res : (res?.data ?? [])
+        setNotifications(list)
+      })
+      .catch((err) => console.error('Error cargando notificaciones:', err))
+      .finally(() => setLoading(false))
   }, [])
 
-  useEffect(() => { load() }, [load])
+  useEffect(() => {
+    if (!navigator.geolocation) {
+      load(null)
+      return
+    }
+    navigator.geolocation.getCurrentPosition(
+      (position) => load({ latitude: position.coords.latitude, longitude: position.coords.longitude }),
+      () => load(null),
+    )
+  }, [load])
+
+  // Respeta el radio global: oculta notificaciones de alertas fuera del rango.
+  // Las que no tienen distancia (no son de proximidad) siempre se muestran.
+  const radius = getAlertRadius()
+  const withinRadius = notifications.filter((n) => {
+    const d = n.data?.distance
+    return d == null || Number(d) <= radius
+  })
 
   const displayed = tab === 'unread'
-    ? notifications.filter((n) => !n.read)
-    : notifications
+    ? withinRadius.filter((n) => !n.read)
+    : withinRadius
 
-  const unreadCount = notifications.filter((n) => !n.read).length
+  const unreadCount = withinRadius.filter((n) => !n.read).length
 
   const handleMarkRead = async (id) => {
     try {
@@ -144,6 +166,7 @@ export const NotificationsPage = () => {
     if (id === 'home') navigate('/home')
     else if (id === 'create') navigate('/alerts/create')
     else if (id === 'profile') navigate('/profile')
+    else if (id === 'map') navigate('/map')
   }
 
   return (
@@ -209,6 +232,7 @@ export const NotificationsPage = () => {
         <ul className='notifications-list' style={{ listStyle: 'none', margin: 0, padding: '0.75rem' }}>
           {displayed.map((notif) => {
             const icon = getNotifIcon(notif)
+            const distance = formatDistance(notif.data?.distance)
             return (
               <li key={notif._id}>
                 <div className={`notification-card ${notif.read ? '' : 'unread'}`}>
@@ -219,7 +243,18 @@ export const NotificationsPage = () => {
                   <div className='notification-body'>
                     <p className='notification-title'>{notif.title}</p>
                     {notif.body && <p className='notification-text'>{notif.body}</p>}
-                    <p className='notification-date'>{formatDate(notif.createdAt)}</p>
+                    <div className='notification-meta'>
+                      <span className='notification-date'>{formatDate(notif.createdAt)}</span>
+                      {distance && (
+                        <span className='notification-distance'>
+                          <svg width='12' height='12' viewBox='0 0 24 24' fill='none' stroke='currentColor' strokeWidth='2'>
+                            <path d='M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0Z' />
+                            <circle cx='12' cy='10' r='3' />
+                          </svg>
+                          {distance}
+                        </span>
+                      )}
+                    </div>
                     <div className='notification-actions'>
                       {!notif.read && (
                         <button className='btn-action-link' onClick={() => handleMarkRead(notif._id)}>

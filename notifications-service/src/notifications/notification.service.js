@@ -46,8 +46,18 @@ export const createNotification = async ({ userId, postId, type, title, body, da
   return notification;
 };
 
+// Distancia en metros entre dos puntos GPS (fórmula de Haversine)
+const haversineMeters = (lat1, lng1, lat2, lng2) => {
+  const R = 6371000;
+  const dLat = (lat2 - lat1) * Math.PI / 180;
+  const dLng = (lng2 - lng1) * Math.PI / 180;
+  const a = Math.sin(dLat / 2) ** 2 +
+    Math.cos(lat1 * Math.PI / 180) * Math.cos(lat2 * Math.PI / 180) * Math.sin(dLng / 2) ** 2;
+  return R * 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
+};
+
 // Obtener notificaciones de un usuario
-export const fetchUserNotifications = async ({ userId, page = 1, limit = 20, onlyUnread = false }) => {
+export const fetchUserNotifications = async ({ userId, page = 1, limit = 20, onlyUnread = false, latitude, longitude }) => {
   const filter = { userId };
   if (onlyUnread) filter.read = false;
 
@@ -59,10 +69,25 @@ export const fetchUserNotifications = async ({ userId, page = 1, limit = 20, onl
     .limit(limitNumber)
     .skip((pageNumber - 1) * limitNumber);
 
+  // Si el cliente envía su ubicación actual, recalcular la distancia al vuelo
+  // en vez de usar la que quedó guardada al momento de crear la notificación
+  const hasUserPosition = latitude != null && longitude != null;
+  const enrichedNotifications = hasUserPosition
+    ? notifications.map((notification) => {
+        const { latitude: alertLat, longitude: alertLng } = notification.data ?? {};
+        if (alertLat == null || alertLng == null) return notification;
+
+        const distance = Math.round(haversineMeters(latitude, longitude, alertLat, alertLng));
+        const obj = notification.toObject();
+        obj.data = { ...obj.data, distance };
+        return obj;
+      })
+    : notifications;
+
   const total = await Notification.countDocuments(filter);
 
   return {
-    notifications,
+    notifications: enrichedNotifications,
     pagination: {
       currentPage: pageNumber,
       totalPages: Math.ceil(total / limitNumber),

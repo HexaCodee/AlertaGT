@@ -1,5 +1,6 @@
 import { useEffect, useMemo, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
+import '../../home/styles/home.css'
 import '../styles/create-alert.css'
 
 const POSTS_API_BASE = import.meta.env.VITE_POSTS_API_URL ?? 'http://localhost:3020/api/v1'
@@ -426,38 +427,51 @@ export const CreateAlertPage = () => {
                 </form>
             </main>
 
-            <nav className='create-bottom-nav' aria-label='Navegación principal'>
-                <button type='button' className='create-bottom-nav-item' onClick={() => navigate('/home')}>
-                    <svg viewBox='0 0 24 24' fill='none' stroke='currentColor' strokeWidth='2'>
-                        <path d='M12 3.2 3 10.6V21a1 1 0 0 0 1 1h5.5a1 1 0 0 0 1-1v-5.2h3V21a1 1 0 0 0 1 1H20a1 1 0 0 0 1-1V10.6l-9-7.4Z' />
-                    </svg>
-                    <span>Inicio</span>
+            <nav className='bottom-nav' aria-label='Navegación principal'>
+                <button type='button' className='bottom-nav-item' onClick={() => navigate('/home')}>
+                    <span className='bottom-nav-icon'>
+                        <svg viewBox='0 0 24 24' fill='none' stroke='currentColor' strokeWidth='2'>
+                            <path d='M12 3.2 3 10.6V21a1 1 0 0 0 1 1h5.5a1 1 0 0 0 1-1v-5.2h3V21a1 1 0 0 0 1 1H20a1 1 0 0 0 1-1V10.6l-9-7.4Z' />
+                        </svg>
+                    </span>
+                    <span className='bottom-nav-label'>Inicio</span>
                 </button>
-                <button type='button' className='create-bottom-nav-item'>
-                    <svg viewBox='0 0 24 24' fill='none' stroke='currentColor' strokeWidth='2'>
-                        <path d='M9 18 3 21V6l6-3 6 3 6-3v15l-6 3-6-3' />
-                        <path d='M9 3v15' />
-                        <path d='M15 6v15' />
-                    </svg>
-                    <span>Mapa</span>
+                <button type='button' className='bottom-nav-item' onClick={() => navigate('/map')}>
+                    <span className='bottom-nav-icon'>
+                        <svg viewBox='0 0 24 24' fill='none' stroke='currentColor' strokeWidth='2'>
+                            <path d='M9 18 3 21V6l6-3 6 3 6-3v15l-6 3-6-3' />
+                            <path d='M9 3v15' />
+                            <path d='M15 6v15' />
+                        </svg>
+                    </span>
+                    <span className='bottom-nav-label'>Mapa</span>
                 </button>
-                <button type='button' className='create-bottom-nav-item active' aria-current='page'>
-                    <span className='create-dot' aria-hidden='true' />
-                    <span>Crear</span>
+                <button type='button' className='bottom-nav-item active' aria-pressed='true'>
+                    <span className='bottom-nav-icon'>
+                        <svg viewBox='0 0 24 24' fill='none' stroke='currentColor' strokeWidth='2'>
+                            <path d='M12 5v14M5 12h14' />
+                            <circle cx='12' cy='12' r='10' />
+                        </svg>
+                    </span>
+                    <span className='bottom-nav-label'>Crear</span>
                 </button>
-                <button type='button' className='create-bottom-nav-item' onClick={() => navigate('/notifications')}>
-                    <svg viewBox='0 0 24 24' fill='none' stroke='currentColor' strokeWidth='2'>
-                        <path d='M15 17H5l1.4-1.4A2 2 0 0 0 7 14.2V10a5 5 0 0 1 10 0v4.2c0 .5.2 1 .6 1.4L19 17h-4' />
-                        <path d='M10 20a2 2 0 0 0 4 0' />
-                    </svg>
-                    <span>Notificaciones</span>
+                <button type='button' className='bottom-nav-item' onClick={() => navigate('/notifications')}>
+                    <span className='bottom-nav-icon'>
+                        <svg viewBox='0 0 24 24' fill='none' stroke='currentColor' strokeWidth='2'>
+                            <path d='M15 17H5l1.4-1.4A2 2 0 0 0 7 14.2V10a5 5 0 0 1 10 0v4.2c0 .5.2 1 .6 1.4L19 17h-4' />
+                            <path d='M10 20a2 2 0 0 0 4 0' />
+                        </svg>
+                    </span>
+                    <span className='bottom-nav-label'>Notificaciones</span>
                 </button>
-                <button type='button' className='create-bottom-nav-item' onClick={() => navigate('/profile')}>
-                    <svg viewBox='0 0 24 24' fill='none' stroke='currentColor' strokeWidth='2'>
-                        <circle cx='12' cy='8' r='4' />
-                        <path d='M4 21a8 8 0 0 1 16 0' />
-                    </svg>
-                    <span>Cuenta</span>
+                <button type='button' className='bottom-nav-item' onClick={() => navigate('/profile')}>
+                    <span className='bottom-nav-icon'>
+                        <svg viewBox='0 0 24 24' fill='none' stroke='currentColor' strokeWidth='2'>
+                            <circle cx='12' cy='8' r='4' />
+                            <path d='M4 21a8 8 0 0 1 16 0' />
+                        </svg>
+                    </span>
+                    <span className='bottom-nav-label'>Cuenta</span>
                 </button>
             </nav>
         </div>

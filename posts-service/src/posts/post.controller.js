@@ -296,12 +296,8 @@ export const flagPost = async (req, res, next) => {
 // Disparar notificaciones a usuarios cercanos (llamadas inter-servicio)
 async function triggerNotifications(post) {
   try {
-    if (!post.location || !post.location.latitude || !post.location.longitude) {
-      console.log('[notify] skipped: no location on post', post._id);
-      return;
-    }
+    if (!post.location || !post.location.latitude || !post.location.longitude) return;
 
-    console.log(`[notify] querying nearby users for post ${post._id} at ${post.location.latitude},${post.location.longitude}`);
     const nearbyResp = await axios.get(`${GEO_SERVICE_URL}/locations/nearby/users`, {
       params: {
         latitude: post.location.latitude,
@@ -311,7 +307,6 @@ async function triggerNotifications(post) {
     });
 
     const users = nearbyResp.data?.data || [];
-    console.log(`[notify] found ${users.length} nearby user(s):`, users.map(u => u.userId));
     if (!users.length) return;
 
     const notificationType = post.riskType === 'GRAVE' ? 'NEARBY_ALERT_CRITICAL' : 'NEW_ALERT';
@@ -325,8 +320,7 @@ async function triggerNotifications(post) {
                 Math.sin(dLng / 2) * Math.sin(dLng / 2);
       const distance = Math.round(R * 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a)));
 
-      console.log(`[notify] sending notification to userId=${user.userId}, postId=${post._id}, type=${notificationType}`);
-      const notifResp = await axios.post(`${NOTIFICATIONS_SERVICE_URL}/notifications`, {
+      await axios.post(`${NOTIFICATIONS_SERVICE_URL}/notifications`, {
         userId: user.userId,
         postId: post._id,
         type: notificationType,
@@ -337,15 +331,16 @@ async function triggerNotifications(post) {
           category: post.category,
           riskType: post.riskType,
           distance,
+          latitude: post.location.latitude,
+          longitude: post.location.longitude,
         },
         fcmToken: user.fcmToken || null,
       }, {
         headers: { 'x-service-token': SERVICE_TOKEN }
       });
-      console.log(`[notify] notifications-service responded ${notifResp.status} for userId=${user.userId}`);
     }));
   } catch (err) {
-    console.error('triggerNotifications error:', err.message, err.response?.data);
+    console.error('triggerNotifications error:', err.message);
   }
 }
 
