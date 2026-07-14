@@ -1,0 +1,9 @@
+# Dependencias
+node_modules/
+
+# Entorno
+.env
+
+# El .gitignore raíz ignora *.json de forma global (para proteger llaves
+# sensibles). Re-incluimos explícitamente el manifiesto del servicio.
+!package.json

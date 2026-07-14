@@ -87,13 +87,22 @@ public class RoleRepository(MongoDbContext context) : IRoleRepository
 
     private async Task LoadUserRelatedData(User user)
     {
-        // Cargar UserProfile
-        var profileCursor = await context.UserProfiles.FindAsync(up => up.UserId == user.Id);
-        user.UserProfile = await profileCursor.FirstOrDefaultAsync();
+        // Cargar UserProfile solo si no viene ya embebido en el documento (caso normal de
+        // registro). La colección separada `user_profiles` solo la usa el admin sembrado por
+        // DataSeeder; para el resto de usuarios está vacía, y sobrescribir siempre aquí borraba
+        // el teléfono/ciudad/dirección/país reales del perfil.
+        if (user.UserProfile == null)
+        {
+            var profileCursor = await context.UserProfiles.FindAsync(up => up.UserId == user.Id);
+            user.UserProfile = await profileCursor.FirstOrDefaultAsync();
+        }
 
-        // Cargar UserEmail
-        var emailCursor = await context.UserEmails.FindAsync(ue => ue.UserId == user.Id);
-        user.UserEmail = await emailCursor.FirstOrDefaultAsync();
+        // Cargar UserEmail (mismo criterio: preferir el embebido si ya existe)
+        if (user.UserEmail == null)
+        {
+            var emailCursor = await context.UserEmails.FindAsync(ue => ue.UserId == user.Id);
+            user.UserEmail = await emailCursor.FirstOrDefaultAsync();
+        }
 
         // Cargar UserRoles con información del Role
         var userRolesCursor = await _userRolesCollection.FindAsync(ur => ur.UserId == user.Id);

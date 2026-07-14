@@ -4,11 +4,21 @@ import {
   getAlertById,
   getComments,
   postComment,
-  flagAlert,
   deleteAlert,
 } from '../services/alertService'
+import { getPublicProfile } from '../../profile/services/profileService.js'
+import {
+  getAlertVerdict,
+  getReputation,
+  getRatingSummary,
+  rateUser,
+} from '../../reputation/services/reputationService.js'
+import { ReportAlertModal } from '../../reputation/components/ReportAlertModal.jsx'
+import { ReputationBadge } from '../../reputation/components/ReputationBadge.jsx'
+import { StarRating } from '../../reputation/components/StarRating.jsx'
 import defaultAlert from '../../../assets/img/defaultAlert.png'
 import '../styles/alert-detail.css'
+import '../../reputation/styles/reputation.css'
 
 const CATEGORY_META = {
   ACCIDENTE: { emoji: '🚗', label: 'Accidente', bg: '#fff3e0' },
@@ -113,9 +123,25 @@ export const AlertDetailPage = () => {
   const [menuOpen, setMenuOpen] = useState(false)
   const [actionMsg, setActionMsg] = useState('')
 
+  // ── Reputación / reportes ──
+  const [showReportModal, setShowReportModal] = useState(false)
+  const [verdict, setVerdict] = useState(null)
+  const [authorReputation, setAuthorReputation] = useState(null)
+  const [authorRatingSummary, setAuthorRatingSummary] = useState(null)
+  const [myRating, setMyRating] = useState(0)
+  const [ratingMsg, setRatingMsg] = useState('')
+
+  // Nombres reales de autores (userId -> nombre para mostrar), resueltos vía auth-service
+  const [authorNames, setAuthorNames] = useState({})
+  const fetchedAuthorsRef = useRef(new Set())
+
   const resolveAuthorName = useCallback(
-    (authorId) => (authorId && authorId === currentUserId ? 'Tú' : 'Miembro de la comunidad'),
-    [currentUserId]
+    (authorId) => {
+      if (!authorId) return 'Miembro de la comunidad'
+      if (authorId === currentUserId) return 'Tú'
+      return authorNames[authorId] || 'Miembro de la comunidad'
+    },
+    [currentUserId, authorNames]
   )
 
   // Cargar la alerta (fuente de verdad) y recalcular distancia
@@ -149,8 +175,55 @@ export const AlertDetailPage = () => {
     }
   }, [id])
 
+  // Veredicto de reportes de la alerta (conteo / confirmada falsa)
+  const loadVerdict = useCallback(async () => {
+    try { setVerdict(await getAlertVerdict(id)) } catch { /* silencioso */ }
+  }, [id])
+
   useEffect(() => { loadAlert() }, [loadAlert])
   useEffect(() => { loadComments() }, [loadComments])
+  useEffect(() => { loadVerdict() }, [loadVerdict])
+
+  // Reputación del autor (una vez que conocemos su id)
+  useEffect(() => {
+    const authorId = alert?.authorId
+    if (!authorId) return
+    Promise.all([getReputation(authorId), getRatingSummary(authorId)])
+      .then(([rep, sum]) => { setAuthorReputation(rep); setAuthorRatingSummary(sum) })
+      .catch(() => { /* silencioso: no romper la vista si reputación no responde */ })
+  }, [alert?.authorId])
+
+  // Resuelve el nombre real (auth-service) del autor de la alerta y de cada comentarista.
+  // Usa un ref para no repetir peticiones ya hechas/en curso, y no rompe la vista si falla.
+  useEffect(() => {
+    const ids = new Set()
+    if (alert?.authorId) ids.add(alert.authorId)
+    comments.forEach((c) => c.authorId && ids.add(c.authorId))
+
+    const toFetch = [...ids].filter(
+      (authorId) => authorId !== currentUserId && !fetchedAuthorsRef.current.has(authorId)
+    )
+    if (toFetch.length === 0) return
+
+    toFetch.forEach((authorId) => fetchedAuthorsRef.current.add(authorId))
+
+    Promise.all(
+      toFetch.map((authorId) =>
+        getPublicProfile(authorId)
+          .then((p) => {
+            const fullName = `${p?.name ?? ''} ${p?.surname ?? ''}`.trim()
+            return [authorId, fullName || p?.username || null]
+          })
+          .catch(() => [authorId, null])
+      )
+    ).then((pairs) => {
+      setAuthorNames((prev) => {
+        const next = { ...prev }
+        pairs.forEach(([authorId, name]) => { if (name) next[authorId] = name })
+        return next
+      })
+    })
+  }, [alert?.authorId, comments, currentUserId])
 
   const handleSubmitComment = async (e) => {
     e.preventDefault()
@@ -173,13 +246,39 @@ export const AlertDetailPage = () => {
     }
   }
 
-  const handleReport = async () => {
+  const handleReport = () => {
     setMenuOpen(false)
+    setShowReportModal(true)
+  }
+
+  // Resultado del modal de reporte: refrescamos veredicto y avisamos.
+  const handleReported = (data) => {
+    setShowReportModal(false)
+    loadVerdict()
+    if (data?.alertVerdict === 'CONFIRMED_FALSE') {
+      setActionMsg('Reporte enviado. Esta alerta fue confirmada como falsa por la comunidad.')
+    } else {
+      setActionMsg('Reporte enviado. Gracias por ayudar a mantener la comunidad segura.')
+    }
+  }
+
+  // Calificar al autor de la alerta
+  const handleRate = async (score) => {
+    setMyRating(score)
+    setRatingMsg('')
     try {
-      await flagAlert(id)
-      setActionMsg('Alerta reportada. Gracias por ayudar a la comunidad.')
+      await rateUser({ targetUserId: alert.authorId, score, postId: id })
+      setRatingMsg('¡Gracias por tu calificación!')
+      // Refrescar el resumen del autor
+      const [rep, sum] = await Promise.all([
+        getReputation(alert.authorId),
+        getRatingSummary(alert.authorId),
+      ])
+      setAuthorReputation(rep)
+      setAuthorRatingSummary(sum)
     } catch (err) {
-      setActionMsg(err.message || 'No se pudo reportar la alerta')
+      setRatingMsg(err.message || 'No se pudo registrar la calificación')
+      setMyRating(0)
     }
   }
 
@@ -281,13 +380,38 @@ export const AlertDetailPage = () => {
 
           <div className='detail-author'>
             <span className='detail-avatar'>{initials(resolveAuthorName(alert.authorId))}</span>
-            <div>
+            <div style={{ flex: 1, minWidth: 0 }}>
               <span className='detail-author-label'>Publicado por</span>
               <span className='detail-author-name'>{resolveAuthorName(alert.authorId)}</span>
             </div>
           </div>
+
+          {authorReputation && (
+            <div style={{ marginTop: '0.75rem' }}>
+              <ReputationBadge reputation={authorReputation} ratingSummary={authorRatingSummary} />
+            </div>
+          )}
+
+          {!isAuthor && currentUserId && (
+            <div className='rep-rate-box'>
+              <span className='rep-rate-title'>Califica al autor de esta alerta</span>
+              <StarRating value={myRating} onRate={handleRate} size={28} />
+              {ratingMsg && <span className='rep-rate-done'>{ratingMsg}</span>}
+            </div>
+          )}
         </section>
         </div>
+
+        {verdict && verdict.verdict === 'CONFIRMED_FALSE' && (
+          <div className='rep-verdict-banner rep-verdict-false'>
+            🚫 Esta alerta fue confirmada como FALSA por la comunidad ({verdict.falseReportsCount} reportes).
+          </div>
+        )}
+        {verdict && verdict.verdict === 'FLAGGED' && verdict.reportsCount > 0 && (
+          <div className='rep-verdict-banner rep-verdict-flagged'>
+            ⚠️ Esta alerta tiene {verdict.reportsCount} reporte{verdict.reportsCount === 1 ? '' : 's'} de la comunidad.
+          </div>
+        )}
 
         {actionMsg && <p className='detail-action-msg'>{actionMsg}</p>}
 
@@ -347,6 +471,14 @@ export const AlertDetailPage = () => {
           )}
         </section>
       </main>
+
+      {showReportModal && (
+        <ReportAlertModal
+          postId={id}
+          onClose={() => setShowReportModal(false)}
+          onReported={handleReported}
+        />
+      )}
     </div>
   )
 }

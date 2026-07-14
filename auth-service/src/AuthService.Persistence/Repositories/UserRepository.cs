@@ -219,7 +219,11 @@ public class UserRepository(MongoDbContext context, ILogger<UserRepository> logg
         user.UserRoles = await GetUserRolesAsync(user.Id);
 
         // Cargar UserProfile
-        if (!string.IsNullOrEmpty(user.Id))
+        // Si ya viene embebido en el documento (caso normal: el registro guarda todo embebido
+        // en la colección `users`), no lo sobrescribimos. La colección separada `user_profiles`
+        // solo la usa el usuario admin sembrado por DataSeeder; para el resto de usuarios está
+        // vacía, y sobrescribir aquí borraba el teléfono/ciudad/dirección/país reales.
+        if (!string.IsNullOrEmpty(user.Id) && user.UserProfile == null)
         {
             var profileCursor = await context.UserProfiles.FindAsync(up => up.UserId == user.Id);
             user.UserProfile = await profileCursor.FirstOrDefaultAsync();
@@ -237,8 +241,8 @@ public class UserRepository(MongoDbContext context, ILogger<UserRepository> logg
             }
         }
 
-        // Cargar UserPasswordReset
-        if (!string.IsNullOrEmpty(user.Id))
+        // Cargar UserPasswordReset (mismo criterio: preferir el embebido si ya existe)
+        if (!string.IsNullOrEmpty(user.Id) && user.UserPasswordReset == null)
         {
             var passwordResetCursor = await context.UserPasswordResets.FindAsync(upr => upr.UserId == user.Id);
             user.UserPasswordReset = await passwordResetCursor.FirstOrDefaultAsync();

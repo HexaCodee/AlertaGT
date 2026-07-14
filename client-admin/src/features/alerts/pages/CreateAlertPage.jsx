@@ -8,6 +8,21 @@ const DEFAULT_LOCATION_LABEL = 'Ciudad de Guatemala (Predeterminada)'
 const DEFAULT_LATITUDE = 14.6168
 const DEFAULT_LONGITUDE = -90.5133
 
+// Límites geográficos aproximados de Guatemala (mismos valores que el backend,
+// para no dejar publicar alertas fuera del país).
+const GUATEMALA_BOUNDS = {
+    MIN_LATITUDE: 13.73,
+    MAX_LATITUDE: 17.81,
+    MIN_LONGITUDE: -92.24,
+    MAX_LONGITUDE: -88.22,
+}
+
+const isWithinGuatemala = (latitude, longitude) =>
+    latitude >= GUATEMALA_BOUNDS.MIN_LATITUDE &&
+    latitude <= GUATEMALA_BOUNDS.MAX_LATITUDE &&
+    longitude >= GUATEMALA_BOUNDS.MIN_LONGITUDE &&
+    longitude <= GUATEMALA_BOUNDS.MAX_LONGITUDE
+
 const CATEGORY_OPTIONS = [
     { id: 'accident', label: 'Accidente', icon: '🚗' },
     { id: 'traffic', label: 'Tráfico', icon: '🚦' },
@@ -56,41 +71,50 @@ export const CreateAlertPage = () => {
     const [description, setDescription] = useState('')
     const [category, setCategory] = useState('')
     const [riskType, setriskType] = useState('')
-    const [useCurrentLocation, setUseCurrentLocation] = useState(true)
-    const [manualAddress, setManualAddress] = useState('')
     const [locationLabel, setLocationLabel] = useState(DEFAULT_LOCATION_LABEL)
     const [currentCoordinates, setCurrentCoordinates] = useState({
         latitude: DEFAULT_LATITUDE,
         longitude: DEFAULT_LONGITUDE
     })
+    const [isOutsideGuatemala, setIsOutsideGuatemala] = useState(false)
     const [selectedImage, setSelectedImage] = useState(null)
     const [attachmentNames, setAttachmentNames] = useState([])
     const [submitMessage, setSubmitMessage] = useState('')
     const [isSubmitting, setIsSubmitting] = useState(false)
+
+    const applyCoordinates = (latitude, longitude, label) => {
+        setCurrentCoordinates({ latitude, longitude })
+        setIsOutsideGuatemala(!isWithinGuatemala(latitude, longitude))
+        setLocationLabel(
+            isWithinGuatemala(latitude, longitude)
+                ? label
+                : 'Ubicación fuera de Guatemala: no se puede publicar'
+        )
+    }
 
     const refreshCurrentLocation = () => {
     const savedLat = window.sessionStorage.getItem('user_lat')
     const savedLng = window.sessionStorage.getItem('user_lng')
 
     if (!navigator.geolocation) {
-        setCurrentCoordinates(savedLat ? { latitude: parseFloat(savedLat), longitude: parseFloat(savedLng) } : { latitude: DEFAULT_LATITUDE, longitude: DEFAULT_LONGITUDE })
-        setLocationLabel(savedLat ? 'Ubicación de la sesión' : DEFAULT_LOCATION_LABEL)
+        if (savedLat && savedLng) {
+            applyCoordinates(parseFloat(savedLat), parseFloat(savedLng), 'Ubicación de la sesión')
+        } else {
+            applyCoordinates(DEFAULT_LATITUDE, DEFAULT_LONGITUDE, DEFAULT_LOCATION_LABEL)
+        }
         return
     }
 
     navigator.geolocation.getCurrentPosition(
         (position) => {
             const { latitude, longitude } = position.coords
-            setCurrentCoordinates({ latitude, longitude })
-            setLocationLabel('Coordenadas GPS detectadas')
+            applyCoordinates(latitude, longitude, 'Coordenadas GPS detectadas')
         },
         () => {
             if (savedLat && savedLng) {
-                setCurrentCoordinates({ latitude: parseFloat(savedLat), longitude: parseFloat(savedLng) })
-                setLocationLabel('Ubicación de la sesión (Sensor previo)')
+                applyCoordinates(parseFloat(savedLat), parseFloat(savedLng), 'Ubicación de la sesión (Sensor previo)')
             } else {
-                setCurrentCoordinates({ latitude: DEFAULT_LATITUDE, longitude: DEFAULT_LONGITUDE })
-                setLocationLabel(DEFAULT_LOCATION_LABEL)
+                applyCoordinates(DEFAULT_LATITUDE, DEFAULT_LONGITUDE, DEFAULT_LOCATION_LABEL)
             }
         },
         {
@@ -100,47 +124,25 @@ export const CreateAlertPage = () => {
 }
 
     useEffect(() => {
-        if (useCurrentLocation) {
-            refreshCurrentLocation()
-            return
-        }
-
-        setCurrentCoordinates(null)
-        setLocationLabel('Dirección especificada manualmente')
-    }, [useCurrentLocation])
+        refreshCurrentLocation()
+    }, [])
 
     const canPublish = useMemo(() => {
-        const hasLocation = useCurrentLocation
-            ? Boolean(currentCoordinates)
-            : manualAddress.trim().length > 0
-
         return (
             title.trim().length > 0 &&
             description.trim().length > 0 &&
             category.length > 0 &&
             riskType.length > 0 &&
-            hasLocation
+            Boolean(currentCoordinates) &&
+            !isOutsideGuatemala
         )
-    }, [category, currentCoordinates, description, manualAddress, riskType, title, useCurrentLocation])
+    }, [category, currentCoordinates, description, isOutsideGuatemala, riskType, title])
 
     const buildLocationPayload = () => {
-        if (useCurrentLocation) {
-            return {
-                latitude: currentCoordinates?.latitude ?? DEFAULT_LATITUDE,
-                longitude: currentCoordinates?.longitude ?? DEFAULT_LONGITUDE,
-                address: locationLabel
-            }
-        }
-
-        const trimmedAddress = manualAddress.trim()
-
-        if (!trimmedAddress) {
-            return null
-        }
-
         return {
-            address: trimmedAddress,
-            manual: true
+            latitude: currentCoordinates?.latitude ?? DEFAULT_LATITUDE,
+            longitude: currentCoordinates?.longitude ?? DEFAULT_LONGITUDE,
+            address: locationLabel
         }
     }
 
@@ -160,6 +162,11 @@ export const CreateAlertPage = () => {
 
     const handleSubmit = async (event) => {
         event.preventDefault()
+
+        if (isOutsideGuatemala) {
+            setSubmitMessage('No puedes publicar alertas fuera de Guatemala.')
+            return
+        }
 
         if (!canPublish) {
             setSubmitMessage('Completa los campos obligatorios antes de publicar.')
@@ -345,40 +352,22 @@ export const CreateAlertPage = () => {
                     </section>
 
                     <section className='field-block'>
-                        <div className='location-header'>
-                            <p className='section-label'>
-                                Ubicación <span>*</span>
-                            </p>
-                            <label className='switch' aria-label='Usar mi ubicación actual'>
-                                <input
-                                    type='checkbox'
-                                    checked={useCurrentLocation}
-                                    onChange={(event) => setUseCurrentLocation(event.target.checked)}
-                                />
-                                <span className='slider' />
-                            </label>
-                        </div>
+                        <p className='section-label'>
+                            Ubicación <span>*</span>
+                        </p>
 
-                        <div className='location-current'>
-                            <span className='location-pin' aria-hidden='true'>📍</span>
+                        <div className={`location-current ${isOutsideGuatemala ? 'location-current--error' : ''}`}>
+                            <span className='location-pin' aria-hidden='true'>{isOutsideGuatemala ? '🚫' : '📍'}</span>
                             <div>
                                 <strong>Usar mi ubicación actual</strong>
                                 <small>{locationLabel}</small>
                             </div>
                         </div>
 
-                        {!useCurrentLocation && (
-                            <>
-                                <label htmlFor='manual-address' className='sub-label'>Dirección manual</label>
-                                <input
-                                    id='manual-address'
-                                    type='text'
-                                    value={manualAddress}
-                                    onChange={(event) => setManualAddress(event.target.value)}
-                                    placeholder='Ingresa la dirección'
-                                    className='text-input'
-                                />
-                            </>
+                        {isOutsideGuatemala && (
+                            <p className='location-warning'>
+                                AlertaGT solo permite publicar alertas dentro de Guatemala. Verifica tu ubicación o GPS.
+                            </p>
                         )}
 
                         <button

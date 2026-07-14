@@ -20,6 +20,7 @@ import { asyncHandler } from '../middlewares/async-handler.js';
 
 import { validateJWT } from '../../middlewares/validate-JWT.js';
 import { requireRole } from '../../middlewares/validate-role.js';
+import { validateCanPublish } from '../../middlewares/validate-can-publish.js';
 import upload from '../../middlewares/upload.js';
 import { validateAttachmentsMiddleware } from '../../middlewares/attachment-validator.js';
 console.log("Cargando rutas de posts...");
@@ -234,6 +235,7 @@ router.get('/:id', asyncHandler(getPostById));        // Obtener publicación po
 router.post(
   '/',
   validateJWT,
+  validateCanPublish,
   upload.fields([
     { name: 'image', maxCount: 1 },
     { name: 'attachments', maxCount: 6 },

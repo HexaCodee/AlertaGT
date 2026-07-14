@@ -1,0 +1,35 @@
+{
+  "name": "alertagt-reputation-service",
+  "version": "1.0.0",
+  "description": "Servicio de Reputación, Reportes y Calificaciones de usuarios para AlertaGT",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "dev": "nodemon index.js",
+    "start": "node index.js",
+    "create-indexes": "node scripts/create-indexes.js"
+  },
+  "keywords": [],
+  "author": "AlertaGT Team",
+  "license": "ISC",
+  "packageManager": "pnpm@10.17.1",
+  "type": "module",
+  "dependencies": {
+    "axios": "^1.13.6",
+    "cors": "^2.8.6",
+    "dotenv": "^17.2.4",
+    "express": "^5.2.1",
+    "express-rate-limit": "^8.2.1",
+    "express-validator": "^7.3.1",
+    "helmet": "^8.1.0",
+    "jsonwebtoken": "^9.0.3",
+    "swagger-jsdoc": "^6.2.8",
+    "swagger-ui-express": "^5.0.1",
+    "mongoose": "^9.1.6",
+    "morgan": "^1.10.1",
+    "uuid": "^13.0.0"
+  },
+  "devDependencies": {
+    "nodemon": "^3.1.11"
+  }
+}
