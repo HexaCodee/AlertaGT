@@ -39,6 +39,35 @@ public class ProfileController(IUserService userService) : ControllerBase
     }
 
     /// <summary>
+    /// Obtiene el subconjunto público del perfil de cualquier usuario (nombre de usuario,
+    /// nombre, apellido y foto de perfil). No expone datos sensibles como email o teléfono.
+    /// Se usa para mostrar el autor real de una alerta o comentario en vez de un genérico.
+    /// </summary>
+    /// <param name="userId">Id del usuario cuyo perfil público se desea consultar.</param>
+    [HttpGet("{userId}/public")]
+    [ProducesResponseType(StatusCodes.Status200OK, Type = typeof(PublicUserDto))]
+    [ProducesResponseType(StatusCodes.Status404NotFound)]
+    public async Task<ActionResult<PublicUserDto>> GetPublicProfile(string userId)
+    {
+        try
+        {
+            var user = await userService.GetUserProfileAsync(userId);
+            return Ok(new PublicUserDto
+            {
+                Id = user.Id,
+                Username = user.Username,
+                Name = user.Name,
+                Surname = user.Surname,
+                ProfilePicture = user.ProfilePicture
+            });
+        }
+        catch (KeyNotFoundException)
+        {
+            return NotFound(new { success = false, message = "Usuario no encontrado" });
+        }
+    }
+
+    /// <summary>
     /// Actualiza la información del perfil del usuario (teléfono, ciudad, dirección, país).
     /// </summary>
     /// <param name="updateDto">Nueva información del perfil.</param>

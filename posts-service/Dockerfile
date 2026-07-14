@@ -1,5 +1,6 @@
 # Dockerfile para servicios Node.js (Posts, Notifications, Geolocation)
-FROM node:18-alpine AS base
+# Node 20+ es requerido por mongoose 9 (usa el objeto `crypto` global, ausente en Node 18).
+FROM node:20-alpine AS base
 
 # Instalar pnpm
 RUN npm install -g pnpm

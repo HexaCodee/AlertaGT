@@ -1,0 +1,206 @@
+/* ===================== Estrellas ===================== */
+.star-rating {
+  display: inline-flex;
+  gap: 2px;
+  align-items: center;
+}
+.star-rating .star {
+  border: none;
+  background: transparent;
+  padding: 0;
+  cursor: pointer;
+  color: #d1d5db;
+  transition: color 0.15s ease, transform 0.1s ease;
+}
+.star-rating .star svg { width: 100%; height: 100%; display: block; }
+.star-rating .star.filled { color: #f59e0b; }
+.star-rating .star.readonly { cursor: default; }
+.star-rating .star:not(.readonly):hover { transform: scale(1.15); }
+
+/* ===================== Insignia de reputación ===================== */
+.reputation-badge {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+  width: 100%;
+}
+.rep-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.5rem;
+}
+.rep-status {
+  font-size: 0.78rem;
+  font-weight: 700;
+  padding: 0.15rem 0.55rem;
+  border-radius: 999px;
+}
+.rep-status-active { background: #dcfce7; color: #15803d; }
+.rep-status-warned { background: #fef3c7; color: #b45309; }
+.rep-status-suspended { background: #fee2e2; color: #b91c1c; }
+.rep-trust-label { font-size: 0.78rem; font-weight: 600; color: #6b7280; }
+
+.rep-trust-bar {
+  width: 100%;
+  height: 7px;
+  border-radius: 999px;
+  background: #e5e7eb;
+  overflow: hidden;
+}
+.rep-trust-fill { height: 100%; border-radius: 999px; transition: width 0.4s ease; }
+
+.rep-stars-row { justify-content: flex-start; gap: 0.5rem; }
+.rep-stars-text { font-size: 0.8rem; color: #6b7280; }
+.rep-false-note { margin: 0; font-size: 0.8rem; color: #b91c1c; font-weight: 600; }
+.rep-suspended-note { margin: 0; font-size: 0.78rem; color: #6b7280; }
+
+/* ===================== Bloque "califica al autor" ===================== */
+.rep-rate-box {
+  display: flex;
+  flex-direction: column;
+  gap: 0.4rem;
+  padding: 0.85rem 1rem;
+  border: 1px dashed #e5e7eb;
+  border-radius: 12px;
+  margin-top: 0.75rem;
+}
+.rep-rate-title { font-size: 0.85rem; font-weight: 600; color: #374151; }
+.rep-rate-done { font-size: 0.82rem; color: #15803d; font-weight: 600; }
+
+/* ===================== Banner de veredicto en la alerta ===================== */
+.rep-verdict-banner {
+  display: flex;
+  align-items: center;
+  gap: 0.6rem;
+  padding: 0.7rem 1rem;
+  border-radius: 12px;
+  font-size: 0.86rem;
+  font-weight: 600;
+}
+.rep-verdict-flagged { background: #fef3c7; color: #b45309; }
+.rep-verdict-false { background: #fee2e2; color: #b91c1c; }
+
+/* ===================== Modal de reporte ===================== */
+.rep-modal-overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.5);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 1rem;
+  z-index: 1000;
+}
+.rep-modal {
+  width: 100%;
+  max-width: 420px;
+  background: #fff;
+  border-radius: 18px;
+  padding: 1.35rem 1.35rem 1.5rem;
+  box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+  max-height: 90vh;
+  overflow-y: auto;
+}
+.rep-modal-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 0.35rem;
+}
+.rep-modal-head h3 { margin: 0; font-size: 1.15rem; font-weight: 800; color: #1f2430; }
+.rep-modal-close {
+  border: none; background: transparent; cursor: pointer; color: #9ca3af;
+  display: grid; place-items: center; padding: 0.2rem;
+}
+.rep-modal-sub { margin: 0 0 1rem; font-size: 0.88rem; color: #6b7280; }
+
+.rep-reason-list { display: flex; flex-direction: column; gap: 0.5rem; margin-bottom: 0.9rem; }
+.rep-reason {
+  display: flex;
+  align-items: center;
+  gap: 0.65rem;
+  padding: 0.7rem 0.85rem;
+  border: 1.5px solid #e5e7eb;
+  border-radius: 12px;
+  cursor: pointer;
+  transition: border-color 0.15s ease, background 0.15s ease;
+}
+.rep-reason:hover { border-color: #fca5a5; }
+.rep-reason.selected { border-color: #d30000; background: #fef2f2; }
+.rep-reason input { accent-color: #d30000; }
+.rep-reason-emoji { font-size: 1.1rem; }
+.rep-reason-label { font-size: 0.9rem; color: #374151; font-weight: 500; }
+
+.rep-comment {
+  width: 100%;
+  border: 1.5px solid #e5e7eb;
+  border-radius: 12px;
+  padding: 0.7rem 0.85rem;
+  font-size: 0.9rem;
+  font-family: inherit;
+  resize: vertical;
+  box-sizing: border-box;
+}
+.rep-comment:focus { outline: none; border-color: #d30000; }
+.rep-modal-error { margin: 0.6rem 0 0; color: #dc2626; font-size: 0.85rem; }
+
+.rep-modal-actions { display: flex; gap: 0.7rem; margin-top: 1.1rem; }
+.rep-btn-primary, .rep-btn-secondary {
+  flex: 1;
+  padding: 0.75rem;
+  border-radius: 12px;
+  font-size: 0.92rem;
+  font-weight: 700;
+  cursor: pointer;
+  border: none;
+  transition: opacity 0.15s ease;
+}
+.rep-btn-primary { background: #d30000; color: #fff; }
+.rep-btn-secondary { background: #f3f4f6; color: #374151; }
+.rep-btn-primary:disabled { opacity: 0.6; cursor: not-allowed; }
+
+/* ===================== Tarjeta de reputación (perfil) ===================== */
+.rep-profile-card {
+  background: #fff;
+  border-radius: 16px;
+  padding: 1.25rem 1.3rem;
+  margin: 0 1rem 1rem;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.06);
+}
+.rep-profile-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 0.9rem;
+}
+.rep-profile-head h3 { margin: 0; font-size: 1rem; font-weight: 700; color: #1f2430; }
+.rep-profile-trust {
+  font-size: 1.5rem;
+  font-weight: 800;
+  line-height: 1;
+}
+
+/* ===================== Modo oscuro ===================== */
+[data-theme='dark'] .rep-modal { background: var(--dark-surface); }
+[data-theme='dark'] .rep-modal-head h3 { color: var(--dark-text); }
+[data-theme='dark'] .rep-modal-sub,
+[data-theme='dark'] .rep-stars-text,
+[data-theme='dark'] .rep-trust-label { color: var(--dark-text-2); }
+[data-theme='dark'] .rep-reason {
+  border-color: var(--dark-border);
+  background: var(--dark-surface-2);
+}
+[data-theme='dark'] .rep-reason-label { color: var(--dark-text); }
+[data-theme='dark'] .rep-reason.selected { background: rgba(211, 0, 0, 0.15); border-color: #d30000; }
+[data-theme='dark'] .rep-comment {
+  background: var(--dark-surface-2);
+  border-color: var(--dark-border);
+  color: var(--dark-text);
+}
+[data-theme='dark'] .rep-btn-secondary { background: var(--dark-surface-2); color: var(--dark-text); }
+[data-theme='dark'] .rep-trust-bar { background: var(--dark-surface-2); }
+[data-theme='dark'] .rep-profile-card { background: var(--dark-surface); }
+[data-theme='dark'] .rep-profile-head h3 { color: var(--dark-text); }
+[data-theme='dark'] .rep-rate-box { border-color: var(--dark-border); }
+[data-theme='dark'] .rep-rate-title { color: var(--dark-text-2); }

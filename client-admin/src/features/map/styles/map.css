@@ -102,6 +102,7 @@
 
 /* ---------- Marcador de usuario ("tu ubicación") ---------- */
 .map-user-dot {
+  display: inline-block;
   position: relative;
   width: 16px;
   height: 16px;
@@ -113,6 +114,7 @@
 
 /* Anillo tipo radar que se expande alrededor del punto */
 .map-user-pulse {
+  display: block;
   position: absolute;
   left: 50%;
   top: 50%;

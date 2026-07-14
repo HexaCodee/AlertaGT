@@ -27,7 +27,7 @@
 [data-theme='dark'] .alerts-container { background: var(--dark-bg); }
 [data-theme='dark'] .top-panel {
   background: #141b24;
-  border-bottom: 1px solid var(--dark-border);
+  border: 1px solid var(--dark-border);
 }
 
 /* Pills de categoría y selector de orden */

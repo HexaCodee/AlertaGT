@@ -1,7 +1,11 @@
 import { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { getProfileData } from '../services/profileService';
+import { getReputation, getRatingSummary } from '../../reputation/services/reputationService.js';
+import { ReputationBadge } from '../../reputation/components/ReputationBadge.jsx';
+import { getCurrentUserId } from '../../../shared/utils/session.js';
 import { getTheme, toggleTheme } from '../../../shared/utils/theme.js';
+import '../../reputation/styles/reputation.css';
 import {
     getAlertRadius,
     setAlertRadius,
@@ -20,6 +24,8 @@ export const AccountPage = () => {
     const [loading, setLoading] = useState(true);
     const [theme, setTheme] = useState(getTheme());
     const [radius, setRadius] = useState(getAlertRadius());
+    const [reputation, setReputation] = useState(null);
+    const [ratingSummary, setRatingSummary] = useState(null);
 
     const handleToggleTheme = () => setTheme(toggleTheme());
 
@@ -34,6 +40,15 @@ export const AccountPage = () => {
             .then(setData)
             .catch((err) => console.error("Error cargando perfil:", err))
             .finally(() => setLoading(false));
+    }, []);
+
+    // Cargar mi reputación (confianza, estrellas, estado)
+    useEffect(() => {
+        const userId = getCurrentUserId();
+        if (!userId) return;
+        Promise.all([getReputation(userId), getRatingSummary(userId)])
+            .then(([rep, sum]) => { setReputation(rep); setRatingSummary(sum); })
+            .catch(() => { /* silencioso: no romper el perfil si reputación no responde */ });
     }, []);
 
     if (loading) {
@@ -97,6 +112,19 @@ export const AccountPage = () => {
                     <p className="stat-label">Comunidad ayudada</p>
                 </div>
             </section>
+
+            {/* Mi Reputación */}
+            {reputation && (
+                <section className="rep-profile-card">
+                    <div className="rep-profile-head">
+                        <h3>Mi reputación</h3>
+                        <span className="rep-profile-trust" style={{ color: reputation.trustScore >= 70 ? '#16a34a' : reputation.trustScore >= 40 ? '#d97706' : '#dc2626' }}>
+                            {reputation.trustScore}<span style={{ fontSize: '0.85rem', fontWeight: 600, color: '#9ca3af' }}>/100</span>
+                        </span>
+                    </div>
+                    <ReputationBadge reputation={reputation} ratingSummary={ratingSummary} />
+                </section>
+            )}
 
             {/* Información de Contacto */}
             <section className="contact-info-card">
@@ -170,15 +198,10 @@ export const AccountPage = () => {
                     <span className="badge-coming-soon">Próximamente</span>
                     <span className="option-arrow">›</span>
                 </div>
-                <div className="option-item">
+                <div className="option-item border-none">
                     <svg className="option-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M23 6l-9.5 9.5-5-5L1 18M17 6h6v6"/></svg>
                     <span className="option-name">Mi impacto en la comunidad</span>
                     <span className="badge-coming-soon">Próximamente</span>
-                    <span className="option-arrow">›</span>
-                </div>
-                <div className="option-item border-none">
-                    <svg className="option-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg>
-                    <span className="option-name">Configuración</span>
                     <span className="option-arrow">›</span>
                 </div>
             </section>

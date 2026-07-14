@@ -22,3 +22,9 @@ export const updatePreferences = async (preferencesDto) => {
     body: preferencesDto
   })
 }
+
+// Subconjunto público del perfil de cualquier usuario (username, nombre, foto).
+// Se usa para mostrar el autor real de una alerta/comentario en vez de un genérico.
+export const getPublicProfile = async (userId) => {
+  return await apiRequest(`Profile/${userId}/public`)
+}

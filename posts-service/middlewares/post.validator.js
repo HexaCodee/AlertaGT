@@ -1,5 +1,6 @@
 import { body, param } from "express-validator";
 import { checkValidators } from "./check-validators.js";
+import { isWithinGuatemala } from "./geo-bounds.js";
 
 export const validateCreatePost = [
   body("title")
@@ -37,6 +38,9 @@ export const validateCreatePost = [
         const hasLng = value.longitude !== undefined && value.longitude !== null;
         if (hasLat !== hasLng) {
           throw new Error('Si se provee latitud, se debe proveer longitud (y viceversa)');
+        }
+        if (hasLat && hasLng && !isWithinGuatemala(value.latitude, value.longitude)) {
+          throw new Error('La ubicación debe estar dentro de Guatemala');
         }
       }
       return true;
@@ -79,6 +83,9 @@ export const validateUpdatePost = [
         const hasLng = value.longitude !== undefined && value.longitude !== null;
         if (hasLat !== hasLng) {
           throw new Error('Si se provee latitud, se debe proveer longitud (y viceversa)');
+        }
+        if (hasLat && hasLng && !isWithinGuatemala(value.latitude, value.longitude)) {
+          throw new Error('La ubicación debe estar dentro de Guatemala');
         }
       }
       return true;
