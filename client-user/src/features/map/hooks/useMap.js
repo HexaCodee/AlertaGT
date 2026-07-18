@@ -1,0 +1,62 @@
+// client-user/src/features/map/hooks/useMap.js
+// Lógica del mapa: actualizar mi ubicación, buscar alertas cercanas y compartir ubicación.
+//
+// NOTA: en el geo-service la actualización de ubicación es POST /locations
+// (no PUT), y el toggle de compartir es PUT /locations/toggle-sharing.
+
+import { useState, useCallback } from 'react';
+import { geoClient, postsClient } from '../../../shared/api/apiClient.js';
+
+export const useMap = () => {
+  const [nearbyAlerts, setNearbyAlerts] = useState([]);
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState('');
+
+  // Guardar/actualizar mi ubicación actual en el geo-service.
+  const updateLocation = useCallback(async ({ latitude, longitude, address } = {}) => {
+    setError('');
+    try {
+      const response = await geoClient.post('/locations', { latitude, longitude, address });
+      return response.data.data || response.data;
+    } catch (err) {
+      setError(err.response?.data?.message || 'No se pudo actualizar tu ubicación');
+      return null;
+    }
+  }, []);
+
+  // Buscar alertas cercanas a una coordenada.
+  const fetchNearbyAlerts = useCallback(async ({ latitude, longitude, maxDistance = 5000 }) => {
+    setLoading(true);
+    setError('');
+    try {
+      const response = await postsClient.get('/posts/proximity/search', {
+        params: { latitude, longitude, maxDistance },
+      });
+      const data = response.data.data || response.data;
+      const list = Array.isArray(data) ? data : [];
+      setNearbyAlerts(list);
+      return list;
+    } catch (err) {
+      setError(err.response?.data?.message || 'No se pudieron cargar las alertas cercanas');
+      return [];
+    } finally {
+      setLoading(false);
+    }
+  }, []);
+
+  // Activar/desactivar el compartir ubicación.
+  const toggleSharing = useCallback(async () => {
+    setError('');
+    try {
+      const response = await geoClient.put('/locations/toggle-sharing');
+      return response.data.data || response.data;
+    } catch (err) {
+      setError(err.response?.data?.message || 'No se pudo cambiar el compartir ubicación');
+      return null;
+    }
+  }, []);
+
+  return { nearbyAlerts, loading, error, updateLocation, fetchNearbyAlerts, toggleSharing };
+};
+
+export default useMap;
