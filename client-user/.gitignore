@@ -1,0 +1,30 @@
+# client-user/.gitignore
+
+# Dependencias
+node_modules/
+
+# Expo
+.expo/
+dist/
+web-build/
+*.orig.*
+
+# Entorno (nunca commitear URLs/credenciales reales)
+.env
+.env.local
+
+# Nativo
+*.jks
+*.p8
+*.p12
+*.key
+*.mobileprovision
+ios/
+android/
+
+# Sistema / logs
+.DS_Store
+*.log
+npm-debug.*
+yarn-debug.*
+yarn-error.*

@@ -30,8 +30,18 @@
 *firebase-adminsdk*.json
 
 ## [Service Account Keys - SENSITIVE]
-*.json
+**/serviceAccountKey*.json
+**/*-firebase-adminsdk-*.json
 firebase-service-account.json
+
+## [Node.js / Expo / React Native - client-user, posts-service, etc.]
+**/node_modules/
+**/.expo/
+**/dist/
+**/web-build/
+**/.env
+**/.env.local
+**/.env.*.local
 
 ## [Logs]
 *.log
