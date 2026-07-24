@@ -1282,7 +1282,7 @@
           }
         }
       },
-      "MongoDB.Bson/3.9.0": {
+      "MongoDB.Bson/3.10.0": {
         "type": "package",
         "dependencies": {
           "System.Memory": "4.5.5",
@@ -1299,12 +1299,12 @@
           }
         }
       },
-      "MongoDB.Driver/3.9.0": {
+      "MongoDB.Driver/3.10.0": {
         "type": "package",
         "dependencies": {
           "DnsClient": "1.6.1",
           "Microsoft.Extensions.Logging.Abstractions": "2.0.0",
-          "MongoDB.Bson": "3.9.0",
+          "MongoDB.Bson": "3.10.0",
           "SharpCompress": "0.48.1",
           "Snappier": "1.3.1",
           "System.Buffers": "4.6.1",
@@ -5197,10 +5197,10 @@
         "mimekit.nuspec"
       ]
     },
-    "MongoDB.Bson/3.9.0": {
-      "sha512": "J6vB61zKwMSfxbkN+/amGvj1qVMDKrKjV3kmoOWttMcv8JJScLDCFh89FyL3f2lDUyJrnfgZCR6/KX+07e99eg==",
+    "MongoDB.Bson/3.10.0": {
+      "sha512": "dpM9EXd3evUW7qPpSjfWshPYjbD26rxm+e32LWNDpRWBZZZo4WaO5Azy/Xro55u3IZ/8u1Z4hCZnlI72Y+/5jg==",
       "type": "package",
-      "path": "mongodb.bson/3.9.0",
+      "path": "mongodb.bson/3.10.0",
       "files": [
         ".nupkg.metadata",
         ".signature.p7s",
@@ -5211,15 +5211,15 @@
         "lib/net6.0/MongoDB.Bson.xml",
         "lib/netstandard2.1/MongoDB.Bson.dll",
         "lib/netstandard2.1/MongoDB.Bson.xml",
-        "mongodb.bson.3.9.0.nupkg.sha512",
+        "mongodb.bson.3.10.0.nupkg.sha512",
         "mongodb.bson.nuspec",
         "packageIcon.png"
       ]
     },
-    "MongoDB.Driver/3.9.0": {
-      "sha512": "XKUa+y5RtNH1iInfxj3Y7c1FN1BQ16/7hFxoqU6fzc3+BKM1D3mGa+pB/yBbAk8jNxf7+JWEnCfuQOyCo7dQLg==",
+    "MongoDB.Driver/3.10.0": {
+      "sha512": "FEX71Cjn6VFNI6RsQQjNBs7x2nqz9P+oXF0zspnNXzf9N1txhgEO4faIw5aAJknaObmD6cC6X42yiuOQHu27DA==",
       "type": "package",
-      "path": "mongodb.driver/3.9.0",
+      "path": "mongodb.driver/3.10.0",
       "files": [
         ".nupkg.metadata",
         ".signature.p7s",
@@ -5230,7 +5230,7 @@
         "lib/net6.0/MongoDB.Driver.xml",
         "lib/netstandard2.1/MongoDB.Driver.dll",
         "lib/netstandard2.1/MongoDB.Driver.xml",
-        "mongodb.driver.3.9.0.nupkg.sha512",
+        "mongodb.driver.3.10.0.nupkg.sha512",
         "mongodb.driver.nuspec",
         "packageIcon.png"
       ]
@@ -8559,6 +8559,7 @@
       "Microsoft.AspNetCore.OpenApi >= 8.0.19",
       "Microsoft.EntityFrameworkCore.Design >= 9.0.9",
       "Microsoft.Extensions.Logging >= 9.0.9",
+      "MongoDB.Driver >= 3.10.0",
       "NetEscapades.AspNetCore.SecurityHeaders >= 1.2.0",
       "Serilog.AspNetCore >= 9.0.0",
       "Swashbuckle.AspNetCore >= 9.0.4"
@@ -8634,6 +8635,10 @@
           "Microsoft.Extensions.Logging": {
             "target": "Package",
             "version": "[9.0.9, )"
+          },
+          "MongoDB.Driver": {
+            "target": "Package",
+            "version": "[3.10.0, )"
           },
           "NetEscapades.AspNetCore.SecurityHeaders": {
             "target": "Package",
