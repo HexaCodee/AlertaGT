@@ -1,12 +1,15 @@
 import mongoose from 'mongoose';
 import dotenv from 'dotenv';
+import dns from 'dns';
 
 dotenv.config();
 
+dns.setServers(['8.8.8.8', '8.8.8.8']); // Forzar DNS de Google (fix para ECONNREFUSED en querySrv)
+
 export const dbConnection = async () => {
   try {
-    const mongoURI = process.env.MONGODB_URI || 'mongodb://localhost:27017';
-    const dbName = process.env.DATABASE_NAME || 'AlertaGT_Posts';
+    const mongoURI = process.env.URI_MONGODB || 'mongodb://localhost:27017';
+    const dbName = process.env.DATABASE_NAME || 'AlertaGtPosts';
     
     await mongoose.connect(mongoURI, { dbName });
 

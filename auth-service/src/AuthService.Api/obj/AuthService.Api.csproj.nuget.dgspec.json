@@ -72,6 +72,10 @@
               "target": "Package",
               "version": "[9.0.9, )"
             },
+            "MongoDB.Driver": {
+              "target": "Package",
+              "version": "[3.10.0, )"
+            },
             "NetEscapades.AspNetCore.SecurityHeaders": {
               "target": "Package",
               "version": "[1.2.0, )"

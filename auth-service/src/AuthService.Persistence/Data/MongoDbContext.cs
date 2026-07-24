@@ -11,7 +11,7 @@ public class MongoDbContext
 
     public MongoDbContext(IConfiguration configuration)
     {
-        var connectionString = configuration["MONGODB_URI"]
+        var connectionString = configuration["URI_MONGODB"]
             ?? configuration.GetConnectionString("DefaultConnection");
         var databaseName = configuration["DATABASE_NAME"]
             ?? configuration.GetConnectionString("MongoDbDatabase");
