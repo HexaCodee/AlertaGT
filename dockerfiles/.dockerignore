@@ -1,0 +1,26 @@
+# General exclusions for all Docker build contexts
+**/node_modules/
+**/.git/
+**/.vs/
+**/.vscode/
+**/dist/
+**/.expo/
+**/.next/
+**/.cache/
+**/coverage/
+**/*.log
+**/.DS_Store
+**/.env
+**/.env.*
+**/*.pem
+**/*.key
+**/*.crt
+**/*.cer
+**/*.p12
+**/*.pfx
+**/*.jks
+**/*.p8
+**/keys/*.xml
+**/keys/**/*.xml
+**/README.md
+**/Dockerfile*

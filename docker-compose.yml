@@ -1,56 +1,67 @@
+name: alertagt
+
 services:
   mongodb:
     image: mongo:7.0
     container_name: alertagt-mongodb
     restart: unless-stopped
+    env_file:
+      - ./.env.docker
     environment:
-      MONGO_INITDB_ROOT_USERNAME: admin
-      MONGO_INITDB_ROOT_PASSWORD: password123
-      MONGO_INITDB_DATABASE: AlertaGT
+      MONGO_INITDB_ROOT_USERNAME: ${MONGO_INITDB_ROOT_USERNAME:-admin}
+      MONGO_INITDB_ROOT_PASSWORD: ${MONGO_INITDB_ROOT_PASSWORD:-password123}
+      MONGO_INITDB_DATABASE: ${MONGO_INITDB_DATABASE:-AlertaGT}
     ports:
-      - "27017:27017"
+      - "${MONGODB_PORT:-27017}:27017"
     volumes:
       - mongodb_data:/data/db
       - ./docker/mongo-init:/docker-entrypoint-initdb.d
     networks:
       - alertagt-network
     healthcheck:
-      test: ["CMD", "mongosh", "--eval", "db.adminCommand('ping')"]
+      test: ["CMD", "mongosh", "--host", "127.0.0.1", "--eval", "db.adminCommand('ping')"]
       interval: 10s
       timeout: 5s
-      retries: 3
+      retries: 10
+      start_period: 20s
 
   auth-service:
     build:
-      context: ./auth-service
-      dockerfile: Dockerfile
+      context: .
+      dockerfile: ./dockerfiles/auth-service.Dockerfile
     container_name: alertagt-auth-service
     restart: unless-stopped
-    environment:
-      ASPNETCORE_ENVIRONMENT: Production
-      ASPNETCORE_URLS: http://+:3010
-      MONGODB_URI: mongodb://admin:password123@mongodb:27017
-      DATABASE_NAME: AlertaGT_Auth
-      JWT_SECRET: E$3cr3tK3yF0rK1n4lSp0rts@In6am2024
-      JWT_EXPIRATION_MINUTES: 60
-      JWT_REFRESH_EXPIRATION_DAYS: 7
-      SERVICE_TOKEN: 0c819cbf650f3df2fd99dab2e552a1c04de54bcdb83dda3443ff2e5ce16f3648
-      SMTP_HOST: smtp.gmail.com
-      SMTP_PORT: 465
-      SMTP_USER: official.hexacodee@gmail.com
-      SMTP_PASSWORD: bogo pufu dyko lxke
-      CLOUDINARY_CLOUD_NAME: dpxs0f5zw
-      CLOUDINARY_API_KEY: 521768524693749
-      CLOUDINARY_API_SECRET: 1Z2fmRasGsJ0-kVYEeXSX4s0Mdg
-      JwtSettings__SecretKey: E$3cr3tK3yF0rK1n4lSp0rts@In6am2024
-      JwtSettings__Issuer: AlertaGT
-      JwtSettings__Audience: AlertaGT
-      JwtSettings__ExpirationMinutes: "60"
-    ports:
-      - "3010:3010"
     depends_on:
       mongodb:
         condition: service_healthy
+    env_file:
+      - ./.env.docker
+    environment:
+      ASPNETCORE_ENVIRONMENT: ${ASPNETCORE_ENVIRONMENT:-Production}
+      ASPNETCORE_URLS: ${ASPNETCORE_URLS:-http://+:3010}
+      MONGODB_URI: ${MONGODB_URI:-mongodb://admin:password123@mongodb:27017}
+      DATABASE_NAME: ${DATABASE_NAME:-AlertaGT_Auth}
+      JWT_SECRET: ${JWT_SECRET:-E$3cr3tK3yF0rK1n4lSp0rts@In6am2024}
+      JWT_EXPIRATION_MINUTES: ${JWT_EXPIRATION_MINUTES:-60}
+      JWT_REFRESH_EXPIRATION_DAYS: ${JWT_REFRESH_EXPIRATION_DAYS:-7}
+      JWT_ISSUER: ${JWT_ISSUER:-AlertaGT}
+      JWT_AUDIENCE: ${JWT_AUDIENCE:-AlertaGT}
+      SERVICE_TOKEN: ${SERVICE_TOKEN:-0c819cbf650f3df2fd99dab2e552a1c04de54bcdb83dda3443ff2e5ce16f3648}
+      SMTP_HOST: ${SMTP_HOST:-smtp.gmail.com}
+      SMTP_PORT: ${SMTP_PORT:-465}
+      SMTP_USER: ${SMTP_USER:-official.hexacodee@gmail.com}
+      SMTP_PASSWORD: ${SMTP_PASSWORD:-bogo pufu dyko lxke}
+      SMTP_ENABLE_SSL: ${SMTP_ENABLE_SSL:-true}
+      SMTP_USE_IMPLICIT_SSL: ${SMTP_USE_IMPLICIT_SSL:-true}
+      CLOUDINARY_CLOUD_NAME: ${CLOUDINARY_CLOUD_NAME:-dpxs0f5zw}
+      CLOUDINARY_API_KEY: ${CLOUDINARY_API_KEY:-521768524693749}
+      CLOUDINARY_API_SECRET: ${CLOUDINARY_API_SECRET:-1Z2fmRasGsJ0-kVYEeXSX4s0Mdg}
+      JwtSettings__SecretKey: ${JWT_SECRET:-E$3cr3tK3yF0rK1n4lSp0rts@In6am2024}
+      JwtSettings__Issuer: ${JWT_ISSUER:-AlertaGT}
+      JwtSettings__Audience: ${JWT_AUDIENCE:-AlertaGT}
+      JwtSettings__ExpirationMinutes: ${JWT_EXPIRATION_MINUTES:-60}
+    ports:
+      - "${AUTH_SERVICE_PORT:-3010}:3010"
     networks:
       - alertagt-network
     healthcheck:
@@ -58,31 +69,14 @@ services:
       interval: 30s
       timeout: 10s
       retries: 3
+      start_period: 20s
 
   posts-service:
     build:
-      context: ./posts-service
-      dockerfile: Dockerfile
+      context: .
+      dockerfile: ./dockerfiles/posts-service.Dockerfile
     container_name: alertagt-posts-service
     restart: unless-stopped
-    environment:
-      NODE_ENV: production
-      PORT: 3020
-      MONGODB_URI: mongodb://admin:password123@mongodb:27017
-      DATABASE_NAME: AlertaGT_Posts
-      AUTH_SERVICE_URL: http://auth-service:3010/api/v1
-      GEO_SERVICE_URL: http://geolocatedalerts-service:3022/api/v1
-      NOTIFICATIONS_SERVICE_URL: http://notifications-service:3021/api/v1
-      REPUTATION_SERVICE_URL: http://reputation-service:3023/api/v1
-      SERVICE_TOKEN: 0c819cbf650f3df2fd99dab2e552a1c04de54bcdb83dda3443ff2e5ce16f3648
-      CLOUDINARY_CLOUD_NAME: dpxs0f5zw
-      CLOUDINARY_API_KEY: 521768524693749
-      CLOUDINARY_API_SECRET: 1Z2fmRasGsJ0-kVYEeXSX4s0Mdg
-      RATE_LIMIT_REQUESTS_PER_MINUTE: 100
-      CORS_ORIGIN: http://localhost:3000,http://localhost:3001,http://localhost:5173,http://localhost:4173,http://localhost:8081
-      LOG_LEVEL: info
-    ports:
-      - "3020:3020"
     depends_on:
       mongodb:
         condition: service_healthy
@@ -92,6 +86,26 @@ services:
         condition: service_healthy
       notifications-service:
         condition: service_healthy
+    env_file:
+      - ./.env.docker
+    environment:
+      NODE_ENV: ${NODE_ENV:-production}
+      PORT: ${POSTS_SERVICE_PORT:-3020}
+      MONGODB_URI: ${MONGODB_URI:-mongodb://admin:password123@mongodb:27017}
+      DATABASE_NAME: ${DATABASE_NAME_POSTS:-AlertaGT_Posts}
+      AUTH_SERVICE_URL: ${AUTH_SERVICE_URL:-http://auth-service:3010/api/v1}
+      GEO_SERVICE_URL: ${GEO_SERVICE_URL:-http://geolocatedalerts-service:3022/api/v1}
+      NOTIFICATIONS_SERVICE_URL: ${NOTIFICATIONS_SERVICE_URL:-http://notifications-service:3021/api/v1}
+      REPUTATION_SERVICE_URL: ${REPUTATION_SERVICE_URL:-http://reputation-service:3023/api/v1}
+      SERVICE_TOKEN: ${SERVICE_TOKEN:-0c819cbf650f3df2fd99dab2e552a1c04de54bcdb83dda3443ff2e5ce16f3648}
+      CLOUDINARY_CLOUD_NAME: ${CLOUDINARY_CLOUD_NAME:-dpxs0f5zw}
+      CLOUDINARY_API_KEY: ${CLOUDINARY_API_KEY:-521768524693749}
+      CLOUDINARY_API_SECRET: ${CLOUDINARY_API_SECRET:-1Z2fmRasGsJ0-kVYEeXSX4s0Mdg}
+      RATE_LIMIT_REQUESTS_PER_MINUTE: ${RATE_LIMIT_REQUESTS_PER_MINUTE:-100}
+      CORS_ORIGIN: ${CORS_ORIGIN:-http://localhost:3000,http://localhost:3001,http://localhost:5173,http://localhost:4173,http://localhost:8081}
+      LOG_LEVEL: ${LOG_LEVEL:-info}
+    ports:
+      - "${POSTS_SERVICE_PORT:-3020}:3020"
     networks:
       - alertagt-network
     healthcheck:
@@ -99,30 +113,33 @@ services:
       interval: 30s
       timeout: 10s
       retries: 3
+      start_period: 20s
 
   notifications-service:
     build:
-      context: ./notifications-service
-      dockerfile: Dockerfile
+      context: .
+      dockerfile: ./dockerfiles/notifications-service.Dockerfile
     container_name: alertagt-notifications-service
     restart: unless-stopped
-    environment:
-      NODE_ENV: production
-      PORT: 3021
-      MONGODB_URI: mongodb://admin:password123@mongodb:27017
-      DATABASE_NAME: AlertaGT_Notifications
-      AUTH_SERVICE_URL: http://auth-service:3010/api/v1
-      SERVICE_TOKEN: 0c819cbf650f3df2fd99dab2e552a1c04de54bcdb83dda3443ff2e5ce16f3648
-      RATE_LIMIT_REQUESTS_PER_MINUTE: 100
-      CORS_ORIGIN: http://localhost:3000,http://localhost:3001,http://localhost:5173,http://localhost:4173,http://localhost:8081
-      LOG_LEVEL: info
-    ports:
-      - "3021:3021"
     depends_on:
       mongodb:
         condition: service_healthy
       auth-service:
         condition: service_healthy
+    env_file:
+      - ./.env.docker
+    environment:
+      NODE_ENV: ${NODE_ENV:-production}
+      PORT: ${NOTIFICATIONS_SERVICE_PORT:-3021}
+      MONGODB_URI: ${MONGODB_URI:-mongodb://admin:password123@mongodb:27017}
+      DATABASE_NAME: ${DATABASE_NAME_NOTIFICATIONS:-AlertaGT_Notifications}
+      AUTH_SERVICE_URL: ${AUTH_SERVICE_URL:-http://auth-service:3010/api/v1}
+      SERVICE_TOKEN: ${SERVICE_TOKEN:-0c819cbf650f3df2fd99dab2e552a1c04de54bcdb83dda3443ff2e5ce16f3648}
+      RATE_LIMIT_REQUESTS_PER_MINUTE: ${RATE_LIMIT_REQUESTS_PER_MINUTE:-100}
+      CORS_ORIGIN: ${CORS_ORIGIN:-http://localhost:3000,http://localhost:3001,http://localhost:5173,http://localhost:4173,http://localhost:8081}
+      LOG_LEVEL: ${LOG_LEVEL:-info}
+    ports:
+      - "${NOTIFICATIONS_SERVICE_PORT:-3021}:3021"
     networks:
       - alertagt-network
     healthcheck:
@@ -130,68 +147,35 @@ services:
       interval: 30s
       timeout: 10s
       retries: 3
-
-  reputation-service:
-    build:
-      context: ./reputation-service
-      dockerfile: Dockerfile
-    container_name: alertagt-reputation-service
-    restart: unless-stopped
-    environment:
-      NODE_ENV: production
-      PORT: 3023
-      MONGODB_URI: mongodb://admin:password123@mongodb:27017
-      DATABASE_NAME: AlertaGT_Reputation
-      AUTH_SERVICE_URL: http://auth-service:3010/api/v1
-      POSTS_SERVICE_URL: http://posts-service:3020/api/v1
-      NOTIFICATIONS_SERVICE_URL: http://notifications-service:3021/api/v1
-      SERVICE_TOKEN: 0c819cbf650f3df2fd99dab2e552a1c04de54bcdb83dda3443ff2e5ce16f3648
-      RATE_LIMIT_REQUESTS_PER_MINUTE: 100
-      CORS_ORIGIN: http://localhost:3000,http://localhost:3001,http://localhost:5173,http://localhost:4173,http://localhost:8081
-      LOG_LEVEL: info
-      # DEMO: umbral bajado a 1 para poder confirmar una alerta como falsa con una sola cuenta reportando.
-      # Restaurar a 5 (o quitar la línea) después de la demo.
-      FALSE_REPORT_THRESHOLD: 1
-    ports:
-      - "3023:3023"
-    depends_on:
-      mongodb:
-        condition: service_healthy
-      auth-service:
-        condition: service_healthy
-    networks:
-      - alertagt-network
-    healthcheck:
-      test: ["CMD", "curl", "-f", "http://localhost:3023/api/v1/health"]
-      interval: 30s
-      timeout: 10s
-      retries: 3
+      start_period: 20s
 
   geolocatedalerts-service:
     build:
-      context: ./geolocatedalerts-service
-      dockerfile: Dockerfile
+      context: .
+      dockerfile: ./dockerfiles/geolocatedalerts-service.Dockerfile
     container_name: alertagt-geolocatedalerts-service
     restart: unless-stopped
-    environment:
-      NODE_ENV: production
-      PORT: 3022
-      MONGODB_URI: mongodb://admin:password123@mongodb:27017
-      DATABASE_NAME: AlertaGT_Geo
-      AUTH_SERVICE_URL: http://auth-service:3010/api/v1
-      POSTS_SERVICE_URL: http://posts-service:3020/api/v1
-      NOTIFICATIONS_SERVICE_URL: http://notifications-service:3021/api/v1
-      SERVICE_TOKEN: 0c819cbf650f3df2fd99dab2e552a1c04de54bcdb83dda3443ff2e5ce16f3648
-      RATE_LIMIT_REQUESTS_PER_MINUTE: 100
-      CORS_ORIGIN: http://localhost:3000,http://localhost:3001,http://localhost:5173,http://localhost:4173,http://localhost:8081
-      LOG_LEVEL: info
-    ports:
-      - "3022:3022"
     depends_on:
       mongodb:
         condition: service_healthy
       auth-service:
         condition: service_healthy
+    env_file:
+      - ./.env.docker
+    environment:
+      NODE_ENV: ${NODE_ENV:-production}
+      PORT: ${GEOLOCATION_SERVICE_PORT:-3022}
+      MONGODB_URI: ${MONGODB_URI:-mongodb://admin:password123@mongodb:27017}
+      DATABASE_NAME: ${DATABASE_NAME_GEO:-AlertaGT_Geo}
+      AUTH_SERVICE_URL: ${AUTH_SERVICE_URL:-http://auth-service:3010/api/v1}
+      POSTS_SERVICE_URL: ${POSTS_SERVICE_URL:-http://posts-service:3020/api/v1}
+      NOTIFICATIONS_SERVICE_URL: ${NOTIFICATIONS_SERVICE_URL:-http://notifications-service:3021/api/v1}
+      SERVICE_TOKEN: ${SERVICE_TOKEN:-0c819cbf650f3df2fd99dab2e552a1c04de54bcdb83dda3443ff2e5ce16f3648}
+      RATE_LIMIT_REQUESTS_PER_MINUTE: ${RATE_LIMIT_REQUESTS_PER_MINUTE:-100}
+      CORS_ORIGIN: ${CORS_ORIGIN:-http://localhost:3000,http://localhost:3001,http://localhost:5173,http://localhost:4173,http://localhost:8081}
+      LOG_LEVEL: ${LOG_LEVEL:-info}
+    ports:
+      - "${GEOLOCATION_SERVICE_PORT:-3022}:3022"
     networks:
       - alertagt-network
     healthcheck:
@@ -199,6 +183,118 @@ services:
       interval: 30s
       timeout: 10s
       retries: 3
+      start_period: 20s
+
+  reputation-service:
+    build:
+      context: .
+      dockerfile: ./dockerfiles/reputation-service.Dockerfile
+    container_name: alertagt-reputation-service
+    restart: unless-stopped
+    depends_on:
+      mongodb:
+        condition: service_healthy
+      auth-service:
+        condition: service_healthy
+    env_file:
+      - ./.env.docker
+    environment:
+      NODE_ENV: ${NODE_ENV:-production}
+      PORT: ${REPUTATION_SERVICE_PORT:-3023}
+      MONGODB_URI: ${MONGODB_URI:-mongodb://admin:password123@mongodb:27017}
+      DATABASE_NAME: ${DATABASE_NAME_REPUTATION:-AlertaGT_Reputation}
+      AUTH_SERVICE_URL: ${AUTH_SERVICE_URL:-http://auth-service:3010/api/v1}
+      POSTS_SERVICE_URL: ${POSTS_SERVICE_URL:-http://posts-service:3020/api/v1}
+      NOTIFICATIONS_SERVICE_URL: ${NOTIFICATIONS_SERVICE_URL:-http://notifications-service:3021/api/v1}
+      SERVICE_TOKEN: ${SERVICE_TOKEN:-0c819cbf650f3df2fd99dab2e552a1c04de54bcdb83dda3443ff2e5ce16f3648}
+      RATE_LIMIT_REQUESTS_PER_MINUTE: ${RATE_LIMIT_REQUESTS_PER_MINUTE:-100}
+      CORS_ORIGIN: ${CORS_ORIGIN:-http://localhost:3000,http://localhost:3001,http://localhost:5173,http://localhost:4173,http://localhost:8081}
+      LOG_LEVEL: ${LOG_LEVEL:-info}
+      FALSE_REPORT_THRESHOLD: ${FALSE_REPORT_THRESHOLD:-1}
+    ports:
+      - "${REPUTATION_SERVICE_PORT:-3023}:3023"
+    networks:
+      - alertagt-network
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:3023/api/v1/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 20s
+
+  client-admin:
+    build:
+      context: .
+      dockerfile: ./dockerfiles/client-admin.Dockerfile
+    container_name: alertagt-client-admin
+    restart: unless-stopped
+    depends_on:
+      auth-service:
+        condition: service_healthy
+      posts-service:
+        condition: service_healthy
+      notifications-service:
+        condition: service_healthy
+      geolocatedalerts-service:
+        condition: service_healthy
+      reputation-service:
+        condition: service_healthy
+    env_file:
+      - ./.env.docker
+    environment:
+      NODE_ENV: ${NODE_ENV:-production}
+      VITE_AUTH_URL: ${VITE_AUTH_URL:-http://localhost:3010/api/v1/auth}
+      VITE_POSTS_API_URL: ${VITE_POSTS_API_URL:-http://localhost:3020/api/v1}
+      VITE_NOTIFICATIONS_URL: ${VITE_NOTIFICATIONS_URL:-http://localhost:3021/api/v1}
+      VITE_REPUTATION_API_URL: ${VITE_REPUTATION_API_URL:-http://localhost:3023/api/v1}
+      VITE_GEOLOCATION_API_URL: ${VITE_GEOLOCATION_API_URL:-http://localhost:3022/api/v1}
+    volumes:
+      - ./client-admin:/app
+      - /app/node_modules
+    ports:
+      - "${CLIENT_ADMIN_PORT:-5173}:5173"
+    networks:
+      - alertagt-network
+
+  client-user:
+    build:
+      context: .
+      dockerfile: ./dockerfiles/client-user.Dockerfile
+    container_name: alertagt-client-user
+    restart: unless-stopped
+    depends_on:
+      auth-service:
+        condition: service_healthy
+      posts-service:
+        condition: service_healthy
+      notifications-service:
+        condition: service_healthy
+      geolocatedalerts-service:
+        condition: service_healthy
+      reputation-service:
+        condition: service_healthy
+    env_file:
+      - ./.env.docker
+    environment:
+      NODE_ENV: ${NODE_ENV:-development}
+      EXPO_PUBLIC_AUTH_URL: ${EXPO_PUBLIC_AUTH_URL:-http://192.168.1.33:3010/api/v1/auth}
+      EXPO_PUBLIC_POSTS_URL: ${EXPO_PUBLIC_POSTS_URL:-http://192.168.1.33:3020/api/v1}
+      EXPO_PUBLIC_NOTIFICATIONS_URL: ${EXPO_PUBLIC_NOTIFICATIONS_URL:-http://192.168.1.33:3021/api/v1}
+      EXPO_PUBLIC_GEO_URL: ${EXPO_PUBLIC_GEO_URL:-http://192.168.1.33:3022/api/v1}
+      EXPO_PUBLIC_REPUTATION_URL: ${EXPO_PUBLIC_REPUTATION_URL:-http://192.168.1.33:3023/api/v1}
+      EXPO_PACKAGER_HOSTNAME: ${EXPO_PACKAGER_HOSTNAME:-10.0.2.2}
+      CHOKIDAR_USEPOLLING: "true"
+      WATCHPACK_POLLING: "true"
+    volumes:
+      - ./client-user:/app
+      - /app/node_modules
+    ports:
+      - "${CLIENT_MOBILE_PORT:-8081}:8081"
+      - "${CLIENT_MOBILE_EXPO_PORT:-19000}:19000"
+      - "${CLIENT_MOBILE_EXPO_DEVTOOLS_PORT:-19001}:19001"
+      - "${CLIENT_MOBILE_EXPO_INSPECTOR_PORT:-19002}:19002"
+    networks:
+      - alertagt-network
 
 volumes:
   mongodb_data:

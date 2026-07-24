@@ -7,22 +7,24 @@ export default defineConfig({
   build: {
     // Optimizaciones de build
     target: 'esnext',
-    minify: 'terser',
-    terserOptions: {
-      compress: {
-        drop_console: true,
-        drop_debugger: true
-      }
-    },
     rollupOptions: {
       output: {
-        manualChunks: {
-          'vendor': ['react', 'react-dom', 'react-router-dom']
+        manualChunks(id) {
+          if (id.includes('node_modules')) {
+            if (
+              id.includes('react-router-dom') ||
+              id.includes('react-dom') ||
+              id.includes('react')
+            ) {
+              return 'vendor'
+            }
+          }
         },
         chunkFileNames: 'js/[name]-[hash].js',
         entryFileNames: 'js/[name]-[hash].js',
         assetFileNames: (assetInfo) => {
-          const info = assetInfo.name.split('.')
+          const name = assetInfo?.name ?? 'asset'
+          const info = name.split('.')
           const ext = info[info.length - 1]
           if (/png|jpe?g|gif|svg/.test(ext)) {
             return `images/[name]-[hash][extname]`

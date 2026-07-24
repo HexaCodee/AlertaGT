@@ -1,5 +1,9 @@
 # Node.js
 node_modules
+**/node_modules/
+**/node_modules/**
+**/.pnpm/
+**/.pnpm/**
 npm-debug.log*
 yarn-debug.log*
 yarn-error.log*
@@ -78,6 +82,12 @@ typings/
 
 # Next.js build output
 .next
+
+# Expo / React Native local artifacts
+.expo/
+.expo/**
+.expo-shared/
+.expo-shared/**
 
 # Nuxt.js build / generate output
 .nuxt
