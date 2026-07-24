@@ -3,6 +3,21 @@ node_modules/
 
 # Entorno
 .env
+.env.*
+.env.docker
+*.env
+
+# Claves y secretos
+*.pem
+*.key
+*.crt
+*.cer
+*.p12
+*.pfx
+*.jks
+*.p8
+**/keys/*.xml
+**/keys/**/*.xml
 
 # El .gitignore raíz ignora *.json de forma global (para proteger llaves
 # sensibles). Re-incluimos explícitamente el manifiesto del servicio.

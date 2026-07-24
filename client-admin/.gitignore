@@ -1,3 +1,19 @@
+# Environment and secrets
+.env
+.env.*
+.env.docker
+*.env
+*.pem
+*.key
+*.crt
+*.cer
+*.p12
+*.pfx
+*.jks
+*.p8
+**/keys/*.xml
+**/keys/**/*.xml
+
 # Logs
 logs
 *.log

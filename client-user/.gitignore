@@ -11,7 +11,22 @@ web-build/
 
 # Entorno (nunca commitear URLs/credenciales reales)
 .env
+.env.*
 .env.local
+.env.docker
+*.env
+
+# Claves y secretos
+*.pem
+*.key
+*.crt
+*.cer
+*.p12
+*.pfx
+*.jks
+*.p8
+**/keys/*.xml
+**/keys/**/*.xml
 
 # Nativo
 *.jks

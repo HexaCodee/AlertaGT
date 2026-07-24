@@ -27,12 +27,25 @@
 **/appsettings.Production.json
 **/secret.json
 .env
+.env.*
+.env.docker
+*.env
 *firebase-adminsdk*.json
 
 ## [Service Account Keys - SENSITIVE]
 **/serviceAccountKey*.json
 **/*-firebase-adminsdk-*.json
 firebase-service-account.json
+**/keys/*.xml
+**/keys/**/*.xml
+**/*.pem
+**/*.key
+**/*.crt
+**/*.cer
+**/*.p12
+**/*.pfx
+**/*.jks
+**/*.p8
 
 ## [Node.js / Expo / React Native - client-user, posts-service, etc.]
 **/node_modules/
