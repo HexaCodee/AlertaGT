@@ -17,3 +17,11 @@ export const register = async (formData) => {
     isPublic: true
   })
 }
+
+export const verifyEmail = async (token) => {
+  return await authRequest('verify-email', {
+    method: 'POST',
+    body: { token },
+    isPublic: true
+  })
+}

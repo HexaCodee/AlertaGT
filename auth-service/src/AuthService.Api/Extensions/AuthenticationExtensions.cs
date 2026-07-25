@@ -27,8 +27,6 @@ public static class AuthenticationExtensions
         })
         .AddJwtBearer(options =>
         {
-            var secretKey = configuration["JwtSettings:SecretKey"] ?? jwtSettings["SecretKey"];
-            Console.WriteLine(">>> CLAVE CARGADA EN AUTH: " + secretKey);
             options.TokenValidationParameters = new TokenValidationParameters
             {
                 ValidateIssuer = true,
@@ -39,29 +37,6 @@ public static class AuthenticationExtensions
                 ValidAudience = jwtSettings["Audience"],
                 IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(secretKey)),
                 ClockSkew = TimeSpan.Zero
-            };
-            options.Events = new JwtBearerEvents
-            {
-                OnAuthenticationFailed = context =>
-                {
-                    Console.WriteLine($">>> JWT Authentication Failed: {context.Exception.Message}");
-                    if (context.Exception.InnerException != null)
-                    {
-                        Console.WriteLine($">>> Inner Exception: {context.Exception.InnerException.Message}");
-                    }
-                    return Task.CompletedTask;
-                },
-                OnTokenValidated = context =>
-                {
-                    Console.WriteLine(">>> JWT Token Validated Successfully");
-                    return Task.CompletedTask;
-                },
-                OnMessageReceived = context =>
-                {
-                    var authHeader = context.Request.Headers["Authorization"].ToString();
-                    Console.WriteLine($">>> JWT Message Received. Auth Header: {authHeader}");
-                    return Task.CompletedTask;
-                }
             };
         });
 

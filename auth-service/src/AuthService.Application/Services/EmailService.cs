@@ -9,62 +9,100 @@ namespace AuthService.Application.Services;
  
 public class EmailService(IConfiguration configuration, ILogger<EmailService> logger) : IEmailService
 {
+    // Marca de AlertaGT: mismo rojo (#d30000) que usan client-admin/client-user en
+    // headers y botones primarios, para que los correos se vean consistentes con la app.
+    private const string BrandColor = "#d30000";
+
     public async Task SendEmailVerificationAsync(string email, string username, string token)
     {
-        var subject = "Verifica tu dirección de correo electrónico";
+        var subject = "Verifica tu correo — AlertaGT";
         var verificationUrl = $"{configuration["AppSettings:FrontendUrl"]}/verify-email?token={token}";
- 
-        var body = $@"
-<h2>¡Bienvenido {username}!</h2>
-<p>Por favor, verifica tu dirección de correo electrónico haciendo clic en el enlace a continuación:</p>
-<a href='{verificationUrl}' style='background-color: #007bff; color: white; padding: 10px 20px; text-decoration: none; border-radius: 5px;'>
-                Verificar Correo Electrónico
-</a>
-<p>Si no puedes hacer clic en el enlace, copia y pega esta URL en tu navegador:</p>
-<p>{verificationUrl}</p>
-<p>Este enlace expirará en 24 horas.</p>
-<p>Si no creaste una cuenta, por favor ignora este correo.</p>
+
+        var content = $@"
+<h2 style='margin-top:0;color:#111827;'>¡Bienvenido a AlertaGT, {username}!</h2>
+<p style='color:#4b5563;line-height:1.6;'>Gracias por unirte a la comunidad de AlertaGT. Para activar tu cuenta y empezar a reportar y ver alertas cerca de ti, verificá tu correo electrónico:</p>
+<p style='text-align:center;margin:32px 0;'>
+  <a href='{verificationUrl}' style='background-color:{BrandColor};color:#ffffff;padding:12px 28px;text-decoration:none;border-radius:8px;font-weight:bold;display:inline-block;'>Verificar mi correo</a>
+</p>
+<p style='color:#6b7280;font-size:13px;'>Si el botón no funciona, copiá y pegá este enlace en tu navegador:<br><a href='{verificationUrl}' style='color:{BrandColor};'>{verificationUrl}</a></p>
+<p style='color:#6b7280;font-size:13px;'>Este enlace expira en 24 horas. Si no creaste esta cuenta, podés ignorar este correo.</p>
         ";
- 
-        await SendEmailAsync(email, subject, body);
+
+        await SendEmailAsync(email, subject, WrapInBrandedTemplate(content));
     }
- 
+
     public async Task SendPasswordResetAsync(string email, string username, string token)
     {
-        var subject = "Restablece tu contraseña";
+        var subject = "Restablece tu contraseña — AlertaGT";
         var resetUrl = $"{configuration["AppSettings:FrontendUrl"]}/reset-password?token={token}";
- 
-        var body = $@"
-<h2>Solicitud de Restablecimiento de Contraseña</h2>
-<p>Hola {username},</p>
-<p>Solicitaste restablecer tu contraseña. Haz clic en el enlace a continuación para restablecerla:</p>
-<a href='{resetUrl}' style='background-color: #dc3545; color: white; padding: 10px 20px; text-decoration: none; border-radius: 5px;'>
-                Restablecer Contraseña
-</a>
-<p>Si no puedes hacer clic en el enlace, copia y pega esta URL en tu navegador:</p>
-<p>{resetUrl}</p>
-<p>Este enlace expirará en 1 hora.</p>
-<p>Si no solicitaste esto, por favor ignora este correo y tu contraseña permanecerá sin cambios.</p>
+
+        var content = $@"
+<h2 style='margin-top:0;color:#111827;'>Restablecer tu contraseña</h2>
+<p style='color:#4b5563;line-height:1.6;'>Hola {username}, recibimos una solicitud para restablecer la contraseña de tu cuenta de AlertaGT.</p>
+<p style='text-align:center;margin:32px 0;'>
+  <a href='{resetUrl}' style='background-color:#dc2626;color:#ffffff;padding:12px 28px;text-decoration:none;border-radius:8px;font-weight:bold;display:inline-block;'>Restablecer contraseña</a>
+</p>
+<p style='color:#6b7280;font-size:13px;'>Si el botón no funciona, copiá y pegá este enlace en tu navegador:<br><a href='{resetUrl}' style='color:{BrandColor};'>{resetUrl}</a></p>
+<p style='color:#6b7280;font-size:13px;'>Este enlace expira en 1 hora. Si no solicitaste este cambio, ignorá este correo — tu contraseña seguirá igual.</p>
         ";
- 
-        await SendEmailAsync(email, subject, body);
+
+        await SendEmailAsync(email, subject, WrapInBrandedTemplate(content));
     }
- 
+
     public async Task SendWelcomeEmailAsync(string email, string username)
     {
         var subject = "¡Bienvenido a AlertaGT!";
- 
-        var body = $@"
-<h2>¡Bienvenido a AlertaGT, {username}!</h2>
-<p>Tu cuenta ha sido verificada y activada exitosamente.</p>
-<p>Ahora puedes disfrutar de todas las funciones de nuestra plataforma.</p>
-<p>Si tienes alguna pregunta, no dudes en contactar a nuestro equipo de soporte.</p>
-<p>¡Gracias por unirte a nosotros!</p>
+
+        var content = $@"
+<h2 style='margin-top:0;color:#111827;'>¡Tu cuenta ya está activa, {username}!</h2>
+<p style='color:#4b5563;line-height:1.6;'>Verificamos tu correo y tu cuenta de AlertaGT quedó activada. Ya podés reportar alertas, ver el mapa comunitario y recibir notificaciones cerca de tu ubicación.</p>
+<p style='color:#6b7280;font-size:13px;'>¿Tenés alguna pregunta? Escribinos, con gusto te ayudamos.</p>
         ";
- 
-        await SendEmailAsync(email, subject, body);
+
+        await SendEmailAsync(email, subject, WrapInBrandedTemplate(content));
     }
- 
+
+    // Plantilla común: header rojo con el nombre "AlertaGT" + tarjeta blanca con el
+    // contenido de cada correo + pie de página. La usan los 3 correos para que
+    // todos se vean consistentes con la marca (antes solo el de bienvenida la tenía).
+    private static string WrapInBrandedTemplate(string innerContent) => $@"
+<!DOCTYPE html>
+<html>
+<body style='margin:0;padding:0;background-color:#f3f4f6;font-family:Arial,Helvetica,sans-serif;'>
+  <table width='100%' cellpadding='0' cellspacing='0' style='background-color:#f3f4f6;padding:32px 0;'>
+    <tr>
+      <td align='center'>
+        <table width='480' cellpadding='0' cellspacing='0' style='background-color:#ffffff;border-radius:16px;overflow:hidden;max-width:480px;border:1px solid #e5e7eb;'>
+          <tr>
+            <td style='background-color:{BrandColor};padding:28px 24px;text-align:center;'>
+              <span style='color:#ffffff;font-size:15px;'>🚨</span>
+              <div style='color:#ffffff;font-size:26px;font-weight:bold;letter-spacing:0.5px;margin-top:4px;'>AlertaGT</div>
+              <div style='color:rgba(255,255,255,0.85);font-size:12px;margin-top:2px;letter-spacing:0.3px;'>Alertas comunitarias en tiempo real</div>
+            </td>
+          </tr>
+          <tr>
+            <td style='padding:36px 28px;'>
+              {innerContent}
+            </td>
+          </tr>
+          <tr>
+            <td style='padding:0 28px;'>
+              <div style='border-top:1px solid #f0f1f3;'></div>
+            </td>
+          </tr>
+          <tr>
+            <td style='padding:18px 24px 24px;background-color:#ffffff;text-align:center;'>
+              <p style='margin:0;font-size:12px;color:#9ca3af;'>AlertaGT — tu comunidad más segura</p>
+              <p style='margin:4px 0 0;font-size:11px;color:#c1c5cb;'>Este es un correo automático, por favor no respondas a esta dirección.</p>
+            </td>
+          </tr>
+        </table>
+      </td>
+    </tr>
+  </table>
+</body>
+</html>";
+
     private async Task SendEmailAsync(string to, string subject, string body)
     {
         var smtpSettings = configuration.GetSection("SmtpSettings");

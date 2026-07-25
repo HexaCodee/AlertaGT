@@ -8,6 +8,19 @@ import '../styles/home.css'
 const GEOLOCATION_API_BASE = import.meta.env.VITE_GEOLOCATION_API_URL ?? 'http://localhost:3022/api/v1'
 const POSTS_API_BASE = import.meta.env.VITE_POSTS_API_URL ?? 'http://localhost:3020/api/v1'
 
+// Umbral a partir del cual avisamos que la posición es poco confiable. En
+// desktops sin GPS, el navegador suele resolver la ubicación por IP/red, con
+// un margen de error de varios kilómetros — eso es lo que hace que la
+// ubicación "caiga" en un punto genérico que no es la ubicación real del
+// usuario (no es un bug de AlertaGT, es una limitación del método del navegador).
+const LOW_ACCURACY_THRESHOLD_METERS = 5000
+
+const formatAccuracyNote = (accuracy) => {
+  if (accuracy == null || !Number.isFinite(accuracy) || accuracy <= LOW_ACCURACY_THRESHOLD_METERS) return ''
+  const km = (accuracy / 1000).toFixed(1)
+  return ` (precisión baja, ±${km} km)`
+}
+
 export const HomePage = () => {
   const navigate = useNavigate()
   const [selectedCategory, setSelectedCategory] = useState('all')
@@ -36,11 +49,12 @@ export const HomePage = () => {
 
     navigator.geolocation.getCurrentPosition(
       async (position) => {
-        const { latitude, longitude } = position.coords
+        const { latitude, longitude, accuracy } = position.coords
+        const accuracyNote = formatAccuracyNote(accuracy)
 
         window.sessionStorage.setItem('user_lat', latitude)
         window.sessionStorage.setItem('user_lng', longitude)
-        setLocationText('Ubicación GPS local')
+        setLocationText(`Ubicación GPS local${accuracyNote}`)
         setLocationStatus(`${latitude.toFixed(4)}, ${longitude.toFixed(4)}`)
 
         try {
@@ -66,7 +80,7 @@ export const HomePage = () => {
 
           if (response.ok) {
             const result = await response.json()
-            setLocationText(result?.data?.address || 'Ubicación actualizada en vivo')
+            setLocationText(`${result?.data?.address || 'Ubicación actualizada en vivo'}${accuracyNote}`)
           }
         } catch (err) {
           if (err.name !== 'AbortError') setLocationText('Ubicación GPS local (Servicio Geo Offline)')
@@ -75,7 +89,12 @@ export const HomePage = () => {
       () => {
         setLocationStatus('Permiso de ubicación denegado')
         setLocationText('Sin acceso a GPS')
-      }
+      },
+      // Sin esto, el navegador puede resolver la posición por IP/red (baja
+      // precisión) en vez de GPS/Wi-Fi real, aunque el permiso esté concedido —
+      // en equipos de escritorio eso puede devolver una ubicación aproximada
+      // muy alejada de la real. maximumAge:0 evita reusar una posición vieja en caché.
+      { enableHighAccuracy: true, timeout: 8000, maximumAge: 0 }
     )
   }, [])
 

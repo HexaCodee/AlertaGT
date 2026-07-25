@@ -105,6 +105,10 @@ export const NotificationsPage = () => {
     navigator.geolocation.getCurrentPosition(
       (position) => load({ latitude: position.coords.latitude, longitude: position.coords.longitude }),
       () => load(null),
+      // enableHighAccuracy + maximumAge:0: evita que el navegador resuelva la
+      // posición por IP/red (baja precisión, puede quedar lejos de la real)
+      // o reuse una posición vieja en caché.
+      { enableHighAccuracy: true, timeout: 8000, maximumAge: 0 },
     )
   }, [load])
 

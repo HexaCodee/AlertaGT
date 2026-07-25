@@ -23,6 +23,19 @@ const isWithinGuatemala = (latitude, longitude) =>
     longitude >= GUATEMALA_BOUNDS.MIN_LONGITUDE &&
     longitude <= GUATEMALA_BOUNDS.MAX_LONGITUDE
 
+// Umbral a partir del cual avisamos que la posición es poco confiable. En
+// desktops sin GPS, el navegador suele resolver la ubicación por IP/red, con
+// un margen de error de varios kilómetros — eso es lo que produce que la
+// ubicación "caiga" en un punto genérico que no es la ubicación real del
+// usuario (no es un bug de AlertaGT, es una limitación del método del navegador).
+const LOW_ACCURACY_THRESHOLD_METERS = 5000
+
+const formatAccuracyNote = (accuracy) => {
+    if (accuracy == null || !Number.isFinite(accuracy) || accuracy <= LOW_ACCURACY_THRESHOLD_METERS) return ''
+    const km = (accuracy / 1000).toFixed(1)
+    return ` · precisión baja (±${km} km, puede no ser tu ubicación exacta)`
+}
+
 const CATEGORY_OPTIONS = [
     { id: 'accident', label: 'Accidente', icon: '🚗' },
     { id: 'traffic', label: 'Tráfico', icon: '🚦' },
@@ -82,12 +95,12 @@ export const CreateAlertPage = () => {
     const [submitMessage, setSubmitMessage] = useState('')
     const [isSubmitting, setIsSubmitting] = useState(false)
 
-    const applyCoordinates = (latitude, longitude, label) => {
+    const applyCoordinates = (latitude, longitude, label, accuracy = null) => {
         setCurrentCoordinates({ latitude, longitude })
         setIsOutsideGuatemala(!isWithinGuatemala(latitude, longitude))
         setLocationLabel(
             isWithinGuatemala(latitude, longitude)
-                ? label
+                ? `${label}${formatAccuracyNote(accuracy)}`
                 : 'Ubicación fuera de Guatemala: no se puede publicar'
         )
     }
@@ -107,8 +120,8 @@ export const CreateAlertPage = () => {
 
     navigator.geolocation.getCurrentPosition(
         (position) => {
-            const { latitude, longitude } = position.coords
-            applyCoordinates(latitude, longitude, 'Coordenadas GPS detectadas')
+            const { latitude, longitude, accuracy } = position.coords
+            applyCoordinates(latitude, longitude, 'Coordenadas GPS detectadas', accuracy)
         },
         () => {
             if (savedLat && savedLng) {
