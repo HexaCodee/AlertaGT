@@ -2,7 +2,8 @@
 // Campo de texto reutilizable con etiqueta y mensaje de error.
 
 import { useMemo, useState } from 'react';
-import { View, Text, TextInput, StyleSheet } from 'react-native';
+import { View, Text, TextInput, Pressable, StyleSheet } from 'react-native';
+import { MaterialIcons } from '@expo/vector-icons';
 import { SPACING, FONT_SIZE } from '../../constants/theme.js';
 import { useTheme } from '../../context/ThemeContext.jsx';
 
@@ -22,31 +23,48 @@ export const Input = ({
   const { colors: COLORS } = useTheme();
   const styles = useMemo(() => createStyles(COLORS), [COLORS]);
   const [focused, setFocused] = useState(false);
+  const [visible, setVisible] = useState(false);
 
   return (
     <View style={[styles.container, style]}>
       {label ? <Text style={styles.label}>{label}</Text> : null}
-      <TextInput
-        value={value}
-        onChangeText={onChangeText}
-        onBlur={(e) => {
-          setFocused(false);
-          onBlur?.(e);
-        }}
-        onFocus={() => setFocused(true)}
-        placeholder={placeholder}
-        placeholderTextColor={COLORS.textLight}
-        secureTextEntry={secureTextEntry}
-        keyboardType={keyboardType}
-        autoCapitalize={autoCapitalize}
-        multiline={multiline}
-        style={[
-          styles.input,
-          multiline && styles.multiline,
-          focused && styles.inputFocused,
-          error && styles.inputError,
-        ]}
-      />
+      <View style={styles.inputWrapper}>
+        <TextInput
+          value={value}
+          onChangeText={onChangeText}
+          onBlur={(e) => {
+            setFocused(false);
+            onBlur?.(e);
+          }}
+          onFocus={() => setFocused(true)}
+          placeholder={placeholder}
+          placeholderTextColor={COLORS.textLight}
+          secureTextEntry={secureTextEntry && !visible}
+          keyboardType={keyboardType}
+          autoCapitalize={autoCapitalize}
+          multiline={multiline}
+          style={[
+            styles.input,
+            secureTextEntry && styles.inputWithToggle,
+            multiline && styles.multiline,
+            focused && styles.inputFocused,
+            error && styles.inputError,
+          ]}
+        />
+        {secureTextEntry ? (
+          <Pressable
+            onPress={() => setVisible((prev) => !prev)}
+            style={styles.toggleBtn}
+            hitSlop={8}
+          >
+            <MaterialIcons
+              name={visible ? 'visibility-off' : 'visibility'}
+              size={20}
+              color={COLORS.textLight}
+            />
+          </Pressable>
+        ) : null}
+      </View>
       {error ? <Text style={styles.error}>{error}</Text> : null}
     </View>
   );
@@ -62,6 +80,10 @@ const createStyles = (COLORS) => StyleSheet.create({
     color: COLORS.text,
     marginBottom: SPACING.xs,
   },
+  inputWrapper: {
+    position: 'relative',
+    justifyContent: 'center',
+  },
   input: {
     minHeight: 50,
     borderWidth: 1.5,
@@ -72,6 +94,14 @@ const createStyles = (COLORS) => StyleSheet.create({
     fontSize: FONT_SIZE.md,
     color: COLORS.text,
     backgroundColor: COLORS.surface,
+  },
+  inputWithToggle: {
+    paddingRight: SPACING.xl + SPACING.sm,
+  },
+  toggleBtn: {
+    position: 'absolute',
+    right: SPACING.md,
+    padding: SPACING.xs,
   },
   multiline: {
     minHeight: 100,
