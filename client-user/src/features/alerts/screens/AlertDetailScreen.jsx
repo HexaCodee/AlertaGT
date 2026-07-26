@@ -104,7 +104,7 @@ export const AlertDetailScreen = ({ route, navigation }) => {
       const { status } = await Location.requestForegroundPermissionsAsync();
       if (status !== 'granted') return;
       try {
-        const pos = await Location.getCurrentPositionAsync({});
+        const pos = await Location.getCurrentPositionAsync({ accuracy: Location.Accuracy.BestForNavigation });
         if (!cancelled) {
           setDistance(haversineMeters(pos.coords.latitude, pos.coords.longitude, lat, lng));
         }

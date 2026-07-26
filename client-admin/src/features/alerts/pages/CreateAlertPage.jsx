@@ -131,7 +131,9 @@ export const CreateAlertPage = () => {
             }
         },
         {
-            enableHighAccuracy: true
+            enableHighAccuracy: true,
+            timeout: 8000,
+            maximumAge: 0
         }
     )
 }

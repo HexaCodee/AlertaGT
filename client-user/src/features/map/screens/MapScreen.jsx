@@ -44,24 +44,50 @@ export const MapScreen = ({ navigation }) => {
   const [region, setRegion] = useState(null);
   const [permissionDenied, setPermissionDenied] = useState(false);
   const mapRef = useRef(null);
+  const watchSubscription = useRef(null);
 
-  const init = useCallback(async () => {
-    const maxDistance = await getAlertRadius();
-    const { status } = await Location.requestForegroundPermissionsAsync();
-    if (status !== 'granted') {
-      setPermissionDenied(true);
-      setRegion(DEFAULT_REGION);
-      fetchNearbyAlerts({ ...DEFAULT_REGION, maxDistance });
-      return;
-    }
-    const pos = await Location.getCurrentPositionAsync({});
-    const coords = { latitude: pos.coords.latitude, longitude: pos.coords.longitude };
-    setRegion({ ...coords, latitudeDelta: 0.05, longitudeDelta: 0.05 });
-    updateLocation(coords);
-    fetchNearbyAlerts({ ...coords, maxDistance });
+  useEffect(() => {
+    let cancelled = false;
+
+    const start = async () => {
+      const maxDistance = await getAlertRadius();
+      const { status } = await Location.requestForegroundPermissionsAsync();
+      if (cancelled) return;
+      if (status !== 'granted') {
+        setPermissionDenied(true);
+        setRegion(DEFAULT_REGION);
+        fetchNearbyAlerts({ ...DEFAULT_REGION, maxDistance });
+        return;
+      }
+
+      const subscription = await Location.watchPositionAsync(
+        {
+          accuracy: Location.Accuracy.BestForNavigation,
+          timeInterval: 5000,
+          distanceInterval: 15,
+        },
+        (pos) => {
+          const coords = { latitude: pos.coords.latitude, longitude: pos.coords.longitude };
+          setRegion((prev) => ({ ...coords, latitudeDelta: prev?.latitudeDelta ?? 0.05, longitudeDelta: prev?.longitudeDelta ?? 0.05 }));
+          updateLocation(coords);
+          fetchNearbyAlerts({ ...coords, maxDistance });
+        }
+      );
+      if (cancelled) {
+        subscription.remove();
+        return;
+      }
+      watchSubscription.current = subscription;
+    };
+
+    start();
+
+    return () => {
+      cancelled = true;
+      watchSubscription.current?.remove();
+      watchSubscription.current = null;
+    };
   }, [updateLocation, fetchNearbyAlerts]);
-
-  useEffect(() => { init(); }, [init]);
 
   const goToAlert = (id) =>
     navigation.navigate('Alerts', { screen: 'AlertDetail', params: { id } });
