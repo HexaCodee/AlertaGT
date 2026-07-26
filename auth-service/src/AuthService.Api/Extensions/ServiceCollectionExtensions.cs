@@ -34,6 +34,12 @@ public static class ServiceCollectionExtensions
             client.Timeout = TimeSpan.FromSeconds(10);
         });
 
+        services.AddHttpClient("BrevoClient", client =>
+        {
+            client.BaseAddress = new Uri("https://api.brevo.com/v3/");
+            client.Timeout = TimeSpan.FromSeconds(15);
+        });
+
         services.AddScoped<IUserRepository, UserRepository>();
         services.AddScoped<IRoleRepository, RoleRepository>();
         services.AddScoped<IAuthService, Application.Services.AuthService>();

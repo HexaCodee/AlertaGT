@@ -1,13 +1,17 @@
+using System.Net.Http.Headers;
+using System.Text;
+using System.Text.Json;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Logging;
-using MailKit.Net.Smtp;
-using MailKit.Security;
-using MimeKit;
 using AuthService.Application.Interfaces;
- 
+
 namespace AuthService.Application.Services;
- 
-public class EmailService(IConfiguration configuration, ILogger<EmailService> logger) : IEmailService
+
+// Envia correos via la API HTTPS de Brevo (antes Sendinblue) en vez de SMTP:
+// Render bloquea las conexiones SMTP salientes (puertos 465/587) en su plan
+// gratuito, causando System.TimeoutException al conectar. HTTPS (443) si
+// funciona, por eso se usa la API REST de Brevo.
+public class EmailService(IHttpClientFactory httpClientFactory, IConfiguration configuration, ILogger<EmailService> logger) : IEmailService
 {
     // Marca de AlertaGT: mismo rojo (#d30000) que usan client-admin/client-user en
     // headers y botones primarios, para que los correos se vean consistentes con la app.
@@ -106,101 +110,58 @@ public class EmailService(IConfiguration configuration, ILogger<EmailService> lo
     private async Task SendEmailAsync(string to, string subject, string body)
     {
         var smtpSettings = configuration.GetSection("SmtpSettings");
- 
+
+        // Verificar si el email está habilitado
+        var enabled = bool.Parse(smtpSettings["Enabled"] ?? "true");
+        if (!enabled)
+        {
+            logger.LogInformation("El envío de emails está deshabilitado en la configuración. Omitiendo envío");
+            return;
+        }
+
+        var apiKey = configuration["BrevoSettings:ApiKey"];
+        var fromEmail = smtpSettings["FromEmail"];
+        var fromName = smtpSettings["FromName"];
+
+        if (string.IsNullOrEmpty(apiKey) || string.IsNullOrEmpty(fromEmail))
+        {
+            logger.LogError("La configuración de Brevo no está configurada correctamente");
+            throw new InvalidOperationException("La configuración de Brevo no está configurada correctamente");
+        }
+
         try
         {
-            // Verificar si el email está habilitado
-            var enabled = bool.Parse(smtpSettings["Enabled"] ?? "true");
-            if (!enabled)
+            var client = httpClientFactory.CreateClient("BrevoClient");
+            client.BaseAddress ??= new Uri("https://api.brevo.com/v3/");
+            client.DefaultRequestHeaders.Remove("api-key");
+            client.DefaultRequestHeaders.Add("api-key", apiKey);
+            client.DefaultRequestHeaders.Accept.Clear();
+            client.DefaultRequestHeaders.Accept.Add(new MediaTypeWithQualityHeaderValue("application/json"));
+
+            var payload = new
             {
-                logger.LogInformation("El envío de emails está deshabilitado en la configuración. Omitiendo envío");
-                return;
-            }
- 
-            // Validar configuración
-            var host = smtpSettings["Host"];
-            var portString = smtpSettings["Port"];
-            var username = smtpSettings["Username"];
-            var password = smtpSettings["Password"];
-            var fromEmail = smtpSettings["FromEmail"];
-            var fromName = smtpSettings["FromName"];
- 
-            if (string.IsNullOrEmpty(host) || string.IsNullOrEmpty(username) || string.IsNullOrEmpty(password))
+                sender = new { name = fromName, email = fromEmail },
+                to = new[] { new { email = to } },
+                subject,
+                htmlContent = body
+            };
+
+            using var content = new StringContent(JsonSerializer.Serialize(payload), Encoding.UTF8, "application/json");
+            var response = await client.PostAsync("smtp/email", content);
+
+            if (!response.IsSuccessStatusCode)
             {
-                logger.LogError("La configuración SMTP no está configurada correctamente");
-                throw new InvalidOperationException("La configuración SMTP no está configurada correctamente");
+                var errorBody = await response.Content.ReadAsStringAsync();
+                logger.LogError("Brevo respondió con error {StatusCode}: {Body}", response.StatusCode, errorBody);
+                throw new InvalidOperationException($"Brevo respondió con error {response.StatusCode}: {errorBody}");
             }
- 
-            // Avoid logging sensitive SMTP details
- 
-            var port = int.Parse(portString ?? "587");
- 
-            using var client = new SmtpClient();
- 
-            // Configurar timeout
-            var timeoutMs = int.Parse(smtpSettings["Timeout"] ?? "30000");
-            client.Timeout = timeoutMs;
- 
-            try
-            {
-                // Configurar validación de certificados SSL
-                var ignoreCertErrors = bool.Parse(smtpSettings["IgnoreCertificateErrors"] ?? "false");
-                if (ignoreCertErrors)
-                {
-                    logger.LogWarning("Validación de certificados SSL deshabilitada. Solo usar en desarrollo.");
-                    client.ServerCertificateValidationCallback = (s, c, h, e) => true;
-                }
- 
-                // Verificar configuración de SSL implícito
-                var useImplicitSsl = bool.Parse(smtpSettings["UseImplicitSsl"] ?? "false");
- 
-                // Configuración específica por puerto y SSL
-                if (useImplicitSsl || port == 465)
-                {
-                    await client.ConnectAsync(host, port, SecureSocketOptions.SslOnConnect);
-                }
-                else if (port == 587)
-                {
-                    await client.ConnectAsync(host, port, SecureSocketOptions.StartTls);
-                }
-                else
-                {
-                    await client.ConnectAsync(host, port, SecureSocketOptions.Auto);
-                }
- 
-                // Autenticación
-                await client.AuthenticateAsync(username, password);
- 
-                // Crear mensaje con MimeKit
-                var message = new MimeMessage();
-                message.From.Add(new MailboxAddress(fromName, fromEmail));
-                message.To.Add(new MailboxAddress("", to));
-                message.Subject = subject;
-                message.Body = new TextPart("html") { Text = body };
- 
-                // Enviar
-                await client.SendAsync(message);
-                logger.LogInformation("Email enviado exitosamente");
- 
-                await client.DisconnectAsync(true);
-                logger.LogInformation("Pipeline de email completado");
-            }
-            catch (MailKit.Security.AuthenticationException authEx)
-            {
-                logger.LogError(authEx, "La autenticación de Gmail falló. Verifica la contraseña de aplicación.");
-                throw new InvalidOperationException($"La autenticación de Gmail falló: {authEx.Message}. Por favor, verifica la contraseña de aplicación.", authEx);
-            }
-            catch (Exception ex)
-            {
-                logger.LogError(ex, "Error al enviar el email");
-                throw;
-            }
-            logger.LogInformation("Email processed");
+
+            logger.LogInformation("Email enviado exitosamente via Brevo");
         }
         catch (Exception ex)
         {
             logger.LogError(ex, "Error al enviar el email");
- 
+
             // Verificar si usar fallback
             var useFallback = bool.Parse(smtpSettings["UseFallback"] ?? "false");
             if (useFallback)
@@ -208,7 +169,7 @@ public class EmailService(IConfiguration configuration, ILogger<EmailService> lo
                 logger.LogWarning("Usando respaldo de email");
                 return; // No fallar, solo logear
             }
- 
+
             throw new InvalidOperationException($"Error al enviar el email: {ex.Message}", ex);
         }
     }

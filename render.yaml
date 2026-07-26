@@ -59,17 +59,9 @@ services:
         value: "60"
       - key: SmtpSettings__Enabled
         value: "true"
-      - key: SmtpSettings__Host
-        value: smtp.gmail.com
-      - key: SmtpSettings__Port
-        value: "465"
-      - key: SmtpSettings__EnableSsl
-        value: "true"
-      - key: SmtpSettings__UseImplicitSsl
-        value: "true"
-      - key: SmtpSettings__Username
-        sync: false
-      - key: SmtpSettings__Password
+      # Render bloquea conexiones SMTP salientes (465/587), por eso el envio
+      # de correos usa la API HTTPS de Brevo en vez de SmtpSettings.Host/Port.
+      - key: BrevoSettings__ApiKey
         sync: false
       - key: SmtpSettings__FromEmail
         sync: false
