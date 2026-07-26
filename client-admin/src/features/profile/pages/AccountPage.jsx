@@ -55,7 +55,7 @@ export const AccountPage = () => {
         return (
             <div className="profile-loading">
                 <div className="profile-spinner"></div>
-                <p style={{ fontWeight: 500, fontSize: '1rem', color: '#555' }}>Cargando perfil...</p>
+                <p className="profile-loading-text">Cargando perfil...</p>
             </div>
         );
     }
