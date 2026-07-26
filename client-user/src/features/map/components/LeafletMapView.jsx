@@ -5,7 +5,7 @@
 // depender de una API key de Google Maps (react-native-maps en Android
 // requiere una y, sin ella, el mapa se queda en negro).
 
-import { forwardRef, useImperativeHandle, useMemo, useRef } from 'react';
+import { forwardRef, useEffect, useImperativeHandle, useMemo, useRef } from 'react';
 import { StyleSheet } from 'react-native';
 import { WebView } from 'react-native-webview';
 
@@ -76,6 +76,7 @@ const buildHtml = ({ center, markers, tiles, userMarker }) => `
       try {
         const msg = JSON.parse(raw);
         if (msg.type === 'recenter') recenter(msg.latitude, msg.longitude);
+        else if (msg.type === 'updateUserLocation') setUserMarker(msg.latitude, msg.longitude);
       } catch (e) {}
     }
   </script>
@@ -87,21 +88,32 @@ export const LeafletMapView = forwardRef(({ style, region, markers, userLocation
   const webviewRef = useRef(null);
   const tiles = isDark ? TILES.dark : TILES.light;
 
+  const initialRegion = useRef(region).current;
+  const initialUserLocation = useRef(userLocation).current;
+
   const html = useMemo(
     () =>
       buildHtml({
-        center: region,
+        center: initialRegion,
         markers,
         tiles,
-        userMarker: userLocation,
+        userMarker: initialUserLocation,
       }),
     // Solo reconstruimos el HTML cuando cambia el set de alertas o el tema.
-    // region/userLocation se omiten a propósito: el centro inicial no debe
-    // recargar el WebView en cada actualización de GPS — el recentrado se
-    // maneja aparte vía postMessage (ver recenter()).
+    // El centro inicial y el marcador de usuario no deben recargar el WebView
+    // en cada actualización de GPS — eso se maneja vía postMessage
+    // (ver recenter() y updateUserLocation()).
     // eslint-disable-next-line react-hooks/exhaustive-deps
-    [markers, tiles.url, userLocation?.latitude, userLocation?.longitude]
+    [markers, tiles.url]
   );
+
+  useEffect(() => {
+    if (userLocation) {
+      webviewRef.current?.postMessage(
+        JSON.stringify({ type: 'updateUserLocation', latitude: userLocation.latitude, longitude: userLocation.longitude })
+      );
+    }
+  }, [userLocation?.latitude, userLocation?.longitude]);
 
   useImperativeHandle(ref, () => ({
     recenter: (latitude, longitude) => {

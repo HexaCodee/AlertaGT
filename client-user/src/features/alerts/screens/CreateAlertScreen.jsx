@@ -44,7 +44,7 @@ export const CreateAlertScreen = ({ navigation }) => {
         setLocationLabel('Permiso de ubicación denegado');
         return;
       }
-      const pos = await Location.getCurrentPositionAsync({});
+      const pos = await Location.getCurrentPositionAsync({ accuracy: Location.Accuracy.BestForNavigation });
       setCoords({ latitude: pos.coords.latitude, longitude: pos.coords.longitude });
       setLocationLabel('Ubicación GPS detectada');
     })();

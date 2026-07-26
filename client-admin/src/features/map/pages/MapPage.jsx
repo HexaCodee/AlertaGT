@@ -83,6 +83,16 @@ const getUserPosition = () =>
     )
   })
 
+// Distancia aproximada en metros entre dos puntos (fórmula haversine)
+const distanceMeters = (a, b) => {
+  const R = 6371000
+  const dLat = ((b.lat - a.lat) * Math.PI) / 180
+  const dLng = ((b.lng - a.lng) * Math.PI) / 180
+  const s1 = Math.sin(dLat / 2) ** 2
+    + Math.cos((a.lat * Math.PI) / 180) * Math.cos((b.lat * Math.PI) / 180) * Math.sin(dLng / 2) ** 2
+  return 2 * R * Math.asin(Math.sqrt(s1))
+}
+
 export const MapPage = () => {
   const navigate = useNavigate()
   const mapRef = useRef(null)
@@ -94,10 +104,9 @@ export const MapPage = () => {
   const isDark = getTheme() === 'dark'
   const tiles = isDark ? TILES.dark : TILES.light
 
-  const load = useCallback(async () => {
-    const pos = await getUserPosition()
-    setUserPos(pos)
-    const center = pos || DEFAULT_CENTER
+  const lastFetchedPos = useRef(null)
+
+  const fetchAlertsAt = useCallback(async (center) => {
     try {
       const data = await getNearbyAlerts({ latitude: center.lat, longitude: center.lng, maxDistance: getAlertRadius() })
       setAlerts(data)
@@ -108,11 +117,49 @@ export const MapPage = () => {
     }
   }, [])
 
-  useEffect(() => { load() }, [load])
-
-  // Cuando llega la ubicación del usuario, centra el mapa en ella
   useEffect(() => {
-    if (userPos && mapRef.current) mapRef.current.setView([userPos.lat, userPos.lng], 15)
+    let ignore = false
+    let watchId = null
+
+    const start = async () => {
+      const pos = await getUserPosition()
+      if (ignore) return
+      setUserPos(pos)
+      lastFetchedPos.current = pos
+      await fetchAlertsAt(pos || DEFAULT_CENTER)
+      if (ignore || !navigator.geolocation) return
+
+      watchId = navigator.geolocation.watchPosition(
+        (position) => {
+          const next = { lat: position.coords.latitude, lng: position.coords.longitude }
+          setUserPos(next)
+          window.sessionStorage.setItem('user_lat', next.lat)
+          window.sessionStorage.setItem('user_lng', next.lng)
+          if (!lastFetchedPos.current || distanceMeters(lastFetchedPos.current, next) >= 15) {
+            lastFetchedPos.current = next
+            fetchAlertsAt(next)
+          }
+        },
+        () => {},
+        { enableHighAccuracy: true, maximumAge: 0 },
+      )
+    }
+
+    start()
+
+    return () => {
+      ignore = true
+      if (watchId != null) navigator.geolocation.clearWatch(watchId)
+    }
+  }, [fetchAlertsAt])
+
+  // Centra el mapa una sola vez, cuando llega la primera ubicación del usuario
+  const hasCentered = useRef(false)
+  useEffect(() => {
+    if (userPos && mapRef.current && !hasCentered.current) {
+      hasCentered.current = true
+      mapRef.current.setView([userPos.lat, userPos.lng], 15)
+    }
   }, [userPos])
 
   const handleRecenter = () => {

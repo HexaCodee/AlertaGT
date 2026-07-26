@@ -44,7 +44,7 @@ export const AlertsListScreen = ({ navigation }) => {
       return;
     }
     try {
-      const pos = await Location.getCurrentPositionAsync({});
+      const pos = await Location.getCurrentPositionAsync({ accuracy: Location.Accuracy.BestForNavigation });
       const next = { latitude: pos.coords.latitude, longitude: pos.coords.longitude };
       setLocationText(`${next.latitude.toFixed(4)}, ${next.longitude.toFixed(4)}`);
       setCoords(next);
