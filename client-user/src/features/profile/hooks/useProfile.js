@@ -70,7 +70,18 @@ export const useProfile = () => {
     }
   }, []);
 
-  return { loading, error, fetchProfile, updateProfile, getPublicProfile };
+  // Estadísticas del usuario autenticado: alertas publicadas, comentarios
+  // hechos, y "comunidad ayudada" (comentarios recibidos en sus alertas).
+  const fetchProfileStats = useCallback(async () => {
+    try {
+      const response = await profileClient.get('/Profile/stats');
+      return response.data.data || response.data;
+    } catch {
+      return null;
+    }
+  }, []);
+
+  return { loading, error, fetchProfile, updateProfile, getPublicProfile, fetchProfileStats };
 };
 
 export default useProfile;

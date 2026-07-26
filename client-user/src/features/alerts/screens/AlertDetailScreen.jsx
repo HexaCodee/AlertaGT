@@ -66,7 +66,7 @@ export const AlertDetailScreen = ({ route, navigation }) => {
   const currentUserId = useAuthStore((state) => state.user?.id);
 
   const { fetchAlertDetail, addComment, deleteAlert, loading } = useAlerts();
-  const { reportAlert, rateUser } = useReports();
+  const { reportAlert, rateUser, fetchReputation, fetchRatingSummary } = useReports();
   const { getPublicProfile } = useProfile();
 
   const [alert, setAlert] = useState(initialAlert || null);
@@ -82,6 +82,10 @@ export const AlertDetailScreen = ({ route, navigation }) => {
   // (Profile/{userId}/public), igual que en la web.
   const [authorNames, setAuthorNames] = useState({});
   const fetchedAuthorsRef = useRef(new Set());
+
+  // Calificación del autor de la alerta (estrellas + cantidad de reseñas),
+  // igual que en la web (ReputationBadge en AlertDetailPage).
+  const [authorRatingSummary, setAuthorRatingSummary] = useState(null);
 
   const load = useCallback(async () => {
     const result = await fetchAlertDetail(id);
@@ -156,6 +160,17 @@ export const AlertDetailScreen = ({ route, navigation }) => {
       });
     });
   }, [alert?.authorId, comments, currentUserId, getPublicProfile]);
+
+  useEffect(() => {
+    const authorId = alert?.authorId;
+    if (!authorId) return;
+    let cancelled = false;
+    Promise.all([fetchReputation(authorId), fetchRatingSummary(authorId)]).then(([rep, summary]) => {
+      if (cancelled) return;
+      setAuthorRatingSummary(summary ?? (rep ? { average: rep.averageRating, count: rep.ratingsCount } : null));
+    });
+    return () => { cancelled = true; };
+  }, [alert?.authorId, fetchReputation, fetchRatingSummary]);
 
   const handleComment = async () => {
     const text = newComment.trim();
@@ -288,6 +303,14 @@ export const AlertDetailScreen = ({ route, navigation }) => {
               <View>
                 <Text style={styles.authorLabel}>Publicado por</Text>
                 <Text style={styles.authorName}>{authorName}</Text>
+                {authorRatingSummary ? (
+                  <View style={styles.authorRatingRow}>
+                    <StarRating value={Math.round(authorRatingSummary.average || 0)} readOnly size={13} />
+                    <Text style={styles.authorRatingText}>
+                      ({authorRatingSummary.count || 0} reseña{authorRatingSummary.count === 1 ? '' : 's'})
+                    </Text>
+                  </View>
+                ) : null}
               </View>
             </View>
           </View>
@@ -441,6 +464,8 @@ const createStyles = (COLORS) => StyleSheet.create({
   avatarText: { color: '#ffffff', fontWeight: '700', fontSize: FONT_SIZE.md },
   authorLabel: { fontSize: FONT_SIZE.xs, color: COLORS.textMuted },
   authorName: { fontSize: FONT_SIZE.sm, fontWeight: '600', color: COLORS.text },
+  authorRatingRow: { flexDirection: 'row', alignItems: 'center', gap: 4, marginTop: 2 },
+  authorRatingText: { fontSize: FONT_SIZE.xs, color: COLORS.textLight },
 
   actionMsg: {
     marginTop: SPACING.md,
