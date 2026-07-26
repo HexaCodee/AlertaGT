@@ -7,6 +7,7 @@ export const LoginForm = ({ onForgot }) => {
   const [form, setForm] = useState({ emailOrUsername: '', password: '' })
   const [error, setError] = useState('')
   const [loading, setLoading] = useState(false)
+  const [showPassword, setShowPassword] = useState(false)
 
   const handleChange = (event) => {
     const { name, value } = event.target
@@ -89,13 +90,24 @@ export const LoginForm = ({ onForgot }) => {
             <path d='M17 8h-1V7a4 4 0 0 0-8 0v1H7a2 2 0 0 0-2 2v7a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2v-7a2 2 0 0 0-2-2zm-6-1a2 2 0 0 1 4 0v1h-4V7z' />
           </svg>
           <input
-            type='password'
+            type={showPassword ? 'text' : 'password'}
             name='password'
             autoComplete='new-password'
             value={form.password}
             onChange={handleChange}
             placeholder='••••••••'
           />
+          <button
+            type='button'
+            className='password-toggle'
+            aria-label='Mostrar contraseña'
+            onClick={() => setShowPassword((prev) => !prev)}
+          >
+            <svg viewBox='0 0 24 24' width='18' height='18' fill='none' stroke='currentColor' strokeWidth='2'>
+              <path d='M1 12s4-7 11-7 11 7 11 7-4 7-11 7S1 12 1 12z' />
+              <circle cx='12' cy='12' r='3' />
+            </svg>
+          </button>
         </div>
       </label>
 
