@@ -14,6 +14,11 @@ public static class TokenGenerator
         return GenerateSecureToken(32); // 32 bytes = 256 bits
     }
 
+    public static string GenerateRefreshToken()
+    {
+        return GenerateSecureToken(64); // 64 bytes = 512 bits
+    }
+
     private static string GenerateSecureToken(int length)
     {
         using var rng = RandomNumberGenerator.Create();

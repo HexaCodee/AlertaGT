@@ -42,6 +42,7 @@ public static class ServiceCollectionExtensions
 
         services.AddScoped<IUserRepository, UserRepository>();
         services.AddScoped<IRoleRepository, RoleRepository>();
+        services.AddScoped<IRefreshTokenRepository, RefreshTokenRepository>();
         services.AddScoped<IAuthService, Application.Services.AuthService>();
         services.AddScoped<IUserService, UserService>();
         services.AddScoped<IPostsServiceClient, PostsServiceClient>();

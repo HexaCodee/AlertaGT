@@ -10,12 +10,15 @@ using AuthService.Domain.Enums;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Logging;
 using AuthService.Application.DTOs.Email;
+using System.Security.Cryptography;
+using System.Text;
 
 namespace AuthService.Application.Services;
 
 public class AuthService(
     IUserRepository userRepository,
     IRoleRepository roleRepository,
+    IRefreshTokenRepository refreshTokenRepository,
     IPasswordHashService passwordHashService,
     IJwtTokenService jwtTokenService,
     ICloudinaryService cloudinaryService,
@@ -24,6 +27,29 @@ public class AuthService(
     ILogger<AuthService> logger) : IAuthService
 {
     private readonly ICloudinaryService _cloudinaryService = cloudinaryService;
+
+    private static string HashToken(string token)
+    {
+        var bytes = SHA256.HashData(Encoding.UTF8.GetBytes(token));
+        return Convert.ToHexString(bytes);
+    }
+
+    private async Task<(string token, DateTime expiresAt)> IssueRefreshTokenAsync(string userId)
+    {
+        var refreshTokenDays = int.Parse(configuration["JwtSettings:RefreshTokenExpirationDays"] ?? "30");
+        var plainToken = TokenGenerator.GenerateRefreshToken();
+        var expiresAt = DateTime.UtcNow.AddDays(refreshTokenDays);
+
+        await refreshTokenRepository.CreateAsync(new RefreshToken
+        {
+            Id = UuidGenerator.GenerateRefreshTokenId(),
+            UserId = userId,
+            TokenHash = HashToken(plainToken),
+            ExpiresAt = expiresAt
+        });
+
+        return (plainToken, expiresAt);
+    }
     public async Task<RegisterResponseDto> RegisterAsync(RegisterDto registerDto)
     {
         // Verificar si el email ya existe
@@ -212,7 +238,8 @@ public class AuthService(
 
         // Generar token JWT
         var token = jwtTokenService.GenerateToken(user);
-        var expiryMinutes = int.Parse(configuration["JwtSettings:ExpiryInMinutes"] ?? "30");
+        var expiryMinutes = int.Parse(configuration["JwtSettings:ExpirationMinutes"] ?? "60");
+        var (refreshToken, refreshExpiresAt) = await IssueRefreshTokenAsync(user.Id);
 
         // Crear respuesta compacta
         return new AuthResponseDto
@@ -221,8 +248,62 @@ public class AuthService(
             Message = "Login exitoso",
             Token = token,
             UserDetails = MapToUserDetailsDto(user),
-            ExpiresAt = DateTime.UtcNow.AddMinutes(expiryMinutes)
+            ExpiresAt = DateTime.UtcNow.AddMinutes(expiryMinutes),
+            RefreshToken = refreshToken,
+            RefreshTokenExpiresAt = refreshExpiresAt
         };
+    }
+
+    public async Task<AuthResponseDto> RefreshTokenAsync(RefreshTokenDto refreshTokenDto)
+    {
+        var tokenHash = HashToken(refreshTokenDto.RefreshToken);
+        var storedToken = await refreshTokenRepository.GetByTokenHashAsync(tokenHash);
+
+        if (storedToken == null || storedToken.RevokedAt != null || storedToken.ExpiresAt < DateTime.UtcNow)
+        {
+            logger.LogWarning("Intento de refresh con token invalido, revocado o expirado");
+            throw new UnauthorizedAccessException("Refresh token inválido o expirado");
+        }
+
+        var user = await userRepository.GetByIdAsync(storedToken.UserId);
+        if (user == null || !user.Status)
+        {
+            throw new UnauthorizedAccessException("Usuario no encontrado o inactivo");
+        }
+
+        // Rotación: se invalida el refresh token usado y se emite uno nuevo,
+        // asi un token robado solo sirve una vez antes de quedar inutil.
+        await refreshTokenRepository.RevokeAsync(storedToken.Id);
+
+        var newAccessToken = jwtTokenService.GenerateToken(user);
+        var expiryMinutes = int.Parse(configuration["JwtSettings:ExpirationMinutes"] ?? "60");
+        var (newRefreshToken, refreshExpiresAt) = await IssueRefreshTokenAsync(user.Id);
+
+        logger.LogInformation("Access token renovado para el usuario {Username}", user.Username);
+
+        return new AuthResponseDto
+        {
+            Success = true,
+            Message = "Token renovado",
+            Token = newAccessToken,
+            UserDetails = MapToUserDetailsDto(user),
+            ExpiresAt = DateTime.UtcNow.AddMinutes(expiryMinutes),
+            RefreshToken = newRefreshToken,
+            RefreshTokenExpiresAt = refreshExpiresAt
+        };
+    }
+
+    public async Task LogoutAsync(LogoutDto logoutDto)
+    {
+        var tokenHash = HashToken(logoutDto.RefreshToken);
+        var storedToken = await refreshTokenRepository.GetByTokenHashAsync(tokenHash);
+
+        // Si el token no existe o ya esta revocado, no hay nada que hacer:
+        // el logout siempre se reporta como exitoso desde el cliente.
+        if (storedToken != null && storedToken.RevokedAt == null)
+        {
+            await refreshTokenRepository.RevokeAsync(storedToken.Id);
+        }
     }
 
     private UserResponseDto MapToUserResponseDto(User user)

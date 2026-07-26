@@ -12,6 +12,7 @@ import { Card, LoadingSpinner } from '../../../shared/components/common/Common.j
 import { Button } from '../../../shared/components/common/Button.jsx';
 import { RangeSlider } from '../../../shared/components/common/RangeSlider.jsx';
 import { useAuthStore } from '../../../shared/store/authStore.js';
+import { authClient } from '../../../shared/api/authClient.js';
 import { showConfirm } from '../../../shared/utils/alert.js';
 import { useTheme } from '../../../shared/context/ThemeContext.jsx';
 import {
@@ -63,7 +64,19 @@ export const ProfileScreen = ({ navigation }) => {
   };
 
   const confirmLogout = () => {
-    showConfirm('Cerrar sesión', '¿Seguro que deseas salir de tu cuenta?', () => logout(), 'Cerrar sesión');
+    showConfirm('Cerrar sesión', '¿Seguro que deseas salir de tu cuenta?', async () => {
+      const { refreshToken } = useAuthStore.getState();
+      if (refreshToken) {
+        // Revoca la sesión en el servidor. Best-effort: si falla (sin
+        // conexión, backend caído), igual se cierra sesión localmente.
+        try {
+          await authClient.post('/logout', { refreshToken });
+        } catch {
+          // Ignorado a propósito.
+        }
+      }
+      logout();
+    }, 'Cerrar sesión');
   };
 
   if (initializing) return <LoadingSpinner message="Cargando tu perfil..." />;

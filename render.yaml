@@ -57,6 +57,8 @@ services:
         value: AlertaGT
       - key: JwtSettings__ExpirationMinutes
         value: "60"
+      - key: JwtSettings__RefreshTokenExpirationDays
+        value: "30"
       - key: SmtpSettings__Enabled
         value: "true"
       # Render bloquea conexiones SMTP salientes (465/587), por eso el envio
