@@ -12,7 +12,7 @@ import * as Location from 'expo-location';
 import { MaterialIcons } from '@expo/vector-icons';
 import { useMap } from '../hooks/useMap.js';
 import { LeafletMapView } from '../components/LeafletMapView.jsx';
-import { categoryLabel, categoryEmoji } from '../../alerts/constants.js';
+import { categoryLabel, categoryEmoji, categoryColor } from '../../alerts/constants.js';
 import { Card, LoadingSpinner, EmptyState } from '../../../shared/components/common/Common.jsx';
 import { ScreenHeader } from '../../../shared/components/common/ScreenHeader.jsx';
 import { useTheme } from '../../../shared/context/ThemeContext.jsx';
@@ -159,7 +159,7 @@ export const MapScreen = ({ navigation }) => {
           markers={nearbyAlerts
             .map((alert) => {
               const coords = getCoords(alert);
-              return coords ? { id: alert._id, ...coords, emoji: categoryEmoji(alert.category) } : null;
+              return coords ? { id: alert._id, ...coords, emoji: categoryEmoji(alert.category), color: categoryColor(alert.category) } : null;
             })
             .filter(Boolean)}
           onMarkerPress={goToAlert}

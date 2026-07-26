@@ -30,7 +30,9 @@ const buildHtml = ({ center, markers, tiles, userMarker }) => `
   <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
   <style>
     html, body, #map { height: 100%; margin: 0; padding: 0; background: #0f141b; }
-    .alert-pin { font-size: 24px; line-height: 1; text-align: center; filter: drop-shadow(0 1px 2px rgba(0,0,0,0.6)); }
+    .alert-pin__wrap { position: relative; width: 34px; height: 46px; }
+    .alert-pin__svg { width: 34px; height: 46px; display: block; filter: drop-shadow(0 2px 4px rgba(0,0,0,0.35)); }
+    .alert-pin__glyph { position: absolute; top: 7px; left: 0; right: 0; text-align: center; font-size: 15px; line-height: 1; pointer-events: none; }
     .user-dot { width: 14px; height: 14px; border-radius: 50%; background: #2563eb; border: 3px solid #fff; box-shadow: 0 0 0 4px rgba(37,99,235,0.3); }
   </style>
 </head>
@@ -55,7 +57,15 @@ const buildHtml = ({ center, markers, tiles, userMarker }) => `
     function setMarkers(items) {
       markersLayer.clearLayers();
       items.forEach((m) => {
-        const icon = L.divIcon({ className: '', html: '<div class="alert-pin">' + m.emoji + '</div>', iconSize: [28, 28] });
+        const color = m.color || '#6b7280';
+        const html =
+          '<div class="alert-pin__wrap">' +
+          '<svg class="alert-pin__svg" viewBox="0 0 24 34" xmlns="http://www.w3.org/2000/svg">' +
+          '<path d="M12 0C5.373 0 0 5.373 0 12c0 8.5 12 22 12 22s12-13.5 12-22C24 5.373 18.627 0 12 0z" fill="' + color + '" stroke="#ffffff" stroke-width="2"/>' +
+          '</svg>' +
+          '<span class="alert-pin__glyph">' + m.emoji + '</span>' +
+          '</div>';
+        const icon = L.divIcon({ className: '', html, iconSize: [34, 46], iconAnchor: [17, 46], popupAnchor: [0, -40] });
         const marker = L.marker([m.latitude, m.longitude], { icon }).addTo(markersLayer);
         marker.on('click', () => {
           window.ReactNativeWebView.postMessage(JSON.stringify({ type: 'markerPress', id: m.id }));
