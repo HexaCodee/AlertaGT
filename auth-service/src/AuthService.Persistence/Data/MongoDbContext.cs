@@ -29,6 +29,7 @@ public class MongoDbContext
     public IMongoCollection<UserProfile> UserProfiles => _database.GetCollection<UserProfile>("user_profiles");
     public IMongoCollection<UserEmail> UserEmails => _database.GetCollection<UserEmail>("user_emails");
     public IMongoCollection<UserPasswordReset> UserPasswordResets => _database.GetCollection<UserPasswordReset>("user_password_resets");
+    public IMongoCollection<RefreshToken> RefreshTokens => _database.GetCollection<RefreshToken>("refresh_tokens");
 
     private void CreateIndexes()
     {
@@ -72,6 +73,21 @@ public class MongoDbContext
                     new CreateIndexOptions { Unique = true, Sparse = true })
             };
             UserPasswordResets.Indexes.CreateMany(userPasswordResetsIndexModel);
+
+            // Índices para RefreshTokens: búsqueda rápida por hash, y TTL para
+            // que Mongo borre solos los tokens ya vencidos.
+            var refreshTokensIndexModel = new[]
+            {
+                new CreateIndexModel<RefreshToken>(
+                    Builders<RefreshToken>.IndexKeys.Ascending(rt => rt.TokenHash),
+                    new CreateIndexOptions { Unique = true }),
+                new CreateIndexModel<RefreshToken>(
+                    Builders<RefreshToken>.IndexKeys.Ascending(rt => rt.UserId)),
+                new CreateIndexModel<RefreshToken>(
+                    Builders<RefreshToken>.IndexKeys.Ascending(rt => rt.ExpiresAt),
+                    new CreateIndexOptions { ExpireAfter = TimeSpan.Zero })
+            };
+            RefreshTokens.Indexes.CreateMany(refreshTokensIndexModel);
         }
         catch (Exception ex)
         {

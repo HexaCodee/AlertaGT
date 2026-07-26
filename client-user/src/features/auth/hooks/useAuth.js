@@ -24,12 +24,13 @@ export const useAuth = () => {
 
         const token = data.token ?? data.accessToken ?? null;
         const user = data.userDetails ?? data.user ?? null;
+        const refreshToken = data.refreshToken ?? null;
 
         if (!token) {
           throw new Error('Respuesta de login sin token');
         }
 
-        login(token, user);
+        login(token, user, refreshToken);
         return { success: true, user };
       } catch (err) {
         const message =

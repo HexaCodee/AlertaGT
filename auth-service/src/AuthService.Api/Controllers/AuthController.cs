@@ -31,6 +31,39 @@ public class AuthController(IAuthService authService) : ControllerBase
     }
 
     /// <summary>
+    /// Canjea un refresh token vigente por un access token nuevo (y un refresh
+    /// token nuevo, por rotación). No requiere que el access token anterior
+    /// siga siendo válido.
+    /// </summary>
+    /// <param name="refreshTokenDto">Refresh token emitido en un login/refresh previo.</param>
+    /// <returns>Nuevo token JWT y detalles del usuario.</returns>
+    [HttpPost("refresh")]
+    [EnableRateLimiting("AuthPolicy")]
+    [ProducesResponseType(StatusCodes.Status200OK, Type = typeof(AuthResponseDto))]
+    [ProducesResponseType(StatusCodes.Status401Unauthorized)]
+    [ProducesResponseType(StatusCodes.Status429TooManyRequests)]
+    public async Task<ActionResult<AuthResponseDto>> Refresh([FromBody] RefreshTokenDto refreshTokenDto)
+    {
+        var result = await authService.RefreshTokenAsync(refreshTokenDto);
+        return Ok(result);
+    }
+
+    /// <summary>
+    /// Cierra sesión revocando el refresh token indicado. El access token en
+    /// uso sigue siendo válido hasta que expire por su cuenta (no hay
+    /// blacklist de access tokens).
+    /// </summary>
+    /// <param name="logoutDto">Refresh token de la sesión a cerrar.</param>
+    [HttpPost("logout")]
+    [EnableRateLimiting("ApiPolicy")]
+    [ProducesResponseType(StatusCodes.Status200OK)]
+    public async Task<IActionResult> Logout([FromBody] LogoutDto logoutDto)
+    {
+        await authService.LogoutAsync(logoutDto);
+        return Ok(new { success = true, message = "Sesión cerrada" });
+    }
+
+    /// <summary>
     /// Registra un nuevo usuario en la plataforma.
     /// </summary>
     /// <param name="registerDto">Información del nuevo usuario (nombre, email, teléfono, etc.).</param>

@@ -29,4 +29,15 @@ public class AuthResponseDto
     /// Fecha y hora de expiración del token JWT.
     /// </summary>
     public DateTime ExpiresAt { get; set; }
+
+    /// <summary>
+    /// Token de larga duración usado para obtener un nuevo access token sin
+    /// volver a pedir credenciales.
+    /// </summary>
+    public string RefreshToken { get; set; } = string.Empty;
+
+    /// <summary>
+    /// Fecha y hora de expiración del refresh token.
+    /// </summary>
+    public DateTime RefreshTokenExpiresAt { get; set; }
 }
