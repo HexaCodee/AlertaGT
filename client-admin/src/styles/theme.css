@@ -105,6 +105,9 @@
 [data-theme='dark'] .contact-row,
 [data-theme='dark'] .option-item { border-color: var(--dark-border); }
 [data-theme='dark'] .app-footer-info { color: var(--dark-text-muted); }
+[data-theme='dark'] .logout-btn { background-color: var(--dark-surface); }
+[data-theme='dark'] .profile-loading { background-color: var(--dark-bg); }
+[data-theme='dark'] .profile-loading-text { color: var(--dark-text-2); }
 
 /* ---------- Crear alerta ---------- */
 [data-theme='dark'] .create-alert-page { background: var(--dark-bg); }

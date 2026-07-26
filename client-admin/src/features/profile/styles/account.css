@@ -240,6 +240,12 @@
     font-family: inherit;
 }
 
+.profile-loading-text {
+    font-weight: 500;
+    font-size: 1rem;
+    color: #555;
+}
+
 .profile-spinner {
     width: 48px;
     height: 48px;
