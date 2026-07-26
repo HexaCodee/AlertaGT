@@ -7,6 +7,7 @@
 import axios from 'axios';
 import { ENDPOINTS } from '../constants/endpoints.js';
 import { useAuthStore } from '../store/authStore.js';
+import { refreshAccessToken } from './tokenRefresh.js';
 
 // Rutas del auth-service que NO deben disparar logout ante un 401
 // (son públicas o previas a tener sesión).
@@ -22,7 +23,7 @@ const isPublicAuthPath = (url = '') =>
 
 export const authClient = axios.create({
   baseURL: ENDPOINTS.AUTH,
-  timeout: 15000,
+  timeout: 50000,
   headers: { Accept: 'application/json' },
 });
 
@@ -36,17 +37,30 @@ authClient.interceptors.request.use((config) => {
   return config;
 });
 
-// Response: 401 en ruta protegida -> logout; en ruta pública -> dejar pasar el error.
+// Response: 401 en ruta protegida -> intenta renovar el access token con el
+// refresh token y reintenta la petición una sola vez; si el refresh falla,
+// cierra sesión. En rutas públicas (login/register/...) un 401 es
+// "credenciales inválidas", no "sesión expirada" -> se deja pasar tal cual.
 authClient.interceptors.response.use(
   (response) => response,
-  (error) => {
-    const url = error.config?.url || '';
-    if (error.response?.status === 401 && !isPublicAuthPath(url)) {
-      // TODO(refresh): cuando exista POST /refresh, intentar refrescar aquí antes
-      // de cerrar sesión, con cola de peticiones concurrentes.
-      useAuthStore.getState().logout();
+  async (error) => {
+    const { config, response } = error;
+    const url = config?.url || '';
+
+    if (response?.status !== 401 || isPublicAuthPath(url) || config._retry) {
+      return Promise.reject(error);
     }
-    return Promise.reject(error);
+
+    config._retry = true;
+    try {
+      const newToken = await refreshAccessToken();
+      config.headers = config.headers || {};
+      config.headers.Authorization = `Bearer ${newToken}`;
+      return authClient(config);
+    } catch {
+      useAuthStore.getState().logout();
+      return Promise.reject(error);
+    }
   }
 );
 

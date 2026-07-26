@@ -1,21 +1,18 @@
 // client-user/src/shared/api/apiClient.js
 // Factory de clientes axios para los microservicios de AlertaGT.
 // Cada cliente inyecta el Bearer token desde authStore y, ante un 401,
-// cierra sesión (el backend aún no soporta refresh token).
+// intenta renovar el access token con el refresh token guardado y reintenta
+// la petición una vez; si el refresh falla, cierra sesión.
 
 import axios from 'axios';
 import { ENDPOINTS } from '../constants/endpoints.js';
 import { useAuthStore } from '../store/authStore.js';
+import { refreshAccessToken } from './tokenRefresh.js';
 
 /**
  * Crea una instancia de axios con:
  *  - Authorization: Bearer <token> en cada request (si hay sesión).
- *  - Manejo de 401: logout directo del store.
- *
- * TODO(refresh): cuando el auth-service exponga POST /refresh, aquí es donde va
- * la cola de peticiones concurrentes: al recibir 401, intentar refrescar el
- * token una sola vez, reintentar las peticiones en espera y solo hacer logout()
- * si el refresh falla.
+ *  - Manejo de 401: refresh-and-retry, con logout solo si el refresh falla.
  */
 export const createApiClient = (baseURL) => {
   const client = axios.create({
@@ -34,15 +31,27 @@ export const createApiClient = (baseURL) => {
     return config;
   });
 
-  // Response: si el token es inválido/expiró, cerrar sesión.
+  // Response: 401 -> intenta renovar el token y reintenta una vez; si el
+  // refresh falla (o ya se había reintentado), cierra sesión.
   client.interceptors.response.use(
     (response) => response,
-    (error) => {
-      if (error.response?.status === 401) {
-        // TODO(refresh): reemplazar por intento de refresh + cola de reintentos.
-        useAuthStore.getState().logout();
+    async (error) => {
+      const { config, response } = error;
+
+      if (response?.status !== 401 || config._retry) {
+        return Promise.reject(error);
       }
-      return Promise.reject(error);
+
+      config._retry = true;
+      try {
+        const newToken = await refreshAccessToken();
+        config.headers = config.headers || {};
+        config.headers.Authorization = `Bearer ${newToken}`;
+        return client(config);
+      } catch {
+        useAuthStore.getState().logout();
+        return Promise.reject(error);
+      }
     }
   );
 
