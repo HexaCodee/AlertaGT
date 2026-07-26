@@ -1,0 +1,34 @@
+{
+  "cli": {
+    "version": ">= 12.0.0",
+    "appVersionSource": "local"
+  },
+  "build": {
+    "preview": {
+      "distribution": "internal",
+      "android": {
+        "buildType": "apk"
+      },
+      "env": {
+        "EXPO_PUBLIC_AUTH_URL": "https://auth-service-7qdh.onrender.com/api/v1/auth",
+        "EXPO_PUBLIC_POSTS_URL": "https://posts-service-03dn.onrender.com/api/v1",
+        "EXPO_PUBLIC_NOTIFICATIONS_URL": "https://notifications-service-wswx.onrender.com/api/v1",
+        "EXPO_PUBLIC_GEO_URL": "https://geolocatedalerts-service.onrender.com/api/v1",
+        "EXPO_PUBLIC_REPUTATION_URL": "https://reputation-service-a0oc.onrender.com/api/v1"
+      }
+    },
+    "production": {
+      "distribution": "internal",
+      "android": {
+        "buildType": "apk"
+      },
+      "env": {
+        "EXPO_PUBLIC_AUTH_URL": "https://auth-service-7qdh.onrender.com/api/v1/auth",
+        "EXPO_PUBLIC_POSTS_URL": "https://posts-service-03dn.onrender.com/api/v1",
+        "EXPO_PUBLIC_NOTIFICATIONS_URL": "https://notifications-service-wswx.onrender.com/api/v1",
+        "EXPO_PUBLIC_GEO_URL": "https://geolocatedalerts-service.onrender.com/api/v1",
+        "EXPO_PUBLIC_REPUTATION_URL": "https://reputation-service-a0oc.onrender.com/api/v1"
+      }
+    }
+  }
+}

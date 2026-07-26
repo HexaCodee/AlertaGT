@@ -12,9 +12,13 @@ var builder = WebApplication.CreateBuilder(args);
 // CORRECCIÓN: Omitir validación SSL (Cloudinary, etc.)
 System.Net.ServicePointManager.ServerCertificateValidationCallback += (sender, certificate, chain, sslPolicyErrors) => true;
 
-// Configure Serilog from appsettings.json only (avoid duplicate sinks)
+// Consola como sink base: si appsettings.json no esta presente (p. ej. en
+// Render, donde no se sube a git) Serilog debe seguir escribiendo a stdout
+// en vez de quedar sin ningun sink configurado.
 builder.Host.UseSerilog((context, services, loggerConfiguration) =>
     loggerConfiguration
+        .MinimumLevel.Information()
+        .WriteTo.Console()
         .ReadFrom.Configuration(context.Configuration)
         .ReadFrom.Services(services));
 
