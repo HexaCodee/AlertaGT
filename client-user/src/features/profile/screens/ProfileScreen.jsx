@@ -36,12 +36,13 @@ const STATUS_META = {
 export const ProfileScreen = ({ navigation }) => {
   const { colors: COLORS, isDark, toggleTheme } = useTheme();
   const styles = useMemo(() => createStyles(COLORS), [COLORS]);
-  const { fetchProfile } = useProfile();
+  const { fetchProfile, fetchProfileStats } = useProfile();
   const { fetchReputation } = useReports();
   const logout = useAuthStore((state) => state.logout);
 
   const [profile, setProfile] = useState(null);
   const [reputation, setReputation] = useState(null);
+  const [stats, setStats] = useState(null);
   const [initializing, setInitializing] = useState(true);
   const [radius, setRadius] = useState(ALERT_RADIUS_MIN);
 
@@ -52,8 +53,9 @@ export const ProfileScreen = ({ navigation }) => {
       setProfile(data);
       if (data.id) setReputation(await fetchReputation(data.id));
     }
+    setStats(await fetchProfileStats());
     setInitializing(false);
-  }, [fetchProfile, fetchReputation]);
+  }, [fetchProfile, fetchReputation, fetchProfileStats]);
 
   useEffect(() => { load(); }, [load]);
   useEffect(() => { getAlertRadius().then(setRadius); }, []);
@@ -98,6 +100,28 @@ export const ProfileScreen = ({ navigation }) => {
         <Text style={styles.name}>{profile.name} {profile.surname}</Text>
         <Text style={styles.username}>@{profile.username}</Text>
       </View>
+
+      {stats ? (
+        <Card>
+          <View style={styles.statsRow}>
+            <View style={styles.statColumn}>
+              <MaterialIcons name="warning" size={22} color={COLORS.primary} />
+              <Text style={styles.statNumber}>{stats.totalAlerts}</Text>
+              <Text style={styles.statLabel}>Alertas publicadas</Text>
+            </View>
+            <View style={styles.statColumn}>
+              <MaterialIcons name="chat-bubble" size={22} color={COLORS.primary} />
+              <Text style={styles.statNumber}>{stats.totalComments}</Text>
+              <Text style={styles.statLabel}>Comentarios</Text>
+            </View>
+            <View style={styles.statColumn}>
+              <MaterialIcons name="trending-up" size={22} color={COLORS.primary} />
+              <Text style={styles.statNumber}>{stats.communityHelped}</Text>
+              <Text style={styles.statLabel}>Comunidad ayudada</Text>
+            </View>
+          </View>
+        </Card>
+      ) : null}
 
       {reputation ? (
         <Card>
@@ -190,6 +214,10 @@ const createStyles = (COLORS) => StyleSheet.create({
   container: { flex: 1, backgroundColor: COLORS.background },
   content: { padding: SPACING.md, paddingBottom: SPACING.xxl },
   header: { alignItems: 'center', marginBottom: SPACING.lg },
+  statsRow: { flexDirection: 'row' },
+  statColumn: { flex: 1, alignItems: 'center', gap: 2 },
+  statNumber: { fontSize: FONT_SIZE.lg, fontWeight: '800', color: COLORS.text, marginTop: SPACING.xs },
+  statLabel: { fontSize: FONT_SIZE.xs, color: COLORS.textLight, textAlign: 'center' },
   repRow: { flexDirection: 'row', alignItems: 'flex-end', gap: SPACING.xs },
   trust: { fontSize: FONT_SIZE.xxl, fontWeight: '800', color: COLORS.primary, lineHeight: 34 },
   trustMax: { fontSize: FONT_SIZE.sm, color: COLORS.textLight, marginBottom: 4 },

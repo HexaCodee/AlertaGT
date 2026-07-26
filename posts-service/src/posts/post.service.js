@@ -1,5 +1,14 @@
 ﻿import Post from "./post.model.js";
 
+// Las alertas dejan de aparecer en el mapa y en la lista de "cercanas" pasadas
+// estas horas desde su creación (siguen en la base de datos para
+// estadísticas/historial, solo se ocultan de la vista pública).
+const ALERT_VISIBILITY_HOURS = 24;
+
+const notExpiredFilter = () => ({
+  createdAt: { $gte: new Date(Date.now() - ALERT_VISIBILITY_HOURS * 60 * 60 * 1000) },
+});
+
 // Crear publicación
 export const createPostRecord = async ({ postData, authorId, image = null, attachments = [] }) => {
   const data = {
@@ -19,7 +28,7 @@ export const createPostRecord = async ({ postData, authorId, image = null, attac
 
 // Listar publicaciones con paginación y filtros opcionales
 export const fetchPosts = async ({ page = 1, limit = 10, category, onlyPublished = true }) => {
-  const filter = { isActive: true };
+  const filter = { isActive: true, ...notExpiredFilter() };
   if (category) filter.category = category;
   if (onlyPublished) filter.isPublished = true;
 
@@ -50,9 +59,9 @@ export const fetchPostsByProximity = async ({ latitude, longitude, maxDistance =
   const lat = parseFloat(latitude);
   const maxDistNum = parseInt(maxDistance) || 20000;
 
-  // 1. Condiciones básicas: solo arrastramos que esté activa
-  const matchConditions = { isActive: true };
-  
+  // 1. Condiciones básicas: solo arrastramos que esté activa y no expirada
+  const matchConditions = { isActive: true, ...notExpiredFilter() };
+
   if (category && category.toLowerCase() !== 'all') {
     matchConditions.category = category.trim().toUpperCase();
   }

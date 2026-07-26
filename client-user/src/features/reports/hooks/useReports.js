@@ -51,6 +51,16 @@ export const useReports = () => {
     }
   }, []);
 
+  // Resumen de calificaciones de un usuario (promedio y cantidad de reseñas).
+  const fetchRatingSummary = useCallback(async (userId) => {
+    try {
+      const response = await reputationClient.get(`/ratings/user/${userId}/summary`);
+      return response.data.data || response.data;
+    } catch {
+      return null;
+    }
+  }, []);
+
   // Reportar una alerta.
   const reportAlert = useCallback(async ({ postId, reason, comment = '' }) => {
     setLoading(true);
@@ -87,6 +97,7 @@ export const useReports = () => {
     fetchMyReports,
     fetchAlertVerdict,
     fetchReputation,
+    fetchRatingSummary,
     reportAlert,
     rateUser,
   };
