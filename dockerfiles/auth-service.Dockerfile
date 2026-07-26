@@ -21,8 +21,11 @@ RUN apt-get update \
 
 COPY --from=build /app/publish .
 
-ENV ASPNETCORE_ENVIRONMENT=Development
+ENV ASPNETCORE_ENVIRONMENT=Production
 ENV ASPNETCORE_URLS=http://+:3010
+# Los contenedores de Render tienen un limite bajo de inotify; evita el
+# FileSystemWatcher de appsettings.json que no necesitamos en produccion.
+ENV DOTNET_hostBuilder__reloadConfigOnChange=false
 
 EXPOSE 3010
 
