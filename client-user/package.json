@@ -24,6 +24,7 @@
     "expo-location": "~55.1.12",
     "expo-secure-store": "~55.0.16",
     "expo-status-bar": "~55.0.6",
+    "expo-updates": "~55.0.26",
     "react": "19.2.0",
     "react-dom": "19.2.0",
     "react-hook-form": "^7.54.2",
