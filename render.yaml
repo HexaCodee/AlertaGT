@@ -1,0 +1,206 @@
+services:
+  # --- Frontend web (admin) ---
+
+  - type: web
+    name: client-admin
+    runtime: static
+    rootDir: client-admin
+    buildCommand: pnpm install --frozen-lockfile && pnpm build
+    staticPublishPath: ./dist
+    routes:
+      - type: rewrite
+        source: /*
+        destination: /index.html
+    envVars:
+      - key: VITE_AUTH_URL
+        sync: false
+      - key: VITE_POSTS_API_URL
+        sync: false
+      - key: VITE_NOTIFICATIONS_URL
+        sync: false
+      - key: VITE_GEOLOCATION_API_URL
+        sync: false
+      - key: VITE_REPUTATION_API_URL
+        sync: false
+
+  # --- Servicio .NET ---
+
+  - type: web
+    name: auth-service
+    runtime: docker
+    dockerfilePath: dockerfiles/auth-service.Dockerfile
+    dockerContext: .
+    plan: free
+    healthCheckPath: /api/v1/health
+    envVars:
+      - key: PORT
+        value: "3010"
+      - key: ASPNETCORE_ENVIRONMENT
+        value: Production
+      - key: ConnectionStrings__DefaultConnection
+        sync: false
+      - key: ConnectionStrings__MongoDbDatabase
+        value: AlertaGtAuth
+      - key: AppSettings__FrontendUrl
+        sync: false
+      - key: PostsServiceUrl
+        sync: false
+      - key: Security__AllowedOrigins__0
+        sync: false
+      - key: Security__AdminAllowedOrigins__0
+        sync: false
+      - key: JwtSettings__SecretKey
+        sync: false
+      - key: JwtSettings__Issuer
+        value: AlertaGT
+      - key: JwtSettings__Audience
+        value: AlertaGT
+      - key: JwtSettings__ExpirationMinutes
+        value: "60"
+      - key: SmtpSettings__Enabled
+        value: "true"
+      - key: SmtpSettings__Host
+        value: smtp.gmail.com
+      - key: SmtpSettings__Port
+        value: "465"
+      - key: SmtpSettings__EnableSsl
+        value: "true"
+      - key: SmtpSettings__UseImplicitSsl
+        value: "true"
+      - key: SmtpSettings__Username
+        sync: false
+      - key: SmtpSettings__Password
+        sync: false
+      - key: SmtpSettings__FromEmail
+        sync: false
+      - key: SmtpSettings__FromName
+        value: AlertaGT Soporte
+      - key: CloudinarySettings__CloudName
+        sync: false
+      - key: CloudinarySettings__ApiKey
+        sync: false
+      - key: CloudinarySettings__ApiSecret
+        sync: false
+      - key: CloudinarySettings__BaseUrl
+        sync: false
+      - key: CloudinarySettings__Folder
+        value: auth_alertagt/profiles
+      - key: CloudinarySettings__DefaultAvatarPath
+        sync: false
+
+  # --- Microservicios Node ---
+
+  - type: web
+    name: posts-service
+    runtime: docker
+    dockerfilePath: dockerfiles/posts-service.Dockerfile
+    dockerContext: .
+    plan: free
+    healthCheckPath: /api/v1/health
+    envVars:
+      - key: PORT
+        value: "3020"
+      - key: NODE_ENV
+        value: production
+      - key: URI_MONGODB
+        sync: false
+      - key: SERVICE_TOKEN
+        sync: false
+      - key: AUTH_SERVICE_URL
+        sync: false
+      - key: GEO_SERVICE_URL
+        sync: false
+      - key: NOTIFICATIONS_SERVICE_URL
+        sync: false
+      - key: REPUTATION_SERVICE_URL
+        sync: false
+      - key: CORS_ORIGIN
+        sync: false
+      - key: CLOUDINARY_CLOUD_NAME
+        sync: false
+      - key: CLOUDINARY_API_KEY
+        sync: false
+      - key: CLOUDINARY_API_SECRET
+        sync: false
+      - key: CLOUDINARY_FOLDER
+        value: alerts_posts
+
+  - type: web
+    name: notifications-service
+    runtime: docker
+    dockerfilePath: dockerfiles/notifications-service.Dockerfile
+    dockerContext: .
+    plan: free
+    healthCheckPath: /api/v1/health
+    envVars:
+      - key: PORT
+        value: "3021"
+      - key: NODE_ENV
+        value: production
+      - key: URI_MONGODB
+        sync: false
+      - key: SERVICE_TOKEN
+        sync: false
+      - key: AUTH_SERVICE_URL
+        sync: false
+      - key: CORS_ORIGIN
+        sync: false
+      # El JSON de Firebase Admin SDK no va en git ni en env vars planas:
+      # subelo como "Secret File" en Render (ver nota de despliegue) y
+      # apunta esta ruta al path que Render le asigna.
+      - key: FIREBASE_SERVICE_ACCOUNT_PATH
+        sync: false
+
+  - type: web
+    name: geolocatedalerts-service
+    runtime: docker
+    dockerfilePath: dockerfiles/geolocatedalerts-service.Dockerfile
+    dockerContext: .
+    plan: free
+    healthCheckPath: /api/v1/health
+    envVars:
+      - key: PORT
+        value: "3022"
+      - key: NODE_ENV
+        value: production
+      - key: URI_MONGODB
+        sync: false
+      - key: SERVICE_TOKEN
+        sync: false
+      - key: AUTH_SERVICE_URL
+        sync: false
+      - key: POSTS_SERVICE_URL
+        sync: false
+      - key: NOTIFICATIONS_SERVICE_URL
+        sync: false
+      - key: CORS_ORIGIN
+        sync: false
+
+  - type: web
+    name: reputation-service
+    runtime: docker
+    dockerfilePath: dockerfiles/reputation-service.Dockerfile
+    dockerContext: .
+    plan: free
+    healthCheckPath: /api/v1/health
+    envVars:
+      - key: PORT
+        value: "3023"
+      - key: NODE_ENV
+        value: production
+      - key: URI_MONGODB
+        sync: false
+      - key: DATABASE_NAME
+        value: AlertaGtRepu
+      - key: SERVICE_TOKEN
+        sync: false
+      - key: AUTH_SERVICE_URL
+        sync: false
+      - key: POSTS_SERVICE_URL
+        sync: false
+      - key: NOTIFICATIONS_SERVICE_URL
+        sync: false
+      - key: CORS_ORIGIN
+        sync: false
+      - key: FALSE_REPORT_THRESHOLD
+        value: "1"

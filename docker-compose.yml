@@ -91,8 +91,8 @@ services:
     environment:
       NODE_ENV: ${NODE_ENV:-production}
       PORT: ${POSTS_SERVICE_PORT:-3020}
-      MONGODB_URI: ${MONGODB_URI:-mongodb://admin:password123@mongodb:27017}
-      DATABASE_NAME: ${DATABASE_NAME_POSTS:-AlertaGT_Posts}
+      URI_MONGODB: ${URI_MONGODB_POSTS:-mongodb://admin:password123@mongodb:27017}
+      DATABASE_NAME: ${DATABASE_NAME_POSTS:-AlertaGtPosts}
       AUTH_SERVICE_URL: ${AUTH_SERVICE_URL:-http://auth-service:3010/api/v1}
       GEO_SERVICE_URL: ${GEO_SERVICE_URL:-http://geolocatedalerts-service:3022/api/v1}
       NOTIFICATIONS_SERVICE_URL: ${NOTIFICATIONS_SERVICE_URL:-http://notifications-service:3021/api/v1}
@@ -131,8 +131,8 @@ services:
     environment:
       NODE_ENV: ${NODE_ENV:-production}
       PORT: ${NOTIFICATIONS_SERVICE_PORT:-3021}
-      MONGODB_URI: ${MONGODB_URI:-mongodb://admin:password123@mongodb:27017}
-      DATABASE_NAME: ${DATABASE_NAME_NOTIFICATIONS:-AlertaGT_Notifications}
+      URI_MONGODB: ${URI_MONGODB_NOTIFICATIONS:-mongodb://admin:password123@mongodb:27017}
+      DATABASE_NAME: ${DATABASE_NAME_NOTIFICATIONS:-AlertaGtNoti}
       AUTH_SERVICE_URL: ${AUTH_SERVICE_URL:-http://auth-service:3010/api/v1}
       SERVICE_TOKEN: ${SERVICE_TOKEN:-0c819cbf650f3df2fd99dab2e552a1c04de54bcdb83dda3443ff2e5ce16f3648}
       RATE_LIMIT_REQUESTS_PER_MINUTE: ${RATE_LIMIT_REQUESTS_PER_MINUTE:-100}
@@ -165,8 +165,8 @@ services:
     environment:
       NODE_ENV: ${NODE_ENV:-production}
       PORT: ${GEOLOCATION_SERVICE_PORT:-3022}
-      MONGODB_URI: ${MONGODB_URI:-mongodb://admin:password123@mongodb:27017}
-      DATABASE_NAME: ${DATABASE_NAME_GEO:-AlertaGT_Geo}
+      URI_MONGODB: ${URI_MONGODB_GEO:-mongodb://admin:password123@mongodb:27017}
+      DATABASE_NAME: ${DATABASE_NAME_GEO:-AlertaGtGeo}
       AUTH_SERVICE_URL: ${AUTH_SERVICE_URL:-http://auth-service:3010/api/v1}
       POSTS_SERVICE_URL: ${POSTS_SERVICE_URL:-http://posts-service:3020/api/v1}
       NOTIFICATIONS_SERVICE_URL: ${NOTIFICATIONS_SERVICE_URL:-http://notifications-service:3021/api/v1}
@@ -201,8 +201,8 @@ services:
     environment:
       NODE_ENV: ${NODE_ENV:-production}
       PORT: ${REPUTATION_SERVICE_PORT:-3023}
-      MONGODB_URI: ${MONGODB_URI:-mongodb://admin:password123@mongodb:27017}
-      DATABASE_NAME: ${DATABASE_NAME_REPUTATION:-AlertaGT_Reputation}
+      URI_MONGODB: ${URI_MONGODB_REPUTATION:-mongodb://admin:password123@mongodb:27017}
+      DATABASE_NAME: ${DATABASE_NAME_REPUTATION:-AlertaGtRepu}
       AUTH_SERVICE_URL: ${AUTH_SERVICE_URL:-http://auth-service:3010/api/v1}
       POSTS_SERVICE_URL: ${POSTS_SERVICE_URL:-http://posts-service:3020/api/v1}
       NOTIFICATIONS_SERVICE_URL: ${NOTIFICATIONS_SERVICE_URL:-http://notifications-service:3021/api/v1}
