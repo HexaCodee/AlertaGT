@@ -50,8 +50,8 @@ const userLocationSchema = new Schema(
       type: Date,
       default: Date.now,
     },
-    // FCM token para notificaciones push
-    fcmToken: {
+    // Push token de Expo para notificaciones push
+    expoPushToken: {
       type: String,
     },
     // Radio de búsqueda en metros (preferencia del usuario)

@@ -3,15 +3,15 @@ import {
   saveUserLocation,
   findUsersNearby,
   getUserLocation,
-  updateFCMToken,
-  getNearbyUsersFCMTokens,
+  updateExpoPushToken,
+  getNearbyUsersPushTokens,
   setUserInactive,
   setUserActive,
   toggleLocationSharing,
   getLocationStatus,
   deleteUserLocation,
 } from './location.service.js';
-import { validateGpsCoordinates, validateSearchRadius, validateFCMToken } from '../../middlewares/geo-validators.js';
+import { validateGpsCoordinates, validateSearchRadius, validateExpoPushToken } from '../../middlewares/geo-validators.js';
 import { jwtDecode } from 'jwt-decode';
 
 const POSTS_SERVICE_URL = process.env.POSTS_SERVICE_URL || 'http://localhost:3020/api/v1';
@@ -47,7 +47,7 @@ async function notifyNearbyAlerts(userId, latitude, longitude) {
           latitude: post.location?.latitude,
           longitude: post.location?.longitude,
         },
-        fcmToken: null,
+        expoPushToken: null,
       }, { headers: { 'x-service-token': SERVICE_TOKEN } });
     }));
   } catch (err) {
@@ -79,7 +79,7 @@ const extractUserId = (req) => {
 export const updateUserLocation = async (req, res, next) => {
   try {
     const { latitude, longitude, address } = req.body;
-    const fcmToken = req.body.fcmToken;
+    const expoPushToken = req.body.expoPushToken;
     const userId = extractUserId(req);
 
     if (!latitude || !longitude) {
@@ -105,11 +105,11 @@ export const updateUserLocation = async (req, res, next) => {
       });
     }
 
-    // Validar FCM token si se proporciona
-    if (fcmToken && !validateFCMToken(fcmToken)) {
+    // Validar push token de Expo si se proporciona
+    if (expoPushToken && !validateExpoPushToken(expoPushToken)) {
       return res.status(400).json({
         success: false,
-        message: 'Token FCM inválido',
+        message: 'Push token de Expo inválido',
       });
     }
 
@@ -121,7 +121,7 @@ export const updateUserLocation = async (req, res, next) => {
       latitude: lat,
       longitude: lng,
       address,
-      fcmToken,
+      expoPushToken,
     });
 
     res.status(200).json({
@@ -212,7 +212,7 @@ export const getNearbyUsers = async (req, res, next) => {
   }
 };
 
-// Obtener FCM tokens de usuarios cercanos
+// Obtener push tokens de Expo de usuarios cercanos
 export const getNearbyUserTokens = async (req, res, next) => {
   try {
     const { latitude, longitude, maxDistance = 2000 } = req.query;
@@ -224,7 +224,7 @@ export const getNearbyUserTokens = async (req, res, next) => {
       });
     }
 
-    const { users, fcmTokens } = await getNearbyUsersFCMTokens({
+    const { users, pushTokens } = await getNearbyUsersPushTokens({
       latitude: parseFloat(latitude),
       longitude: parseFloat(longitude),
       maxDistance: parseInt(maxDistance) || 2000,
@@ -234,7 +234,7 @@ export const getNearbyUserTokens = async (req, res, next) => {
       success: true,
       data: {
         users: users.length,
-        tokens: fcmTokens,
+        tokens: pushTokens,
       },
       searchLocation: { latitude, longitude },
       searchRadius: maxDistance,
@@ -244,24 +244,24 @@ export const getNearbyUserTokens = async (req, res, next) => {
   }
 };
 
-// Actualizar FCM token del usuario
+// Actualizar push token de Expo del usuario
 export const updateUserFCMToken = async (req, res, next) => {
   try {
-    const { fcmToken } = req.body;
+    const { expoPushToken } = req.body;
     const userId = extractUserId(req);
 
-    if (!userId || !fcmToken) {
+    if (!userId || !expoPushToken) {
       return res.status(400).json({
         success: false,
-        message: 'Se requieren userId y fcmToken',
+        message: 'Se requieren userId y expoPushToken',
       });
     }
 
-    const location = await updateFCMToken({ userId, fcmToken });
+    const location = await updateExpoPushToken({ userId, expoPushToken });
 
     res.status(200).json({
       success: true,
-      message: 'FCM token actualizado',
+      message: 'Push token actualizado',
       data: location,
     });
   } catch (err) {

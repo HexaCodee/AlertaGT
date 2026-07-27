@@ -16,7 +16,7 @@ const TEST_LOCATIONS = [
         latitude: 14.6349,  // Antigua Guatemala
         longitude: -90.5069,
         address: 'Antigua Guatemala, Sacatepéquez',
-        fcmToken: 'test-fcm-token-001',
+        expoPushToken: 'ExponentPushToken[test-token-001]',
         searchRadius: 5000
     },
     {
@@ -24,7 +24,7 @@ const TEST_LOCATIONS = [
         latitude: 14.8406,  // Quetzaltenango (Xela)
         longitude: -91.5181,
         address: 'Quetzaltenango, Guatemala',
-        fcmToken: 'test-fcm-token-002',
+        expoPushToken: 'ExponentPushToken[test-token-002]',
         searchRadius: 3000
     },
     {
@@ -32,7 +32,7 @@ const TEST_LOCATIONS = [
         latitude: 14.5873,  // Guatemala City - Zona 1
         longitude: -90.5534,
         address: 'Zona 1, Ciudad de Guatemala',
-        fcmToken: 'test-fcm-token-003',
+        expoPushToken: 'ExponentPushToken[test-token-003]',
         searchRadius: 2000
     },
     {
@@ -40,7 +40,7 @@ const TEST_LOCATIONS = [
         latitude: 14.6128,  // Mixco
         longitude: -90.6060,
         address: 'Mixco, Guatemala',
-        fcmToken: 'test-fcm-token-004',
+        expoPushToken: 'ExponentPushToken[test-token-004]',
         searchRadius: 2500
     }
 ];
@@ -78,7 +78,7 @@ async function seedData() {
                 address: location.address,
                 isActive: true,
                 lastLocationUpdate: new Date(),
-                fcmToken: location.fcmToken,
+                expoPushToken: location.expoPushToken,
                 searchRadius: location.searchRadius,
                 createdAt: new Date(),
                 updatedAt: new Date()

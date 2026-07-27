@@ -342,7 +342,7 @@ async function triggerNotifications(post) {
             latitude: post.location.latitude,
             longitude: post.location.longitude,
           },
-          fcmToken: user.fcmToken || null,
+          expoPushToken: user.expoPushToken || null,
         }, {
           headers: { 'x-service-token': SERVICE_TOKEN }
         });

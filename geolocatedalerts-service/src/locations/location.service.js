@@ -1,7 +1,7 @@
 import UserLocation from './location.model.js';
 
 // Crear o actualizar ubicación de un usuario
-export const saveUserLocation = async ({ userId, latitude, longitude, address = null, fcmToken = null }) => {
+export const saveUserLocation = async ({ userId, latitude, longitude, address = null, expoPushToken = null }) => {
   const location = await UserLocation.findOneAndUpdate(
     { userId },
     {
@@ -13,7 +13,7 @@ export const saveUserLocation = async ({ userId, latitude, longitude, address = 
       latitude,
       longitude,
       address,
-      ...(fcmToken && { fcmToken }),
+      ...(expoPushToken && { expoPushToken }),
       lastLocationUpdate: new Date(),
       isActive: true,
     },
@@ -48,28 +48,28 @@ export const getUserLocation = async (userId) => {
   return UserLocation.findOne({ userId });
 };
 
-// Actualizar solo el FCM token
-export const updateFCMToken = async ({ userId, fcmToken }) => {
+// Actualizar solo el push token de Expo
+export const updateExpoPushToken = async ({ userId, expoPushToken }) => {
   const location = await UserLocation.findOneAndUpdate(
     { userId },
-    { fcmToken },
+    { expoPushToken },
     { new: true }
   );
 
   return location;
 };
 
-// Obtener todos los FCM tokens de usuarios cercanos
-export const getNearbyUsersFCMTokens = async ({ latitude, longitude, maxDistance = 2000 }) => {
+// Obtener todos los push tokens de Expo de usuarios cercanos
+export const getNearbyUsersPushTokens = async ({ latitude, longitude, maxDistance = 2000 }) => {
   const users = await findUsersNearby({ latitude, longitude, maxDistance });
 
   return {
     users,
-    fcmTokens: users
-      .filter(u => u.fcmToken)
+    pushTokens: users
+      .filter(u => u.expoPushToken)
       .map(u => ({
         userId: u.userId,
-        token: u.fcmToken,
+        token: u.expoPushToken,
       })),
   };
 };
