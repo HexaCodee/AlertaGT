@@ -48,13 +48,13 @@ const notificationSchema = new Schema(
     readAt: {
       type: Date,
     },
-    // Si se envió via FCM
-    sentViaFCM: {
+    // Si se envió como push notification
+    sentPush: {
       type: Boolean,
       default: false,
     },
-    // Respuesta de Firebase
-    fcmResponse: {
+    // Respuesta de la Expo Push API
+    pushResponse: {
       type: Schema.Types.Mixed,
     },
   },

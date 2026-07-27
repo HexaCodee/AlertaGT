@@ -1,10 +1,10 @@
 # Notifications Service
 
-Servicio de notificaciones push para AlertaGT, construido con Node.js, Express y Firebase Cloud Messaging.
+Servicio de notificaciones push para AlertaGT, construido con Node.js, Express y la Expo Push API.
 
 ## Qué hace
 
-- Envía notificaciones push via FCM
+- Envía notificaciones push vía Expo Push API
 - Guarda historial de notificaciones en MongoDB
 - Permite marcar notificaciones como leídas
 - Elimina notificaciones individuales o todas
@@ -16,7 +16,7 @@ Servicio de notificaciones push para AlertaGT, construido con Node.js, Express y
 - Express
 - MongoDB
 - Mongoose
-- Firebase Admin SDK
+- Expo Push API (vía axios, sin credenciales)
 - Swagger (swagger-jsdoc + swagger-ui-express)
 
 ## Uso rápido
@@ -45,7 +45,6 @@ MONGODB_URI=mongodb://localhost:27017
 DATABASE_NAME=AlertaGT_Notifications
 AUTH_SERVICE_URL=http://localhost:3010/api/v1
 SERVICE_TOKEN=your-service-token
-FIREBASE_SERVICE_ACCOUNT_PATH=./alertagt-notifications-firebase-adminsdk-fbsvc-0361af1299.json
 RATE_LIMIT_REQUESTS_PER_MINUTE=100
 CORS_ORIGINS=http://localhost:3000,http://localhost:3001
 LOG_LEVEL=info
@@ -71,9 +70,9 @@ LOG_LEVEL=info
 El flujo típico es:
 
 1. `posts-service` crea una alerta o publicación
-2. `geolocatedalerts-service` obtiene usuarios/FCM tokens cercanos
+2. `geolocatedalerts-service` obtiene usuarios/push tokens de Expo cercanos
 3. `notifications-service` crea registros de notificación
-4. Se envían mensajes push a los tokens FCM
+4. Se envían mensajes push a los tokens de Expo vía Expo Push API
 
 ## Estructura de la aplicación
 
@@ -83,16 +82,15 @@ notifications-service/
 │   ├── app.js
 │   ├── db.configuration.js
 │   ├── cors.configuration.js
-│   ├── helmet.configuration.js
-│   └── firebase.configuration.js
+│   └── helmet.configuration.js
 ├── src/
 │   ├── notifications/
 │   │   ├── notification.model.js
 │   │   ├── notification.service.js
 │   │   ├── notification.controller.js
 │   │   └── notification.routes.js
-│   └── fcm/
-│       └── fcm.service.js
+│   └── expo-push/
+│       └── expo-push.service.js
 ├── middlewares/
 │   └── validate-JWT.js
 ├── index.js
@@ -101,7 +99,7 @@ notifications-service/
 
 ## Notas
 
-- Asegura que `FIREBASE_SERVICE_ACCOUNT_PATH` apunte a un archivo JSON válido.
+- La Expo Push API no requiere credenciales para el volumen de esta app.
 - El servicio necesita acceso a la base de datos MongoDB.
 - La documentación Swagger se genera a partir de las anotaciones JSDoc en `*.routes.js`.
 

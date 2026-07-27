@@ -12,11 +12,13 @@ export const useMap = () => {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
 
-  // Guardar/actualizar mi ubicación actual en el geo-service.
-  const updateLocation = useCallback(async ({ latitude, longitude, address } = {}) => {
+  // Guardar/actualizar mi ubicación actual en el geo-service. expoPushToken es
+  // opcional (solo nativo, y solo si el usuario otorgó permiso de notificaciones);
+  // así se registra el push token de paso, sin un endpoint separado.
+  const updateLocation = useCallback(async ({ latitude, longitude, address, expoPushToken } = {}) => {
     setError('');
     try {
-      const response = await geoClient.post('/locations', { latitude, longitude, address });
+      const response = await geoClient.post('/locations', { latitude, longitude, address, expoPushToken });
       return response.data.data || response.data;
     } catch (err) {
       setError(err.response?.data?.message || 'No se pudo actualizar tu ubicación');

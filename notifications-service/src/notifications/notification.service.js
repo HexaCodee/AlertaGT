@@ -1,8 +1,8 @@
 import Notification from './notification.model.js';
-import { sendPushNotification } from '../fcm/fcm.service.js';
+import { sendPushNotification } from '../expo-push/expo-push.service.js';
 
 // Crear notificación (idempotente: no duplica si ya existe el mismo userId+postId+type)
-export const createNotification = async ({ userId, postId, type, title, body, data = {}, fcmToken = null }) => {
+export const createNotification = async ({ userId, postId, type, title, body, data = {}, expoPushToken = null }) => {
   const existing = await Notification.findOne({ userId, postId, type });
   if (existing) return existing;
   // Si es una notificación de alerta cercana, incluir distancia en el título/cuerpo
@@ -26,20 +26,20 @@ export const createNotification = async ({ userId, postId, type, title, body, da
 
   await notification.save();
 
-  // Enviar via FCM si el token está disponible
-  if (fcmToken) {
+  // Enviar push vía Expo si el usuario tiene un token registrado
+  if (expoPushToken) {
     try {
-      const fcmResponse = await sendPushNotification({
-        token: fcmToken,
+      const pushResponse = await sendPushNotification({
+        token: expoPushToken,
         title: enhancedTitle,
         body: enhancedBody,
         data,
       });
-      notification.sentViaFCM = true;
-      notification.fcmResponse = fcmResponse;
+      notification.sentPush = true;
+      notification.pushResponse = pushResponse;
       await notification.save();
     } catch (err) {
-      console.error('Error enviando notificación vía FCM:', err.message);
+      console.error('Error enviando notificación push:', err.message);
     }
   }
 

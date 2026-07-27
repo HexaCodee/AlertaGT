@@ -11,6 +11,7 @@ import { View, Text, FlatList, Pressable, Platform, StyleSheet } from 'react-nat
 import * as Location from 'expo-location';
 import { MaterialIcons } from '@expo/vector-icons';
 import { useMap } from '../hooks/useMap.js';
+import { usePushToken } from '../../../shared/hooks/usePushToken.js';
 import { LeafletMapView } from '../components/LeafletMapView.jsx';
 import { categoryLabel, categoryEmoji, categoryColor } from '../../alerts/constants.js';
 import { Card, LoadingSpinner, EmptyState } from '../../../shared/components/common/Common.jsx';
@@ -41,6 +42,7 @@ export const MapScreen = ({ navigation }) => {
   const { colors: COLORS, isDark } = useTheme();
   const styles = useMemo(() => createStyles(COLORS), [COLORS]);
   const { nearbyAlerts, loading, error, updateLocation, fetchNearbyAlerts } = useMap();
+  const pushToken = usePushToken();
   const [region, setRegion] = useState(null);
   const [permissionDenied, setPermissionDenied] = useState(false);
   const mapRef = useRef(null);
@@ -69,7 +71,7 @@ export const MapScreen = ({ navigation }) => {
         (pos) => {
           const coords = { latitude: pos.coords.latitude, longitude: pos.coords.longitude };
           setRegion((prev) => ({ ...coords, latitudeDelta: prev?.latitudeDelta ?? 0.05, longitudeDelta: prev?.longitudeDelta ?? 0.05 }));
-          updateLocation(coords);
+          updateLocation({ ...coords, expoPushToken: pushToken });
           fetchNearbyAlerts({ ...coords, maxDistance });
         }
       );
@@ -87,7 +89,7 @@ export const MapScreen = ({ navigation }) => {
       watchSubscription.current?.remove();
       watchSubscription.current = null;
     };
-  }, [updateLocation, fetchNearbyAlerts]);
+  }, [updateLocation, fetchNearbyAlerts, pushToken]);
 
   const goToAlert = (id) =>
     navigation.navigate('Alerts', { screen: 'AlertDetail', params: { id } });

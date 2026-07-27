@@ -178,7 +178,7 @@ router.get('/my-location', asyncHandler(getUserCurrentLocation));
  * @swagger
  * /api/v1/locations/fcm-token:
  *   put:
- *     summary: Actualiza el token FCM del usuario
+ *     summary: Actualiza el push token de Expo del usuario
  *     tags:
  *       - Locations
  *     security:
@@ -191,7 +191,7 @@ router.get('/my-location', asyncHandler(getUserCurrentLocation));
  *             $ref: '#/components/schemas/UpdateFcmTokenRequest'
  *     responses:
  *       200:
- *         description: Token FCM actualizado
+ *         description: Push token actualizado
  *         content:
  *           application/json:
  *             schema:

@@ -65,12 +65,11 @@ export const validateSearchRadius = (radius) => {
 };
 
 /**
- * Valida un token FCM
- * @param {string} token Token FCM
+ * Valida un push token de Expo (formato ExponentPushToken[xxxxx...])
+ * @param {string} token Push token de Expo
  * @returns {boolean}
  */
-export const validateFCMToken = (token) => {
+export const validateExpoPushToken = (token) => {
   if (!token || typeof token !== 'string') return false;
-  // FCM tokens típicamente tienen 152+ caracteres
-  return token.length > 100 && /^[a-zA-Z0-9_\-:]+$/.test(token);
+  return /^Expo(nent)?PushToken\[[A-Za-z0-9_-]+\]$/.test(token);
 };
