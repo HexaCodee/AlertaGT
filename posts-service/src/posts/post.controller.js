@@ -296,7 +296,10 @@ export const flagPost = async (req, res, next) => {
 // Disparar notificaciones a usuarios cercanos (llamadas inter-servicio)
 async function triggerNotifications(post) {
   try {
-    if (!post.location || !post.location.latitude || !post.location.longitude) return;
+    if (!post.location || !post.location.latitude || !post.location.longitude) {
+      console.warn(`triggerNotifications: post ${post._id} has no location, skipping`);
+      return;
+    }
 
     const nearbyResp = await axios.get(`${GEO_SERVICE_URL}/locations/nearby/users`, {
       params: {
@@ -307,7 +310,11 @@ async function triggerNotifications(post) {
     });
 
     const users = nearbyResp.data?.data || [];
-    if (!users.length) return;
+    if (!users.length) {
+      console.warn(`triggerNotifications: no nearby users found for post ${post._id} at [${post.location.latitude}, ${post.location.longitude}]`);
+      return;
+    }
+    console.log(`triggerNotifications: notifying ${users.length} nearby user(s) for post ${post._id}`);
 
     const notificationType = post.riskType === 'GRAVE' ? 'NEARBY_ALERT_CRITICAL' : 'NEW_ALERT';
 
@@ -320,24 +327,28 @@ async function triggerNotifications(post) {
                 Math.sin(dLng / 2) * Math.sin(dLng / 2);
       const distance = Math.round(R * 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a)));
 
-      await axios.post(`${NOTIFICATIONS_SERVICE_URL}/notifications`, {
-        userId: user.userId,
-        postId: post._id,
-        type: notificationType,
-        title: post.title,
-        body: post.text?.substring(0, 120) || '',
-        data: {
+      try {
+        await axios.post(`${NOTIFICATIONS_SERVICE_URL}/notifications`, {
+          userId: user.userId,
           postId: post._id,
-          category: post.category,
-          riskType: post.riskType,
-          distance,
-          latitude: post.location.latitude,
-          longitude: post.location.longitude,
-        },
-        fcmToken: user.fcmToken || null,
-      }, {
-        headers: { 'x-service-token': SERVICE_TOKEN }
-      });
+          type: notificationType,
+          title: post.title,
+          body: post.text?.substring(0, 120) || '',
+          data: {
+            postId: post._id,
+            category: post.category,
+            riskType: post.riskType,
+            distance,
+            latitude: post.location.latitude,
+            longitude: post.location.longitude,
+          },
+          fcmToken: user.fcmToken || null,
+        }, {
+          headers: { 'x-service-token': SERVICE_TOKEN }
+        });
+      } catch (userErr) {
+        console.error(`triggerNotifications: failed to notify user ${user.userId} for post ${post._id}:`, userErr.message);
+      }
     }));
   } catch (err) {
     console.error('triggerNotifications error:', err.message);

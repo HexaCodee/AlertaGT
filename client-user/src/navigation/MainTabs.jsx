@@ -5,7 +5,7 @@
 // "Reportes": reportar vive en el detalle de alerta y la reputación se muestra
 // dentro del perfil, así que aquí replicamos esa misma estructura.
 
-import { useMemo } from 'react';
+import { useMemo, useState, useEffect } from 'react';
 import { StyleSheet } from 'react-native';
 import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
 import { createNativeStackNavigator } from '@react-navigation/native-stack';
@@ -13,6 +13,7 @@ import { MaterialIcons } from '@expo/vector-icons';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useTheme } from '../shared/context/ThemeContext.jsx';
 import { SPACING } from '../shared/constants/theme.js';
+import { useNotifications } from '../features/notifications/hooks/useNotifications.js';
 
 // Pantallas reales por dominio.
 import { AlertsListScreen } from '../features/alerts/screens/AlertsListScreen.jsx';
@@ -76,10 +77,30 @@ const TAB_ICONS = {
   Profile: 'person',
 };
 
+// Cada cuánto se revisa el conteo de notificaciones no leídas mientras la
+// app está abierta, para el badge del tab (no requiere push nativo).
+const UNREAD_POLL_INTERVAL_MS = 30000;
+
 export const MainTabs = () => {
   const insets = useSafeAreaInsets();
   const { colors: COLORS } = useTheme();
   const styles = useMemo(() => createStyles(COLORS), [COLORS]);
+  const { fetchUnreadCount } = useNotifications();
+  const [unreadCount, setUnreadCount] = useState(0);
+
+  useEffect(() => {
+    let cancelled = false;
+    const poll = async () => {
+      const count = await fetchUnreadCount();
+      if (!cancelled) setUnreadCount(count);
+    };
+    poll();
+    const interval = setInterval(poll, UNREAD_POLL_INTERVAL_MS);
+    return () => {
+      cancelled = true;
+      clearInterval(interval);
+    };
+  }, [fetchUnreadCount]);
 
   return (
     <Tab.Navigator
@@ -102,7 +123,11 @@ export const MainTabs = () => {
       <Tab.Screen name="Alerts" component={AlertsStack} options={{ title: 'Inicio' }} />
       <Tab.Screen name="Map" component={MapScreen} options={{ title: 'Mapa' }} />
       <Tab.Screen name="CreateAlert" component={CreateAlertScreen} options={{ title: 'Crear' }} />
-      <Tab.Screen name="Notifications" component={NotificationsStack} options={{ title: 'Notificaciones' }} />
+      <Tab.Screen
+        name="Notifications"
+        component={NotificationsStack}
+        options={{ title: 'Notificaciones', tabBarBadge: unreadCount > 0 ? unreadCount : undefined }}
+      />
       <Tab.Screen name="Profile" component={ProfileStack} options={{ title: 'Cuenta' }} />
     </Tab.Navigator>
   );

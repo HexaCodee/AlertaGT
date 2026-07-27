@@ -15,10 +15,10 @@ import * as Location from 'expo-location';
 import * as ImagePicker from 'expo-image-picker';
 import { MaterialIcons } from '@expo/vector-icons';
 import { useAlerts } from '../hooks/useAlerts.js';
-import { CATEGORIES, RISK_TYPES } from '../constants.js';
+import { CATEGORIES, RISK_TYPES, categoryVisibilityHours, categoryLabel } from '../constants.js';
 import { Input } from '../../../shared/components/common/Input.jsx';
 import { Button } from '../../../shared/components/common/Button.jsx';
-import { showAlert } from '../../../shared/utils/alert.js';
+import { showAlert, showConfirm } from '../../../shared/utils/alert.js';
 import { useTheme } from '../../../shared/context/ThemeContext.jsx';
 import { SPACING, FONT_SIZE } from '../../../shared/constants/theme.js';
 
@@ -84,6 +84,18 @@ export const CreateAlertScreen = ({ navigation }) => {
       return;
     }
 
+    const hours = categoryVisibilityHours(category);
+    const duration = hours >= 24 ? `${Math.round(hours / 24)} día(s)` : `${hours} horas`;
+
+    showConfirm(
+      'Publicar alerta',
+      `Tu alerta de "${categoryLabel(category)}" será visible en el mapa durante ${duration}. Si el incidente se resuelve antes, te recomendamos borrarla desde el detalle de la alerta (menú ⋮ → Eliminar alerta) para no confundir a otros usuarios.`,
+      () => publishAlert(),
+      'Publicar'
+    );
+  };
+
+  const publishAlert = async () => {
     const result = await createAlert({
       title: title.trim(),
       category,
