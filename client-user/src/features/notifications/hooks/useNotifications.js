@@ -34,6 +34,16 @@ export const useNotifications = () => {
     }
   }, []);
 
+  // Conteo de no leídas, para el badge del tab bar (no reemplaza el historial completo).
+  const fetchUnreadCount = useCallback(async () => {
+    try {
+      const response = await notificationsClient.get('/notifications', { params: { unread: true, limit: 1 } });
+      return response.data.pagination?.totalRecords ?? 0;
+    } catch {
+      return 0;
+    }
+  }, []);
+
   // Marcar una notificación como leída (el backend usa PUT /:id/read).
   const markAsRead = useCallback(async (id) => {
     setError('');
@@ -122,6 +132,7 @@ export const useNotifications = () => {
     loading,
     error,
     fetchNotifications,
+    fetchUnreadCount,
     markAsRead,
     removeNotification,
     markAllAsRead,

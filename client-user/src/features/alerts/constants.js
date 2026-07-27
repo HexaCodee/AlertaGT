@@ -4,11 +4,17 @@
 // que las categorías se vean idénticas entre web y móvil.
 
 export const CATEGORIES = [
-  { value: 'ACCIDENTE', label: 'Accidente', icon: 'directions-car', emoji: '🚨', color: '#8b0000' },
-  { value: 'TRAFICO', label: 'Tráfico', icon: 'traffic', emoji: '🚗', color: '#ef4444' },
-  { value: 'PELIGRO', label: 'Peligro', icon: 'warning', emoji: '⚠️', color: '#f59e0b' },
-  { value: 'OTROS', label: 'Otros', icon: 'campaign', emoji: '📌', color: '#6b7280' },
+  { value: 'ACCIDENTE', label: 'Accidente', icon: 'directions-car', emoji: '🚨', color: '#8b0000', visibilityHours: 3 },
+  { value: 'TRAFICO', label: 'Tráfico', icon: 'traffic', emoji: '🚗', color: '#ef4444', visibilityHours: 3 },
+  { value: 'PELIGRO', label: 'Peligro', icon: 'warning', emoji: '⚠️', color: '#f59e0b', visibilityHours: 24 },
+  { value: 'OTROS', label: 'Otros', icon: 'campaign', emoji: '📌', color: '#6b7280', visibilityHours: 24 },
 ];
+
+// Duración de visibilidad de una alerta antes de que se oculte automáticamente
+// del mapa/lista (debe coincidir con ALERT_VISIBILITY_HOURS_BY_CATEGORY en
+// posts-service/src/posts/post.service.js).
+export const categoryVisibilityHours = (value) =>
+  CATEGORIES.find((c) => c.value === value)?.visibilityHours ?? 24;
 
 export const RISK_TYPES = [
   { value: 'LEVE', label: 'Leve' },

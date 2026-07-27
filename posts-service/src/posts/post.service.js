@@ -2,12 +2,29 @@
 
 // Las alertas dejan de aparecer en el mapa y en la lista de "cercanas" pasadas
 // estas horas desde su creación (siguen en la base de datos para
-// estadísticas/historial, solo se ocultan de la vista pública).
-const ALERT_VISIBILITY_HOURS = 24;
+// estadísticas/historial, solo se ocultan de la vista pública). Categorías
+// de eventos pasajeros (tráfico, accidentes) expiran más rápido que las de
+// riesgo persistente (peligro, otros).
+const ALERT_VISIBILITY_HOURS_BY_CATEGORY = {
+  TRAFICO: 3,
+  ACCIDENTE: 3,
+  PELIGRO: 24,
+  OTROS: 24,
+};
+const DEFAULT_VISIBILITY_HOURS = 24;
 
-const notExpiredFilter = () => ({
-  createdAt: { $gte: new Date(Date.now() - ALERT_VISIBILITY_HOURS * 60 * 60 * 1000) },
-});
+export const getAlertVisibilityHours = (category) =>
+  ALERT_VISIBILITY_HOURS_BY_CATEGORY[category] ?? DEFAULT_VISIBILITY_HOURS;
+
+const notExpiredFilter = () => {
+  const now = Date.now();
+  return {
+    $or: Object.entries(ALERT_VISIBILITY_HOURS_BY_CATEGORY).map(([category, hours]) => ({
+      category,
+      createdAt: { $gte: new Date(now - hours * 60 * 60 * 1000) },
+    })),
+  };
+};
 
 // Crear publicación
 export const createPostRecord = async ({ postData, authorId, image = null, attachments = [] }) => {

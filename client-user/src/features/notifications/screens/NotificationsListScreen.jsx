@@ -34,6 +34,10 @@ const TYPE_META = {
   LOCATION_DISABLED: { emoji: '📵', label: 'Ubicación desactivada' },
 };
 
+// Refresco periódico mientras la pantalla está abierta, para que las
+// notificaciones nuevas aparezcan sin depender del pull-to-refresh.
+const POLL_INTERVAL_MS = 30000;
+
 const getNotifMeta = (notif) => {
   const isAlert = notif.type === 'NEW_ALERT' || notif.type === 'NEARBY_ALERT_CRITICAL';
   const category = notif.data?.category;
@@ -72,7 +76,11 @@ export const NotificationsListScreen = ({ navigation }) => {
   const [refreshing, setRefreshing] = useState(false);
   const [tab, setTab] = useState('all');
 
-  useFocusEffect(useCallback(() => { fetchNotifications(); }, [fetchNotifications]));
+  useFocusEffect(useCallback(() => {
+    fetchNotifications();
+    const interval = setInterval(fetchNotifications, POLL_INTERVAL_MS);
+    return () => clearInterval(interval);
+  }, [fetchNotifications]));
 
   const onRefresh = async () => {
     setRefreshing(true);
