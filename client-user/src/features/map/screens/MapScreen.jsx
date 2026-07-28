@@ -71,7 +71,7 @@ export const MapScreen = ({ navigation }) => {
         (pos) => {
           const coords = { latitude: pos.coords.latitude, longitude: pos.coords.longitude };
           setRegion((prev) => ({ ...coords, latitudeDelta: prev?.latitudeDelta ?? 0.05, longitudeDelta: prev?.longitudeDelta ?? 0.05 }));
-          updateLocation({ ...coords, expoPushToken: pushToken });
+          updateLocation({ ...coords, expoPushToken: pushToken, searchRadius: maxDistance });
           fetchNearbyAlerts({ ...coords, maxDistance });
         }
       );
