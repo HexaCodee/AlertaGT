@@ -1,7 +1,7 @@
 import UserLocation from './location.model.js';
 
 // Crear o actualizar ubicación de un usuario
-export const saveUserLocation = async ({ userId, latitude, longitude, address = null, expoPushToken = null }) => {
+export const saveUserLocation = async ({ userId, latitude, longitude, address = null, expoPushToken = null, searchRadius = null }) => {
   const location = await UserLocation.findOneAndUpdate(
     { userId },
     {
@@ -14,6 +14,7 @@ export const saveUserLocation = async ({ userId, latitude, longitude, address = 
       longitude,
       address,
       ...(expoPushToken && { expoPushToken }),
+      ...(searchRadius && { searchRadius }),
       lastLocationUpdate: new Date(),
       isActive: true,
     },
@@ -41,6 +42,33 @@ export const findUsersNearby = async ({ latitude, longitude, maxDistance = 2000,
     .sort({ lastLocationUpdate: -1 });
 
   return users;
+};
+
+// Techo de búsqueda: ningún usuario puede configurar un radio de alertas mayor
+// a este valor (debe cubrir ALERT_RADIUS_MAX en client-user/preferences.js).
+const MAX_POSSIBLE_SEARCH_RADIUS = 50000;
+const DEFAULT_SEARCH_RADIUS = 2000;
+
+// Usuarios cercanos a un punto, respetando el radio de alertas que cada quien
+// configuró en su perfil (no un radio fijo para todos). Se buscan candidatos
+// dentro del techo máximo posible y luego se filtra cada uno contra su propio
+// searchRadius, comparando con la distancia real calculada por $geoNear.
+export const findUsersNearbyWithinOwnRadius = async ({ latitude, longitude, limit = 100 }) => {
+  const candidates = await UserLocation.aggregate([
+    {
+      $geoNear: {
+        near: { type: 'Point', coordinates: [longitude, latitude] },
+        distanceField: 'distance',
+        maxDistance: MAX_POSSIBLE_SEARCH_RADIUS,
+        spherical: true,
+        query: { isActive: true },
+      },
+    },
+    { $sort: { distance: 1 } },
+    { $limit: limit },
+  ]);
+
+  return candidates.filter((user) => user.distance <= (user.searchRadius || DEFAULT_SEARCH_RADIUS));
 };
 
 // Obtener ubicación de un usuario

@@ -2,6 +2,7 @@ import axios from 'axios';
 import {
   saveUserLocation,
   findUsersNearby,
+  findUsersNearbyWithinOwnRadius,
   getUserLocation,
   updateExpoPushToken,
   getNearbyUsersPushTokens,
@@ -18,10 +19,10 @@ const POSTS_SERVICE_URL = process.env.POSTS_SERVICE_URL || 'http://localhost:302
 const NOTIFICATIONS_SERVICE_URL = process.env.NOTIFICATIONS_SERVICE_URL || 'http://localhost:3021/api/v1';
 const SERVICE_TOKEN = process.env.SERVICE_TOKEN;
 
-async function notifyNearbyAlerts(userId, latitude, longitude, expoPushToken) {
+async function notifyNearbyAlerts(userId, latitude, longitude, expoPushToken, searchRadius) {
   try {
     const postsResp = await axios.get(`${POSTS_SERVICE_URL}/posts/proximity/search`, {
-      params: { latitude, longitude, maxDistance: 2000 },
+      params: { latitude, longitude, maxDistance: searchRadius || 2000 },
     });
     const posts = (postsResp.data?.data || []).filter((post) => post.authorId !== userId);
     if (!posts.length) return;
@@ -119,6 +120,14 @@ export const updateUserLocation = async (req, res, next) => {
       });
     }
 
+    // El radio de alertas es opcional aquí: solo se normaliza si el cliente
+    // lo mandó (es el radio configurable del usuario en su perfil, no un
+    // valor fijo para todos).
+    let searchRadius;
+    if (req.body.searchRadius) {
+      searchRadius = validateSearchRadius(req.body.searchRadius).normalizedRadius;
+    }
+
     const lat = parseFloat(latitude);
     const lng = parseFloat(longitude);
 
@@ -128,6 +137,7 @@ export const updateUserLocation = async (req, res, next) => {
       longitude: lng,
       address,
       expoPushToken,
+      searchRadius,
     });
 
     res.status(200).json({
@@ -136,7 +146,7 @@ export const updateUserLocation = async (req, res, next) => {
       data: location,
     });
 
-    void notifyNearbyAlerts(userId, lat, lng, location.expoPushToken);
+    void notifyNearbyAlerts(userId, lat, lng, location.expoPushToken, location.searchRadius);
   } catch (err) {
     next(err);
   }
@@ -172,10 +182,12 @@ export const getUserCurrentLocation = async (req, res, next) => {
   }
 };
 
-// Obtener usuarios cercanos
+// Obtener usuarios cercanos que quieren ser notificados de una alerta en este
+// punto: cada usuario se filtra contra SU PROPIO radio de alertas configurado
+// (no un radio fijo para todos). Usado por posts-service al publicar.
 export const getNearbyUsers = async (req, res, next) => {
   try {
-    const { latitude, longitude, maxDistance = 2000, limit = 100 } = req.query;
+    const { latitude, longitude, limit = 100 } = req.query;
 
     if (!latitude || !longitude) {
       return res.status(400).json({
@@ -195,14 +207,9 @@ export const getNearbyUsers = async (req, res, next) => {
       });
     }
 
-    // Validar radio de búsqueda
-    const radiusValidation = validateSearchRadius(maxDistance);
-    const finalRadius = radiusValidation.normalizedRadius;
-
-    const users = await findUsersNearby({
+    const users = await findUsersNearbyWithinOwnRadius({
       latitude: lat,
       longitude: lng,
-      maxDistance: finalRadius,
       limit: parseInt(limit),
     });
 
@@ -211,7 +218,6 @@ export const getNearbyUsers = async (req, res, next) => {
       data: users,
       count: users.length,
       searchLocation: { latitude, longitude },
-      searchRadius: finalRadius,
     });
   } catch (err) {
     next(err);

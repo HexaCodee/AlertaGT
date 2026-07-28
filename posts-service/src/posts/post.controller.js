@@ -301,11 +301,12 @@ async function triggerNotifications(post) {
       return;
     }
 
+    // El geo-service decide a quién notificar comparando contra el radio de
+    // alertas que cada usuario configuró en su perfil, no un radio fijo.
     const nearbyResp = await axios.get(`${GEO_SERVICE_URL}/locations/nearby/users`, {
       params: {
         latitude: post.location.latitude,
         longitude: post.location.longitude,
-        maxDistance: 2000,
       },
     });
 

@@ -14,11 +14,13 @@ export const useMap = () => {
 
   // Guardar/actualizar mi ubicación actual en el geo-service. expoPushToken es
   // opcional (solo nativo, y solo si el usuario otorgó permiso de notificaciones);
-  // así se registra el push token de paso, sin un endpoint separado.
-  const updateLocation = useCallback(async ({ latitude, longitude, address, expoPushToken } = {}) => {
+  // así se registra el push token de paso, sin un endpoint separado. searchRadius
+  // es el radio de alertas configurado por el usuario (preferences.js): el
+  // backend lo usa para decidir a quién notificar, no solo un valor fijo.
+  const updateLocation = useCallback(async ({ latitude, longitude, address, expoPushToken, searchRadius } = {}) => {
     setError('');
     try {
-      const response = await geoClient.post('/locations', { latitude, longitude, address, expoPushToken });
+      const response = await geoClient.post('/locations', { latitude, longitude, address, expoPushToken, searchRadius });
       return response.data.data || response.data;
     } catch (err) {
       setError(err.response?.data?.message || 'No se pudo actualizar tu ubicación');
