@@ -309,7 +309,7 @@ async function triggerNotifications(post) {
       },
     });
 
-    const users = nearbyResp.data?.data || [];
+    const users = (nearbyResp.data?.data || []).filter((user) => user.userId !== post.authorId);
     if (!users.length) {
       console.warn(`triggerNotifications: no nearby users found for post ${post._id} at [${post.location.latitude}, ${post.location.longitude}]`);
       return;

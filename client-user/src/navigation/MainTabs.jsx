@@ -14,6 +14,7 @@ import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useTheme } from '../shared/context/ThemeContext.jsx';
 import { SPACING } from '../shared/constants/theme.js';
 import { useNotifications } from '../features/notifications/hooks/useNotifications.js';
+import { usePushToken } from '../shared/hooks/usePushToken.js';
 
 // Pantallas reales por dominio.
 import { AlertsListScreen } from '../features/alerts/screens/AlertsListScreen.jsx';
@@ -87,6 +88,10 @@ export const MainTabs = () => {
   const styles = useMemo(() => createStyles(COLORS), [COLORS]);
   const { fetchUnreadCount } = useNotifications();
   const [unreadCount, setUnreadCount] = useState(0);
+
+  // Pide permiso de notificaciones y registra el push token apenas el usuario
+  // inicia sesión, sin depender de que visite la pantalla de Mapa.
+  usePushToken();
 
   useEffect(() => {
     let cancelled = false;
