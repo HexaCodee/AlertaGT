@@ -1,6 +1,6 @@
 const THEME_KEY = 'theme'
 
-export const getTheme = () => window.localStorage.getItem(THEME_KEY) || 'light'
+export const getTheme = () => window.localStorage.getItem(THEME_KEY) || 'dark'
 
 export const applyTheme = (theme) => {
   document.documentElement.setAttribute('data-theme', theme)
