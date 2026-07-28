@@ -18,12 +18,12 @@ const POSTS_SERVICE_URL = process.env.POSTS_SERVICE_URL || 'http://localhost:302
 const NOTIFICATIONS_SERVICE_URL = process.env.NOTIFICATIONS_SERVICE_URL || 'http://localhost:3021/api/v1';
 const SERVICE_TOKEN = process.env.SERVICE_TOKEN;
 
-async function notifyNearbyAlerts(userId, latitude, longitude) {
+async function notifyNearbyAlerts(userId, latitude, longitude, expoPushToken) {
   try {
     const postsResp = await axios.get(`${POSTS_SERVICE_URL}/posts/proximity/search`, {
       params: { latitude, longitude, maxDistance: 2000 },
     });
-    const posts = postsResp.data?.data || [];
+    const posts = (postsResp.data?.data || []).filter((post) => post.authorId !== userId);
     if (!posts.length) return;
 
     // Solo notificar sobre alertas creadas en las últimas 24 horas
@@ -31,27 +31,33 @@ async function notifyNearbyAlerts(userId, latitude, longitude) {
     const recentPosts = posts.filter(p => new Date(p.createdAt) > cutoff);
     if (!recentPosts.length) return;
 
+    console.log(`[geo] notifyNearbyAlerts: notifying user ${userId} about ${recentPosts.length} nearby alert(s)`);
+
     await Promise.all(recentPosts.map(async (post) => {
       const type = post.riskType === 'GRAVE' ? 'NEARBY_ALERT_CRITICAL' : 'NEW_ALERT';
-      await axios.post(`${NOTIFICATIONS_SERVICE_URL}/notifications`, {
-        userId,
-        postId: post._id,
-        type,
-        title: post.title,
-        body: post.text?.substring(0, 120) || '',
-        data: {
+      try {
+        await axios.post(`${NOTIFICATIONS_SERVICE_URL}/notifications`, {
+          userId,
           postId: post._id,
-          category: post.category,
-          riskType: post.riskType,
-          distance: Math.round(post.distance || 0),
-          latitude: post.location?.latitude,
-          longitude: post.location?.longitude,
-        },
-        expoPushToken: null,
-      }, { headers: { 'x-service-token': SERVICE_TOKEN } });
+          type,
+          title: post.title,
+          body: post.text?.substring(0, 120) || '',
+          data: {
+            postId: post._id,
+            category: post.category,
+            riskType: post.riskType,
+            distance: Math.round(post.distance || 0),
+            latitude: post.location?.latitude,
+            longitude: post.location?.longitude,
+          },
+          expoPushToken: expoPushToken || null,
+        }, { headers: { 'x-service-token': SERVICE_TOKEN } });
+      } catch (postErr) {
+        console.error(`[geo] notifyNearbyAlerts: failed to notify user ${userId} about post ${post._id}:`, postErr.response?.status, postErr.message);
+      }
     }));
   } catch (err) {
-    console.error('[geo] notifyNearbyAlerts error:', err.message);
+    console.error('[geo] notifyNearbyAlerts error:', err.response?.status, err.message);
   }
 }
 
@@ -130,7 +136,7 @@ export const updateUserLocation = async (req, res, next) => {
       data: location,
     });
 
-    void notifyNearbyAlerts(userId, lat, lng);
+    void notifyNearbyAlerts(userId, lat, lng, location.expoPushToken);
   } catch (err) {
     next(err);
   }
