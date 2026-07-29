@@ -175,7 +175,12 @@ export const CreateAlertScreen = ({ navigation }) => {
 
       <Text style={styles.label}>Imagen (opcional)</Text>
       {image ? (
-        <Image source={{ uri: image.uri }} style={styles.preview} />
+        <View style={styles.previewWrap}>
+          <Image source={{ uri: image.uri }} style={styles.preview} />
+          <Pressable style={styles.removeImageBtn} onPress={() => setImage(null)} hitSlop={8}>
+            <MaterialIcons name="close" size={18} color="#ffffff" />
+          </Pressable>
+        </View>
       ) : null}
       <View style={styles.imageActions}>
         <Button title="Tomar foto" variant="secondary" onPress={takePhoto} style={styles.imageActionBtn} />
@@ -232,7 +237,19 @@ const createStyles = (COLORS) => StyleSheet.create({
     marginBottom: SPACING.md,
   },
   locationText: { fontSize: FONT_SIZE.sm, color: COLORS.textLight },
-  preview: { width: '100%', height: 180, borderRadius: 12, marginBottom: SPACING.sm },
+  previewWrap: { position: 'relative', marginBottom: SPACING.sm },
+  preview: { width: '100%', height: 180, borderRadius: 12 },
+  removeImageBtn: {
+    position: 'absolute',
+    top: SPACING.xs,
+    right: SPACING.xs,
+    width: 28,
+    height: 28,
+    borderRadius: 14,
+    backgroundColor: 'rgba(0, 0, 0, 0.55)',
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
   imageActions: { flexDirection: 'row', gap: SPACING.sm, marginBottom: SPACING.lg },
   imageActionBtn: { flex: 1 },
   submit: { marginTop: SPACING.sm },
