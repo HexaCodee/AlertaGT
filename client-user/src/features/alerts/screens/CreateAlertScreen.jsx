@@ -50,7 +50,19 @@ export const CreateAlertScreen = ({ navigation }) => {
     })();
   }, []);
 
-  const pickImage = async () => {
+  const applyPickedAsset = (asset) => {
+    setImage({
+      uri: asset.uri,
+      name: asset.fileName || 'alerta.jpg',
+      type: asset.mimeType || 'image/jpeg',
+      // En web, expo-image-picker expone el File real del <input>; lo necesitamos
+      // porque el objeto {uri,name,type} (idioma nativo de RN) no sirve como
+      // parte de FormData en el navegador.
+      file: asset.file,
+    });
+  };
+
+  const pickFromGallery = async () => {
     const { status } = await ImagePicker.requestMediaLibraryPermissionsAsync();
     if (status !== 'granted') {
       showAlert('Permiso requerido', 'Se necesita acceso a tus fotos para adjuntar una imagen.');
@@ -61,16 +73,22 @@ export const CreateAlertScreen = ({ navigation }) => {
       quality: 0.7,
     });
     if (!result.canceled && result.assets?.[0]) {
-      const asset = result.assets[0];
-      setImage({
-        uri: asset.uri,
-        name: asset.fileName || 'alerta.jpg',
-        type: asset.mimeType || 'image/jpeg',
-        // En web, expo-image-picker expone el File real del <input>; lo necesitamos
-        // porque el objeto {uri,name,type} (idioma nativo de RN) no sirve como
-        // parte de FormData en el navegador.
-        file: asset.file,
-      });
+      applyPickedAsset(result.assets[0]);
+    }
+  };
+
+  const takePhoto = async () => {
+    const { status } = await ImagePicker.requestCameraPermissionsAsync();
+    if (status !== 'granted') {
+      showAlert('Permiso requerido', 'Se necesita acceso a la cámara para tomar una foto.');
+      return;
+    }
+    const result = await ImagePicker.launchCameraAsync({
+      mediaTypes: ImagePicker.MediaTypeOptions.Images,
+      quality: 0.7,
+    });
+    if (!result.canceled && result.assets?.[0]) {
+      applyPickedAsset(result.assets[0]);
     }
   };
 
@@ -159,7 +177,10 @@ export const CreateAlertScreen = ({ navigation }) => {
       {image ? (
         <Image source={{ uri: image.uri }} style={styles.preview} />
       ) : null}
-      <Button title={image ? 'Cambiar imagen' : 'Adjuntar imagen'} variant="secondary" onPress={pickImage} style={styles.imageBtn} />
+      <View style={styles.imageActions}>
+        <Button title="Tomar foto" variant="secondary" onPress={takePhoto} style={styles.imageActionBtn} />
+        <Button title="Elegir de galería" variant="secondary" onPress={pickFromGallery} style={styles.imageActionBtn} />
+      </View>
 
       <Button title="Publicar alerta" onPress={handleSubmit} loading={loading} style={styles.submit} />
     </ScrollView>
@@ -212,7 +233,8 @@ const createStyles = (COLORS) => StyleSheet.create({
   },
   locationText: { fontSize: FONT_SIZE.sm, color: COLORS.textLight },
   preview: { width: '100%', height: 180, borderRadius: 12, marginBottom: SPACING.sm },
-  imageBtn: { marginBottom: SPACING.lg },
+  imageActions: { flexDirection: 'row', gap: SPACING.sm, marginBottom: SPACING.lg },
+  imageActionBtn: { flex: 1 },
   submit: { marginTop: SPACING.sm },
 });
 
