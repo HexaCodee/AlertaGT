@@ -10,6 +10,7 @@ import { NotificationsPage } from '../../features/notifications/pages/Notificati
 import { MapPage } from '../../features/map/pages/MapPage.jsx'
 import { TermsOfServicePage } from '../../features/legal/pages/TermsOfServicePage.jsx'
 import { PrivacyPolicyPage } from '../../features/legal/pages/PrivacyPolicyPage.jsx'
+import { AdminPage } from '../../features/admin/pages/AdminPage.jsx'
 
 export const AppRoutes = () => (
   <Routes>
@@ -22,6 +23,9 @@ export const AppRoutes = () => (
     <Route path='/profile' element={<AccountPage />} />
     <Route path='/notifications' element={<NotificationsPage />} />
     <Route path='/map' element={<MapPage />} />
+    {/* El propio AdminPage valida el rol del JWT y muestra acceso restringido
+        si la cuenta no es de administración. */}
+    <Route path='/admin' element={<AdminPage />} />
     <Route path='/terms' element={<TermsOfServicePage />} />
     <Route path='/privacy' element={<PrivacyPolicyPage />} />
   </Routes>

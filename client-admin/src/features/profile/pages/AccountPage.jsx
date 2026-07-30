@@ -3,7 +3,7 @@ import { useNavigate } from 'react-router-dom';
 import { getProfileData } from '../services/profileService';
 import { getReputation, getRatingSummary } from '../../reputation/services/reputationService.js';
 import { ReputationBadge } from '../../reputation/components/ReputationBadge.jsx';
-import { getCurrentUserId } from '../../../shared/utils/session.js';
+import { getCurrentUserId, isAdmin } from '../../../shared/utils/session.js';
 import { getTheme, toggleTheme } from '../../../shared/utils/theme.js';
 import '../../reputation/styles/reputation.css';
 import {
@@ -144,6 +144,17 @@ export const AccountPage = () => {
                     </div>
                 </div>
             </section>
+
+            {/* Acceso al panel de administración (solo admins/moderadores) */}
+            {isAdmin() && (
+                <section className="options-list-card">
+                    <div className="option-item border-none" onClick={() => navigate('/admin')} style={{ cursor: 'pointer' }}>
+                        <svg className="option-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg>
+                        <span className="option-name">Panel de administración</span>
+                        <svg className="option-chevron" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="m9 18 6-6-6-6"/></svg>
+                    </div>
+                </section>
+            )}
 
             {/* Lista de Opciones */}
             <section className="options-list-card">
