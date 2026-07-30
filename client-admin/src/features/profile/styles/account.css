@@ -181,6 +181,14 @@
     color: #222;
 }
 
+/* Indicador de "esta fila navega a otra pantalla" */
+.option-chevron {
+    width: 18px;
+    height: 18px;
+    color: #9ca3af;
+    flex-shrink: 0;
+}
+
 .badge-coming-soon {
     background-color: #e8f0fe;
     color: #1a73e8;

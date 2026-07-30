@@ -1,6 +1,7 @@
 import { useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { login } from '../../../shared/apis/auth.js'
+import { isAdmin } from '../../../shared/utils/session.js'
 
 export const LoginForm = ({ onForgot }) => {
   const navigate = useNavigate()
@@ -52,7 +53,8 @@ export const LoginForm = ({ onForgot }) => {
         window.localStorage.setItem('authUser', JSON.stringify(response.userDetails))
       }
 
-      navigate('/home')
+      // Las cuentas de administración entran directo al panel; el resto a la app.
+      navigate(isAdmin() ? '/admin' : '/home')
     } catch (apiError) {
       setError(apiError.message || 'No se pudo iniciar sesión')
     } finally {
